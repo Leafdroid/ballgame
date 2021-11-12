@@ -18,8 +18,6 @@ namespace Ballers
 
 		public Vector3 Position { get; set; }
 		public Vector3 Velocity { get; set; }
-		public Vector3 RealPosition { get; set; }
-		public Vector3 RealVelocity { get; set; }
 		public Vector3 MoveDirection { get; set; }
 		
 		public bool IsClient => Host.IsClient;

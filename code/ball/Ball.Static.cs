@@ -18,7 +18,7 @@ namespace Ballers
 
 		public static Ball Instantiate( Client client, Vector3 position  )
 		{
-			Ball newBall = new Ball() { Owner = client, RealPosition = position, Position = position };
+			Ball newBall = new Ball() { Owner = client, Position = position };
 			All.Add( newBall );
 			dictionary.Add( client.NetworkIdent, newBall );
 
@@ -76,9 +76,6 @@ namespace Ballers
 				ball.Position = pos;
 				ball.Velocity = vel;
 			}
-
-			ball.RealPosition = pos;
-			ball.RealVelocity = vel;
 		}
 
 		[ServerCmd]
