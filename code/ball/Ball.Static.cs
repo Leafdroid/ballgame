@@ -30,7 +30,7 @@ namespace Ballers
 			Ball newBall = new Ball() { Owner = client, Position = position };
 			All.Add( newBall );
 			dictionary.Add( client.NetworkIdent, newBall );
-
+			
 			return newBall;
 		}
 
@@ -46,14 +46,15 @@ namespace Ballers
 				position += spawnpoint.Position;
 
 			Ball newBall = Instantiate( client, position );
-			NetCreate( client, position );
+			newBall.clothesData = client.GetClientData( "avatar" );
+			NetCreate( client, position, newBall.clothesData );
 
 			return newBall;
 		}
 		private Ball() { }
 
 		[ClientRpc]
-		public static void NetCreate( Client owner, Vector3 position )
+		public static void NetCreate( Client owner, Vector3 position, string clothesData )
 		{
 			if ( !owner.IsValid() )
 				return;
@@ -62,7 +63,8 @@ namespace Ballers
 				return;
 
 			Ball newBall = Instantiate( owner, position );
-			newBall.SetupModel();
+			newBall.clothesData = clothesData;
+			newBall.SetupModels();
 		}
 
 		[ClientRpc]
@@ -94,7 +96,7 @@ namespace Ballers
 				return;
 
 			foreach ( Ball ball in All )
-				NetCreate( To.Single( ConsoleSystem.Caller ), ball.Owner, ball.Position );
+				NetCreate( To.Single( ConsoleSystem.Caller ), ball.Owner, ball.Position, ball.clothesData );
 		}
 
 		[ServerCmd]

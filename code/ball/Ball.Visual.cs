@@ -12,10 +12,52 @@ namespace Ballers
 	{
 		public ModelEntity Model { get; private set; }
 		public AnimSceneObject Terry { get; private set; }
-
 		private TimeSince timeSinceFootShuffle = 60;
 
-		public void SetupModel()
+		private string clothesData;
+		private Clothing.Container container = new();
+		private List<AnimSceneObject> clothingObjects = new();
+
+		public void DressTerry()
+		{
+			container.Deserialize( clothesData );
+
+			Terry.SetMaterialGroup( "Skin01" );
+
+			foreach ( var model in clothingObjects )
+			{
+				model?.Delete();
+			}
+			clothingObjects.Clear();
+
+			foreach ( var c in container.Clothing )
+			{
+				if ( c.Model == "models/citizen/citizen.vmdl" )
+				{
+					Terry.SetMaterialGroup( c.MaterialGroup );
+					continue;
+				}
+
+				var model = Sandbox.Model.Load( c.Model );
+
+				var anim = new AnimSceneObject( model, Terry.Transform );
+
+				if ( !string.IsNullOrEmpty( c.MaterialGroup ) )
+					anim.SetMaterialGroup( c.MaterialGroup );
+
+				Terry.AddChild( "clothing", anim );
+				clothingObjects.Add( anim );
+
+				anim.Update( 1.0f );
+			}
+
+			foreach ( var group in container.GetBodyGroups() )
+			{
+				Terry.SetBodyGroup( group.name, group.value );
+			}
+		}
+
+		public void SetupModels()
 		{
 			if ( !IsClient )
 				return;
@@ -25,6 +67,8 @@ namespace Ballers
 
 			if ( !Owner.IsValid() )
 				return;
+
+			DressTerry();
 
 			float hue = 0;
 			if ( Owner.IsBot )
@@ -91,6 +135,11 @@ namespace Ballers
 
 				// update
 				Terry.Update( RealTime.Delta );
+				foreach ( var clothingObject in clothingObjects )
+				{
+					if (clothingObject.IsValid())
+						clothingObject.Update( RealTime.Delta );
+				}
 			}
 		}
 
