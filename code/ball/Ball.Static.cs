@@ -1,0 +1,174 @@
+﻿
+using Sandbox;
+using Sandbox.UI.Construct;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Ballers
+{
+	public partial class Ball
+	{
+		public static List<Ball> All { get; private set; } = new();
+		public static Ball Find( int networkIdent ) => dictionary.TryGetValue( networkIdent, out Ball ball ) ? ball : null;
+		public static Ball Find( Client client ) => Find( client.NetworkIdent );
+
+		private static Dictionary<int,Ball> dictionary = new();
+
+		public static Ball Instantiate( Client client, Vector3 position  )
+		{
+			Ball newBall = new Ball() { Owner = client, RealPosition = position, Position = position };
+			All.Add( newBall );
+			dictionary.Add( client.NetworkIdent, newBall );
+
+			return newBall;
+		}
+
+		public static Ball Create( Client client )
+		{
+			if ( Host.IsClient )
+				return null;
+
+			var spawnpoint = Entity.All.OfType<SpawnPoint>().OrderBy( x => Guid.NewGuid() ).FirstOrDefault();
+
+			Vector3 position = Vector3.Up * 40f;
+			if ( spawnpoint != null )
+				position += spawnpoint.Position;
+
+			Ball newBall = Instantiate( client, position );
+			NetCreate( client, position );
+
+			return newBall;
+		}
+		private Ball() { }
+
+		[ClientRpc]
+		public static void NetCreate( Client owner, Vector3 position )
+		{
+			if ( !owner.IsValid() )
+				return;
+			// return if ball already exists on client
+			if ( Find( owner.NetworkIdent ).IsValid() )
+				return;
+
+			Ball newBall = Instantiate( owner, position );
+			newBall.SetupModel();
+		}
+
+		[ClientRpc]
+		public static void NetDelete( int netIdent )
+		{
+			Ball ball = Find( netIdent );
+			if ( ball.IsValid() ) 
+				ball.Delete();
+		}
+
+		[ClientRpc]
+		public static void NetData( int netIdent, Vector3 pos, Vector3 vel )
+		{
+			Ball ball = Find( netIdent );
+			if ( !ball.IsValid() )
+				return;
+
+			if ( ball.Owner != Local.Client)
+			{
+				ball.Position = pos;
+				ball.Velocity = vel;
+			}
+
+			ball.RealPosition = pos;
+			ball.RealVelocity = vel;
+		}
+
+		[ServerCmd]
+		public static void RequestBalls()
+		{
+			if ( ConsoleSystem.Caller == null )
+				return;
+
+			foreach ( Ball ball in All )
+				NetCreate( To.Single( ConsoleSystem.Caller ), ball.Owner, ball.Position );
+		}
+
+		[ServerCmd]
+		public static void SendData( int netIdent, Vector3 pos, Vector3 vel)
+		{
+			Ball ball = Find( netIdent );
+
+			if ( !ball.IsValid() )
+				return;
+
+			if ( ConsoleSystem.Caller != ball.Owner )
+				return;
+
+			ball.Position = ball.Position.LerpTo( pos, 0.25f );
+			ball.Velocity = ball.Velocity.LerpTo( vel, 0.25f );
+		}
+
+		[Event.Frame]
+		public static void StaticFrame()
+		{
+			foreach ( Ball ball in All )
+				ball.Frame();
+		}
+
+		[Event.Physics.PreStep]
+		public static void StaticPreStep()
+		{
+			foreach ( Ball ball in All )
+				ball.PreStep();
+		}
+
+		[Event.Tick]
+		public static void StaticTick()
+		{
+			foreach(Ball ball in All)
+			{
+				if ( ball.Owner == null || !ball.Owner.IsValid() )
+					ball.queueDeletion = true;
+
+				int indent = ball.NetworkIdent;
+				if ( ball.queueDeletion && dictionary.ContainsKey( indent ) )
+					dictionary.Remove( indent );
+			}
+			All = All.Where( b => !b.queueDeletion ).ToList();
+
+			foreach ( Ball ball in All )
+				ball.Tick();
+		}
+	}
+
+	public static class BallExtensions
+	{
+		public static Color HsvToRgb( float h, float s, float v )
+		{
+			int hi = (int)Math.Floor( h / 60.0f ) % 6;
+			float f = (h / 60.0f) - MathF.Floor( h / 60.0f );
+
+			float p = v * (1.0f - s);
+			float q = v * (1.0f - (f * s));
+			float t = v * (1.0f - ((1.0f - f) * s));
+
+			switch ( hi )
+			{
+				case 0:
+					return new Color( v, t, p );
+				case 1:
+					return new Color( q, v, p );
+				case 2:
+					return new Color( p, v, t );
+				case 3:
+					return new Color( p, q, v );
+				case 4:
+					return new Color( t, p, v );
+				case 5:
+					return new Color( v, p, q );
+				default:
+					return Color.Black;
+			}
+		}
+
+		public static bool IsValid( this Ball ball ) => ball != null && !ball.QueueDeletion;
+	}
+}

@@ -1,0 +1,115 @@
+﻿
+using Sandbox;
+using Sandbox.UI.Construct;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Ballers
+{
+	public partial class Ball
+	{
+		public float MaxAcceleration = 900f;
+		public float MinAcceleration = 150f;
+		public float Acceleration = 750;
+		
+		public float AirControl = 1f;
+		public float MaxSpeed = 1100f;
+		
+		public float Friction = 0.25f;
+		public float Drag = 0.1f;
+		public float WallBounce = 0.25f;
+		public float FloorBounce = 0.25f;
+
+		public bool Grounded;
+
+		public void PreStep()
+		{
+			float dt = Time.Delta;
+
+			float directionSpeed = Velocity.Dot( MoveDirection );
+
+			float acceleration = Acceleration;
+			if ( !Grounded )
+				acceleration *= AirControl;
+
+			float t = 1f - directionSpeed / MaxSpeed;
+			acceleration *= t;
+			//acceleration = acceleration.Clamp( MinAcceleration, MaxAcceleration );
+			
+
+			Velocity += (MoveDirection * acceleration) * dt;
+			Move();
+			Velocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed ).WithZ( Velocity.z );
+
+			if ( Host.IsClient )
+			{
+				SendData( NetworkIdent, Position, Velocity );
+				//DebugOverlay.ScreenText( (Vector2)Model.Position.ToScreen() * Screen.Size, 0, Color.White, acceleration.ToString() );
+			}
+				
+		}
+
+		public void Move()
+		{
+
+			var mover = new BallMoveHelper( Position, Velocity );
+			mover.Trace = mover.Trace.Radius( 40f ).WorldOnly();
+			mover.MaxStandableAngle = 50.0f;
+			mover.GroundBounce = FloorBounce;
+			mover.WallBounce = WallBounce;
+
+			float friction = Drag;
+			TraceResult groundTrace = mover.TraceDirection( Vector3.Down );
+			if ( Grounded = groundTrace.Hit )
+				friction = Friction;
+
+			mover.ApplyFriction( friction, Time.Delta );
+
+			// Apply gravity
+			mover.Velocity += Vector3.Down * 800 * Time.Delta;
+
+			mover.TryMove( Time.Delta );
+			mover.TryUnstuck();
+
+			if (IsClient)
+			{
+				TraceResult moveTrace = mover.TraceDirection( mover.Velocity * Time.Delta  );
+				if ( moveTrace.Hit )
+				{
+					float hitForce2 = mover.Velocity.Dot( -moveTrace.Normal );
+					if ( hitForce2 > 150f )
+					{
+						float volume = ((hitForce2 - 150f) / (MaxSpeed - 150f)).Clamp( 0f, 1f );
+
+						Sound impactSound =	Sound.FromWorld( BounceSounds.Name, moveTrace.EndPos );
+						impactSound.SetVolume( volume );
+					}
+				}
+			}
+
+			Velocity = mover.Velocity;
+			Position = mover.Position;
+
+			if ( IsServer )
+				NetData( NetworkIdent, Position, Velocity );
+
+			if ( IsClient  )
+				UpdateModel();
+		}
+
+		public static readonly SoundEvent BounceSounds = new()
+		{
+			Sounds = new List<string> {
+			"sounds/ball/bounce1.vsnd",
+			"sounds/ball/bounce2.vsnd",
+			"sounds/ball/bounce3.vsnd",
+			},
+			Pitch = 1f,
+			PitchRandom = 0.1f,
+			Volume = 1f,
+			DistanceMax = 3072f,
+		};
+	}
+}
