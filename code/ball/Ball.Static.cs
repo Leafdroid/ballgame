@@ -141,34 +141,6 @@ namespace Ballers
 
 	public static class BallExtensions
 	{
-		public static Color HsvToRgb( float h, float s, float v )
-		{
-			int hi = (int)Math.Floor( h / 60.0f ) % 6;
-			float f = (h / 60.0f) - MathF.Floor( h / 60.0f );
-
-			float p = v * (1.0f - s);
-			float q = v * (1.0f - (f * s));
-			float t = v * (1.0f - ((1.0f - f) * s));
-
-			switch ( hi )
-			{
-				case 0:
-					return new Color( v, t, p );
-				case 1:
-					return new Color( q, v, p );
-				case 2:
-					return new Color( p, v, t );
-				case 3:
-					return new Color( p, q, v );
-				case 4:
-					return new Color( t, p, v );
-				case 5:
-					return new Color( v, p, q );
-				default:
-					return Color.Black;
-			}
-		}
-
 		public static bool IsValid( this Ball ball ) => ball != null && !ball.QueueDeletion;
 	}
 }

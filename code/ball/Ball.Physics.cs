@@ -10,10 +10,7 @@ namespace Ballers
 {
 	public partial class Ball
 	{
-		public float MaxAcceleration = 900f;
-		public float MinAcceleration = 150f;
 		public float Acceleration = 750;
-		
 		public float AirControl = 1f;
 		public float MaxSpeed = 1100f;
 		
@@ -36,18 +33,14 @@ namespace Ballers
 
 			float t = 1f - directionSpeed / MaxSpeed;
 			acceleration *= t;
-			//acceleration = acceleration.Clamp( MinAcceleration, MaxAcceleration );
-			
+
 
 			Velocity += (MoveDirection * acceleration) * dt;
 			Move();
 			Velocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed ).WithZ( Velocity.z );
 
 			if ( Host.IsClient )
-			{
 				SendData( NetworkIdent, Position, Velocity );
-				//DebugOverlay.ScreenText( (Vector2)Model.Position.ToScreen() * Screen.Size, 0, Color.White, acceleration.ToString() );
-			}
 				
 		}
 

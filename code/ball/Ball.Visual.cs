@@ -34,8 +34,8 @@ namespace Ballers
 				hue = (float)seedColor.NextDouble() * 360f;
 			}
 
-			Color ballColor = BallExtensions.HsvToRgb( hue, 0.8f, 1f );
-			Color ballColor2 = BallExtensions.HsvToRgb( (hue + 30f) % 360, 0.8f, 1f );
+			Color ballColor = new ColorHsv( hue, 0.8f, 1f );
+			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, 0.8f, 1f );
 
 			Model.SceneObject.SetValue( "tint", ballColor );
 			Model.SceneObject.SetValue( "tint2", ballColor2 );

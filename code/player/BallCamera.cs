@@ -9,9 +9,9 @@ namespace Sandbox
 		private float roll = 0f;
 		private float stateInterp = 0f;
 
-		private Vector3 idlePos = Vector3.Zero;
-		private Rotation idleRot = Rotation.From(new Angles(0,0,0));
-		private float idleFov = 80f;
+		private Vector3 idlePos = new Vector3( -1800, -500, 700 );
+		private Rotation idleRot = Rotation.From( new Angles( 25, 20, 0 ) );
+		private float idleFov = 75f;
 
 		private Vector3 lastBallPos;
 		private Rotation lastBallRot;
@@ -24,10 +24,6 @@ namespace Sandbox
 			bool ballExists = ball.IsValid();
 
 			stateInterp = stateInterp.LerpTo( ballExists ? -0.01f : 1.01f, Time.Delta * 3f ).Clamp( 0f, 1f );
-
-			idlePos = new Vector3(-1800,-500,700);
-			idleRot = Rotation.From( new Angles( 25, 20, 0 ) );
-			idleFov = 80f;
 
 			Vector3 mins = Vector3.One*10000f;
 			Vector3 maxs = -mins;
