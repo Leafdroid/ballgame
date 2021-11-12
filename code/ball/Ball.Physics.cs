@@ -10,15 +10,6 @@ namespace Ballers
 {
 	public partial class Ball
 	{
-		public float Acceleration = 750;
-		public float AirControl = 1f;
-		public float MaxSpeed = 1100f;
-		
-		public float Friction = 0.25f;
-		public float Drag = 0.1f;
-		public float WallBounce = 0.25f;
-		public float FloorBounce = 0.25f;
-
 		public bool Grounded;
 
 		public void PreStep()

@@ -59,8 +59,8 @@ namespace Sandbox
 				float vVel = CurrentView.Rotation.Forward.Dot( velocity );
 				float hVel = CurrentView.Rotation.Right.Dot( velocity );
 
-				float vT = vVel / ball.MaxSpeed;
-				float hT = hVel / ball.MaxSpeed;
+				float vT = vVel / Ball.MaxSpeed;
+				float hT = hVel / Ball.MaxSpeed;
 
 				pitch = pitch.LerpTo( vT * 10f, Time.Delta * 10f );
 				roll = roll.LerpTo( -hT * 15f, Time.Delta * 10f );

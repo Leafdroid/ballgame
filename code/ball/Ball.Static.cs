@@ -10,6 +10,15 @@ namespace Ballers
 {
 	public partial class Ball
 	{
+		public static float Acceleration = 750;
+		public static float AirControl = 1f;
+		public static float MaxSpeed = 1100f;
+
+		public static float Friction = 0.25f;
+		public static float Drag = 0.1f;
+		public static float WallBounce = 0.25f;
+		public static float FloorBounce = 0.25f;
+
 		public static List<Ball> All { get; private set; } = new();
 		public static Ball Find( int networkIdent ) => dictionary.TryGetValue( networkIdent, out Ball ball ) ? ball : null;
 		public static Ball Find( Client client ) => Find( client.NetworkIdent );
@@ -98,6 +107,19 @@ namespace Ballers
 
 			if ( ConsoleSystem.Caller != ball.Owner )
 				return;
+
+			// currently broken in the case of falling
+			/*
+			float error = (ball.Position - pos).Length;
+			if ( error > 25 )	
+				Log.Warning( $"{ball.Owner.Name} requested a position {error} units away from the expected position." );
+
+			if ( error > 100 )
+			{
+				Log.Error( $"{ball.Owner.Name} requested a position {error} units away from the expected position." );
+				ball.Owner.Kick();
+			}
+			*/
 
 			ball.Position = ball.Position.LerpTo( pos, 0.25f );
 			ball.Velocity = ball.Velocity.LerpTo( vel, 0.25f );
