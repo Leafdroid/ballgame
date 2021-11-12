@@ -11,6 +11,9 @@ namespace Ballers
 	public partial class Ball
 	{
 		public ModelEntity Model { get; private set; }
+		public AnimSceneObject Terry { get; private set; }
+
+		private TimeSince timeSinceFootShuffle = 60;
 
 		public void SetupModel()
 		{
@@ -18,6 +21,7 @@ namespace Ballers
 				return;
 
 			Model = new ModelEntity( "models/ball.vmdl" );
+			Terry = new AnimSceneObject( Sandbox.Model.Load( "models/citizen/citizen.vmdl"), Transform.Zero );
 
 			if ( !Owner.IsValid() )
 				return;
@@ -41,6 +45,55 @@ namespace Ballers
 			Model.SceneObject.SetValue( "tint2", ballColor2 );
 		}
 
+		public void UpdateTerry()
+		{
+			if ( Terry.IsValid() )
+			{
+				Terry.Position = Model.Position - Vector3.Up * 35f;
+
+				float speed = Velocity.Length;
+				var forward = Terry.Rotation.Forward.Dot( Velocity );
+				var sideward = Terry.Rotation.Right.Dot( Velocity );
+				var angle = MathF.Atan2( sideward, forward ).RadianToDegree().NormalizeDegrees();
+
+				// base stance
+				Terry.SetAnimBool( "b_grounded", true );
+				Terry.SetAnimInt( "holdtype", 0 );
+				Terry.SetAnimFloat( "aimat_weight", 0.5f ); // old
+				Terry.SetAnimFloat( "aim_body_weight", 0.5f );
+
+				// rotation
+				Rotation idealRotation = Rotation.LookAt( Velocity.WithZ( 0 ), Vector3.Up );
+				float turnSpeed = 0.01f;
+				Terry.Rotation = Rotation.Slerp( Terry.Rotation, idealRotation, speed * Time.Delta * turnSpeed );
+				Terry.Rotation = Terry.Rotation.Clamp( idealRotation, 90f, out var change );
+				if ( change > 1 && speed <= 1 ) timeSinceFootShuffle = 0;
+				Terry.SetAnimBool( "b_shuffle", timeSinceFootShuffle < 0.1 );
+
+				// look direction
+				if (speed > 64f)
+				{
+					var aimDir = Velocity.WithZ(0).Normal; // Owner == Local.Client ? Input.Rotation.Forward : Velocity.Normal;
+					var aimPos = Model.Position + aimDir * 200f;
+					var localPos = Terry.Transform.PointToLocal( aimPos );
+					Terry.SetAnimVector( "aim_eyes", localPos );
+					Terry.SetAnimVector( "aim_head", localPos );
+					Terry.SetAnimVector( "aim_body", localPos );
+				}
+
+				// walk animation
+				Terry.SetAnimFloat( "move_direction", angle );
+				Terry.SetAnimFloat( "move_speed", speed );
+				Terry.SetAnimFloat( "move_groundspeed", Velocity.WithZ( 0 ).Length );
+				Terry.SetAnimFloat( "move_y", sideward );
+				Terry.SetAnimFloat( "move_x", forward );
+				Terry.SetAnimFloat( "move_z", 0 );
+
+				// update
+				Terry.Update( RealTime.Delta );
+			}
+		}
+
 		public void UpdateModel()
 		{
 			if ( !IsClient )
@@ -48,19 +101,29 @@ namespace Ballers
 
 			if ( Model.IsValid() )
 			{
-				Model.Position = Owner == Local.Client ? Position : RealPosition;
+				Model.Position = Position;
 
 				if ( IsClient && Velocity.LengthSquared > 0.0f )
 				{
-					Vector3 vel = Owner == Local.Client ? Velocity : RealVelocity;
-
-					var dir = vel.Normal;
+					var dir = Velocity.Normal;
 					var axis = new Vector3( -dir.y, dir.x, 0.0f );
-					var angle = (vel.Length * Time.Delta) / (50.0f * (float)Math.PI);
+					var angle = (Velocity.Length * Time.Delta) / (50.0f * (float)Math.PI);
 					Model.Rotation = Rotation.FromAxis( axis, 180.0f * angle ) * Model.Rotation;
 				}
 			}
 		}
-		
+
+		public void DeleteModels()
+		{
+			if ( !IsClient )
+				return;
+
+			if ( Model.IsValid() )
+				Model.Delete();
+
+			if ( Terry.IsValid() )
+				Terry.Delete();
+		}
+
 	}
 }

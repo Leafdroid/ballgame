@@ -31,8 +31,8 @@ namespace Ballers
 
 			if ( IsServer )
 				NetDelete( NetworkIdent );
-			else if ( Model.IsValid() )
-				Model.Delete();
+			else
+				DeleteModels();
 		}
 
 		public void Tick()
@@ -47,12 +47,7 @@ namespace Ballers
 
 		public void Frame()
 		{
-			Vector3 pos = Position + Vector3.Up * (IsServer ? 1 : -1);
-			if ( Owner == Local.Client)
-			{
-				//DebugOverlay.Sphere( RealPosition, 40f, Color.Cyan.WithAlpha(0.25f) );
-				//DebugOverlay.Line( Position, RealPosition, Color.Cyan.WithAlpha( 0.25f ) );
-			}
+			UpdateTerry();
 		}
 
 		public override int GetHashCode() => NetworkIdent;
