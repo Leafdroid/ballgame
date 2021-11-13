@@ -11,6 +11,8 @@ namespace Ballers
 	public partial class Ball
 	{
 		public bool Grounded;
+		public Sound RollingSound;
+		private float soundInterp = 0f;
 
 		public void PreStep()
 		{
@@ -32,12 +34,10 @@ namespace Ballers
 
 			if ( Host.IsClient )
 				SendData( NetworkIdent, Position, Velocity );
-				
 		}
 
 		public void Move()
 		{
-
 			var mover = new BallMoveHelper( Position, Velocity );
 			mover.Trace = mover.Trace.Radius( 40f ).WorldOnly();
 			mover.MaxStandableAngle = 50.0f;
@@ -80,7 +80,17 @@ namespace Ballers
 				NetData( NetworkIdent, Position, Velocity );
 
 			if ( IsClient  )
+			{
 				UpdateModel();
+				soundInterp = soundInterp.LerpTo( Grounded ? 1.1f : -0.1f, 0.25f );
+				soundInterp = soundInterp.Clamp( 0f, 1f );
+
+				float speed = Velocity.WithZ( 0 ).Length / MaxSpeed;
+				float volume = speed * 0.45f * soundInterp;
+				RollingSound.SetVolume( volume );
+				float pitch = soundInterp+speed*10f;
+				RollingSound.SetPitch( pitch );
+			}
 		}
 
 		public static readonly SoundEvent BounceSounds = new()
@@ -94,6 +104,13 @@ namespace Ballers
 			PitchRandom = 0.1f,
 			Volume = 1f,
 			DistanceMax = 3072f,
+		};
+
+		public static readonly SoundEvent RollingSoundEvent = new( "sounds/ball/shitroll.vsnd" )
+		{
+			DistanceMax = 512f,
+			Pitch = 3f,
+			Volume = 0.05f,
 		};
 	}
 }

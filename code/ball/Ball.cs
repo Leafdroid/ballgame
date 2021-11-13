@@ -30,7 +30,11 @@ namespace Ballers
 			if ( IsServer )
 				NetDelete( NetworkIdent );
 			else
+			{
 				DeleteModels();
+				RollingSound.Stop();
+			}
+				
 		}
 
 		public void Tick()

@@ -65,14 +65,15 @@ namespace Ballers
 			Ball newBall = Instantiate( owner, position );
 			newBall.clothesData = clothesData;
 			newBall.SetupModels();
+			newBall.RollingSound = newBall.Model.PlaySound( RollingSoundEvent.Name );
 		}
 
 		[ClientRpc]
 		public static void NetDelete( int netIdent )
 		{
 			Ball ball = Find( netIdent );
-			if ( ball.IsValid() ) 
-				ball.Delete();
+			if ( ball.IsValid() )
+				ball.Delete();	
 		}
 
 		[ClientRpc]
