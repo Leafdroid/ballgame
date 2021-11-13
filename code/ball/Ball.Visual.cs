@@ -12,11 +12,17 @@ namespace Ballers
 	{
 		public ModelEntity Model { get; private set; }
 		public AnimSceneObject Terry { get; private set; }
-		private TimeSince timeSinceFootShuffle = 60;
 
 		private string clothesData;
 		private Clothing.Container container = new();
 		private List<AnimSceneObject> clothingObjects = new();
+
+		[ClientRpc]
+		public static void ClothingTest()
+		{
+			Clothing item = Resource.FromId<Clothing>( 1918103397 );
+			Log.Info( item != null ? item.Name : "null" );
+		}
 
 		public void DressTerry()
 		{
@@ -65,22 +71,15 @@ namespace Ballers
 			Model = new ModelEntity( "models/ball.vmdl" );
 			Terry = new AnimSceneObject( Sandbox.Model.Load( "models/citizen/citizen.vmdl"), Transform.Zero );
 
+			DressTerry();
+
 			if ( !Owner.IsValid() )
 				return;
 
-			DressTerry();
 
-			float hue = 0;
-			if ( Owner.IsBot )
-			{
-				hue = Rand.Float( 360f );
-			}
-			else
-			{
-				int id = (int)(Owner.PlayerId & 255);
-				Random seedColor = new Random( id );
-				hue = (float)seedColor.NextDouble() * 360f;
-			}
+			int id = (int)(Owner.PlayerId & 255);
+			Random seedColor = new Random( id );
+			float hue = (float)seedColor.NextDouble() * 360f;
 
 			Color ballColor = new ColorHsv( hue, 0.8f, 1f );
 			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, 0.8f, 1f );
@@ -111,8 +110,6 @@ namespace Ballers
 				float turnSpeed = 0.01f;
 				Terry.Rotation = Rotation.Slerp( Terry.Rotation, idealRotation, speed * Time.Delta * turnSpeed );
 				Terry.Rotation = Terry.Rotation.Clamp( idealRotation, 90f, out var change );
-				if ( change > 1 && speed <= 1 ) timeSinceFootShuffle = 0;
-				Terry.SetAnimBool( "b_shuffle", timeSinceFootShuffle < 0.1 );
 
 				// look direction
 				if (speed > 64f)
@@ -136,10 +133,7 @@ namespace Ballers
 				// update
 				Terry.Update( RealTime.Delta );
 				foreach ( var clothingObject in clothingObjects )
-				{
-					if (clothingObject.IsValid())
-						clothingObject.Update( RealTime.Delta );
-				}
+					clothingObject.Update( RealTime.Delta );
 			}
 		}
 

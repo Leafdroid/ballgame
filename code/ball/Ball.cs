@@ -28,24 +28,19 @@ namespace Ballers
 			queueDeletion = true;
 
 			if ( IsServer )
-				NetDelete( NetworkIdent );
+				ClientDelete( NetworkIdent );
 			else
 			{
+				Sound.FromWorld( WilhelmScream.Name, Model.Position );
 				DeleteModels();
 				RollingSound.Stop();
-			}
-				
+			}	
 		}
 
-		public void Tick()
+		public static readonly SoundEvent WilhelmScream = new( "sounds/ball/wilhelm.vsnd" )
 		{
-			if ( IsClient )
-				return;
-
-			Vector3 pos = Position + Vector3.Up * (IsServer ? 1 : -1);
-			//DebugOverlay.Sphere( pos, 40f, Color.Blue );
-			//DebugOverlay.Line( pos, pos + MoveDirection * 80f, Color.Blue );
-		}
+			DistanceMax = 1536f,
+		};
 
 		public void Frame()
 		{

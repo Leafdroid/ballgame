@@ -16,8 +16,6 @@ namespace Ballers
 
 			
 			Position = ball.Model.Position - Vector3.Up * 36;
-
-			Simulate();
 		}
 
 		public override void Simulate()
@@ -34,9 +32,6 @@ namespace Ballers
 			EyeRot = Input.Rotation;
 			EyePosLocal = Vector3.Up * (64 - 10);
 			Velocity = ball.Velocity;
-
-			//SetTag( "noclip" );
-			//SetTag( "sitting" );
 		}
 	}
 }

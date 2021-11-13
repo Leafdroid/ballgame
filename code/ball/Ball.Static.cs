@@ -47,14 +47,14 @@ namespace Ballers
 
 			Ball newBall = Instantiate( client, position );
 			newBall.clothesData = client.GetClientData( "avatar" );
-			NetCreate( client, position, newBall.clothesData );
+			ClientCreate( client, position, newBall.clothesData );
 
 			return newBall;
 		}
 		private Ball() { }
 
 		[ClientRpc]
-		public static void NetCreate( Client owner, Vector3 position, string clothesData )
+		public static void ClientCreate( Client owner, Vector3 position, string clothesData )
 		{
 			if ( !owner.IsValid() )
 				return;
@@ -69,7 +69,7 @@ namespace Ballers
 		}
 
 		[ClientRpc]
-		public static void NetDelete( int netIdent )
+		public static void ClientDelete( int netIdent )
 		{
 			Ball ball = Find( netIdent );
 			if ( ball.IsValid() )
@@ -77,7 +77,7 @@ namespace Ballers
 		}
 
 		[ClientRpc]
-		public static void NetData( int netIdent, Vector3 pos, Vector3 vel )
+		public static void ClientData( int netIdent, Vector3 pos, Vector3 vel )
 		{
 			Ball ball = Find( netIdent );
 			if ( !ball.IsValid() )
@@ -97,7 +97,7 @@ namespace Ballers
 				return;
 
 			foreach ( Ball ball in All )
-				NetCreate( To.Single( ConsoleSystem.Caller ), ball.Owner, ball.Position, ball.clothesData );
+				ClientCreate( To.Single( ConsoleSystem.Caller ), ball.Owner, ball.Position, ball.clothesData );
 		}
 
 		[ServerCmd]
@@ -124,6 +124,7 @@ namespace Ballers
 			}
 			*/
 
+			// this part is kinda weird idk how to interpolate properly
 			ball.Position = ball.Position.LerpTo( pos, 0.25f );
 			ball.Velocity = ball.Velocity.LerpTo( vel, 0.25f );
 		}
@@ -139,7 +140,7 @@ namespace Ballers
 		public static void StaticPreStep()
 		{
 			foreach ( Ball ball in All )
-				ball.PreStep();
+				ball.PhysicsPreStep();
 		}
 
 		[Event.Tick]
@@ -155,9 +156,6 @@ namespace Ballers
 					dictionary.Remove( indent );
 			}
 			All = All.Where( b => !b.queueDeletion ).ToList();
-
-			foreach ( Ball ball in All )
-				ball.Tick();
 		}
 	}
 

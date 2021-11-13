@@ -22,7 +22,7 @@ namespace Ballers
 			Controller = new BallController();
 			Camera = new BallCamera();
 
-			EnableAllCollisions = true;
+			EnableAllCollisions = false;
 			Transmit = TransmitType.Always;
 
 			Ball.Create( Client );

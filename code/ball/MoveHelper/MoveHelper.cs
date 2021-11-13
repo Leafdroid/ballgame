@@ -4,37 +4,32 @@ using System;
 
 namespace Ballers
 {
-	public struct BallMoveHelper
+	public struct MoveHelper
 	{
 		public Vector3 Position;
 		public Vector3 Velocity;
 
-		public bool HitBall;
 		public bool HitWall;
 		public Entity WallEntity;
-		public Vector3 HitWallPos;
 
-		public float HitForce;
-		public float GroundBounce;
-		public float WallBounce;
+		public float GroundBounce => Ball.FloorBounce;
+		public float WallBounce => Ball.WallBounce;
 		public float MaxStandableAngle;
 		public Trace Trace;
 
-		public BallMoveHelper( Vector3 position, Vector3 velocity ) : this()
+		public MoveHelper( Vector3 position, Vector3 velocity ) : this()
 		{
 			Velocity = velocity;
 			Position = position;
-			GroundBounce = 0.0f;
-			WallBounce = 0.0f;
-			MaxStandableAngle = 10.0f;
+			MaxStandableAngle = 45f;
 
 			// Hit everything but other balls
 			Trace = Trace.Ray( 0, 0 )
+				.Radius( 40f )
 				.WorldAndEntities()
 				.HitLayer( CollisionLayer.Solid, true )
 				.HitLayer( CollisionLayer.PLAYER_CLIP, true )
-				.HitLayer( CollisionLayer.GRATE, true )
-				.WithoutTags( new string[2] { "ball" , "coin"} );
+				.HitLayer( CollisionLayer.GRATE, true );
 		}
 
 		public TraceResult TraceFromTo( Vector3 start, Vector3 end )
@@ -53,7 +48,6 @@ namespace Ballers
 			float travelFraction = 0;
 			HitWall = false;
 			WallEntity = null;
-			HitWallPos = Vector3.Zero;
 
 			using var moveplanes = new VelocityClipPlanes( Velocity );
 
@@ -84,7 +78,6 @@ namespace Ballers
 				{
 					HitWall = true;
 					WallEntity = pm.Entity;
-					HitWallPos = pm.EndPos;
 				}
 
 				timeLeft -= timeLeft * pm.Fraction;

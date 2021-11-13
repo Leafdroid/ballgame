@@ -14,7 +14,7 @@ namespace Ballers
 		public Sound RollingSound;
 		private float soundInterp = 0f;
 
-		public void PreStep()
+		public void PhysicsPreStep()
 		{
 			float dt = Time.Delta;
 
@@ -27,22 +27,17 @@ namespace Ballers
 			float t = 1f - directionSpeed / MaxSpeed;
 			acceleration *= t;
 
-
 			Velocity += (MoveDirection * acceleration) * dt;
 			Move();
 			Velocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed ).WithZ( Velocity.z );
 
-			if ( Host.IsClient )
+			if ( IsClient )
 				SendData( NetworkIdent, Position, Velocity );
 		}
 
 		public void Move()
 		{
-			var mover = new BallMoveHelper( Position, Velocity );
-			mover.Trace = mover.Trace.Radius( 40f ).WorldOnly();
-			mover.MaxStandableAngle = 50.0f;
-			mover.GroundBounce = FloorBounce;
-			mover.WallBounce = WallBounce;
+			var mover = new MoveHelper( Position, Velocity );
 
 			float friction = Drag;
 			TraceResult groundTrace = mover.TraceDirection( Vector3.Down );
@@ -52,7 +47,7 @@ namespace Ballers
 			mover.ApplyFriction( friction, Time.Delta );
 
 			// Apply gravity
-			mover.Velocity += Vector3.Down * 800 * Time.Delta;
+			mover.Velocity += PhysicsWorld.Gravity * Time.Delta;
 
 			mover.TryMove( Time.Delta );
 			mover.TryUnstuck();
@@ -62,14 +57,8 @@ namespace Ballers
 				TraceResult moveTrace = mover.TraceDirection( mover.Velocity * Time.Delta  );
 				if ( moveTrace.Hit )
 				{
-					float hitForce2 = mover.Velocity.Dot( -moveTrace.Normal );
-					if ( hitForce2 > 150f )
-					{
-						float volume = ((hitForce2 - 150f) / (MaxSpeed - 150f)).Clamp( 0f, 1f );
-
-						Sound impactSound =	Sound.FromWorld( BounceSounds.Name, moveTrace.EndPos );
-						impactSound.SetVolume( volume );
-					}
+					float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
+					ImpactSound( hitForce );
 				}
 			}
 
@@ -77,23 +66,39 @@ namespace Ballers
 			Position = mover.Position;
 
 			if ( IsServer )
-				NetData( NetworkIdent, Position, Velocity );
+				ClientData( NetworkIdent, Position, Velocity );
 
 			if ( IsClient  )
 			{
 				UpdateModel();
-				soundInterp = soundInterp.LerpTo( Grounded ? 1.1f : -0.1f, 0.25f );
-				soundInterp = soundInterp.Clamp( 0f, 1f );
-
-				float speed = Velocity.WithZ( 0 ).Length / MaxSpeed;
-				float volume = speed * 0.45f * soundInterp;
-				RollingSound.SetVolume( volume );
-				float pitch = soundInterp+speed*10f;
-				RollingSound.SetPitch( pitch );
+				RollSound();
 			}
 		}
 
-		public static readonly SoundEvent BounceSounds = new()
+		private void RollSound()
+		{
+			soundInterp = soundInterp.LerpTo( Grounded ? 1.1f : -0.1f, 0.25f );
+			soundInterp = soundInterp.Clamp( 0f, 1f );
+
+			float speed = Velocity.WithZ( 0 ).Length / MaxSpeed;
+			float volume = speed * 0.5f * soundInterp;
+			RollingSound.SetVolume( 0f ); // volume
+			float pitch = soundInterp + speed * 10f;
+			RollingSound.SetPitch( pitch );
+		}
+
+		private void ImpactSound(float force)
+		{
+			if ( force > 150f )
+			{
+				float volume = ((force - 150f) / (MaxSpeed - 150f)).Clamp( 0f, 1f );
+
+				Sound impactSound = Model.PlaySound( BounceSound.Name );
+				impactSound.SetVolume( volume );
+			}
+		}
+
+		public static readonly SoundEvent BounceSound = new()
 		{
 			Sounds = new List<string> {
 			"sounds/ball/bounce1.vsnd",
@@ -103,12 +108,12 @@ namespace Ballers
 			Pitch = 1f,
 			PitchRandom = 0.1f,
 			Volume = 1f,
-			DistanceMax = 3072f,
+			DistanceMax = 2048f,
 		};
 
 		public static readonly SoundEvent RollingSoundEvent = new( "sounds/ball/shitroll.vsnd" )
 		{
-			DistanceMax = 512f,
+			DistanceMax = 1024f,
 			Pitch = 3f,
 			Volume = 0.05f,
 		};
