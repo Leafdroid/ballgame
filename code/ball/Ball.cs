@@ -19,7 +19,10 @@ namespace Ballers
 		public Vector3 Position { get; set; }
 		public Vector3 Velocity { get; set; }
 		public Vector3 MoveDirection { get; set; }
-		
+
+		public Vector3 ServerPosition { get; set; }
+		public Vector3 ServerVelocity { get; set; }
+
 		public bool IsClient => Host.IsClient;
 		public bool IsServer => Host.IsServer;
 
@@ -33,7 +36,7 @@ namespace Ballers
 			{
 				Sound.FromWorld( WilhelmScream.Name, Model.Position );
 				DeleteModels();
-				RollingSound.Stop();
+				//RollingSound.Stop();
 			}	
 		}
 
@@ -42,8 +45,22 @@ namespace Ballers
 			DistanceMax = 1536f,
 		};
 
+		public void Tick()
+		{
+			//if (IsServer)
+				//DebugOverlay.Sphere( Position, 40f, Color.White.WithAlpha(0.5f) );
+		}
+
 		public void Frame()
 		{
+			if (Owner != Local.Client)
+			{
+				float t = (Time.Delta*15f).Clamp( 0f, 1f );
+				Position = Position.LerpTo( ServerPosition, t );
+				Velocity = Velocity.LerpTo( ServerVelocity, t );
+				UpdateModel();
+			}
+				
 			UpdateTerry();
 		}
 

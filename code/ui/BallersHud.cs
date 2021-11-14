@@ -18,6 +18,7 @@ namespace Ballers
 				RootPanel.SetTemplate( "ui/ballershud.html" );
 
 				RootPanel.AddChild<NameTags>();
+				RootPanel.AddChild<Scoreboard<ScoreboardEntry>>();
 			}
 		}
 	}

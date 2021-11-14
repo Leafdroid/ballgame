@@ -23,7 +23,7 @@ namespace Sandbox
 
 			bool ballExists = ball.IsValid();
 
-			stateInterp = stateInterp.LerpTo( ballExists ? -0.01f : 1.01f, Time.Delta * 3f ).Clamp( 0f, 1f );
+			stateInterp = stateInterp.LerpTo( ballExists ? -0.01f : 1.01f, Time.Delta * 10f ).Clamp( 0f, 1f );
 
 			Vector3 mins = Vector3.One*10000f;
 			Vector3 maxs = -mins;

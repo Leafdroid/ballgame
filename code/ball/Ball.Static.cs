@@ -25,12 +25,12 @@ namespace Ballers
 
 		private static Dictionary<int,Ball> dictionary = new();
 
-		public static Ball Instantiate( Client client, Vector3 position  )
+		public static Ball Instantiate( Client client, Vector3 position )
 		{
 			Ball newBall = new Ball() { Owner = client, Position = position };
 			All.Add( newBall );
 			dictionary.Add( client.NetworkIdent, newBall );
-			
+
 			return newBall;
 		}
 
@@ -41,9 +41,12 @@ namespace Ballers
 
 			var spawnpoint = Entity.All.OfType<SpawnPoint>().OrderBy( x => Guid.NewGuid() ).FirstOrDefault();
 
+			Rotation rotation = Rotation.Identity;
 			Vector3 position = Vector3.Up * 40f;
 			if ( spawnpoint != null )
+			{
 				position += spawnpoint.Position;
+			}
 
 			Ball newBall = Instantiate( client, position );
 			newBall.clothesData = client.GetClientData( "avatar" );
@@ -65,7 +68,7 @@ namespace Ballers
 			Ball newBall = Instantiate( owner, position );
 			newBall.clothesData = clothesData;
 			newBall.SetupModels();
-			newBall.RollingSound = newBall.Model.PlaySound( RollingSoundEvent.Name );
+			//newBall.RollingSound = newBall.Model.PlaySound( RollingSoundEvent.Name );
 		}
 
 		[ClientRpc]
@@ -77,7 +80,7 @@ namespace Ballers
 		}
 
 		[ClientRpc]
-		public static void ClientData( int netIdent, Vector3 pos, Vector3 vel )
+		public static void ClientData( int netIdent, Vector3 pos, Vector3 vel, Vector3 moveDir )
 		{
 			Ball ball = Find( netIdent );
 			if ( !ball.IsValid() )
@@ -85,8 +88,9 @@ namespace Ballers
 
 			if ( ball.Owner != Local.Client)
 			{
-				ball.Position = pos;
-				ball.Velocity = vel;
+				ball.ServerPosition = pos;
+				ball.ServerVelocity = vel;
+				ball.MoveDirection = vel;
 			}
 		}
 
@@ -100,6 +104,7 @@ namespace Ballers
 				ClientCreate( To.Single( ConsoleSystem.Caller ), ball.Owner, ball.Position, ball.clothesData );
 		}
 
+		/*
 		[ServerCmd]
 		public static void SendData( int netIdent, Vector3 pos, Vector3 vel)
 		{
@@ -112,7 +117,6 @@ namespace Ballers
 				return;
 
 			// currently broken in the case of falling
-			/*
 			float error = (ball.Position - pos).Length;
 			if ( error > 25 )	
 				Log.Warning( $"{ball.Owner.Name} requested a position {error} units away from the expected position." );
@@ -122,25 +126,24 @@ namespace Ballers
 				Log.Error( $"{ball.Owner.Name} requested a position {error} units away from the expected position." );
 				ball.Owner.Kick();
 			}
-			*/
+
+			bool starting = Time.Now < BallersGame.StartTime;
+			if ( starting )
+			{
+				Log.Warning( $"{ball.Owner.Name} started {BallersGame.StartTime-Time.Now} seconds early!" );
+			}
 
 			// this part is kinda weird idk how to interpolate properly
-			ball.Position = ball.Position.LerpTo( pos, 0.25f );
-			ball.Velocity = ball.Velocity.LerpTo( vel, 0.25f );
+			//ball.Position = ball.Position.LerpTo( pos, 0.25f );
+			//ball.Velocity = ball.Velocity.LerpTo( vel, 0.25f );
 		}
+		*/
 
 		[Event.Frame]
 		public static void StaticFrame()
 		{
 			foreach ( Ball ball in All )
 				ball.Frame();
-		}
-
-		[Event.Physics.PreStep]
-		public static void StaticPreStep()
-		{
-			foreach ( Ball ball in All )
-				ball.PhysicsPreStep();
 		}
 
 		[Event.Tick]
@@ -156,6 +159,9 @@ namespace Ballers
 					dictionary.Remove( indent );
 			}
 			All = All.Where( b => !b.queueDeletion ).ToList();
+
+			foreach ( Ball ball in All )
+				ball.Tick();
 		}
 	}
 

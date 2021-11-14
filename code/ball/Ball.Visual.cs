@@ -17,7 +17,7 @@ namespace Ballers
 		private Clothing.Container container = new();
 		private List<AnimSceneObject> clothingObjects = new();
 
-		[ClientRpc]
+		[ClientCmd("findhat")]
 		public static void ClothingTest()
 		{
 			Clothing item = Resource.FromId<Clothing>( 1918103397 );

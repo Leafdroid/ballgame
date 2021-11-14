@@ -14,6 +14,19 @@ namespace Ballers
 			Ball.RequestBalls();
 		}
 
+		public void Kill()
+		{
+			DamageInfo dmg = new DamageInfo();
+			dmg.Damage = Health;
+			TakeDamage( dmg );
+		}
+
+		public async void RespawnDelay()
+		{
+			await GameTask.DelaySeconds( .5f );
+			Respawn();
+		}
+
 		public override void Respawn()
 		{
 			EnableDrawing = false;
@@ -37,7 +50,7 @@ namespace Ballers
 			base.Simulate( cl );
 
 			if ( Ball.IsValid() )
-				Ball.SimulateInput();	
+				Ball.Simulate();	
 		}
 
 		public override void OnKilled()
