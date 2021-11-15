@@ -94,12 +94,15 @@ namespace Sandbox.UI
 			if ( player.LifeState != LifeState.Alive )
 				return false;
 
-			Ball ball = Ball.Find( player.Client );
+			if ( player is not BallPlayer ballPlayer )
+				return false;
+
+			Ball ball = ballPlayer.Ball;
 			if ( !ball.IsValid() )
 				return false;
 
 
-			var labelPos = ball.Model.Position + Vector3.Up * 45;
+			var labelPos = ball.Position + Vector3.Up * 45;
 
 
 			//

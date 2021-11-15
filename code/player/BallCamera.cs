@@ -19,70 +19,45 @@ namespace Sandbox
 
 		public override void Update()
 		{
-			Ball ball = Ball.Find( Local.Client );
+			//if ( Host.IsServer )
+				//return;
+			
+			if ( Local.Client.Pawn is not BallPlayer player )
+				return;
 
-			bool ballExists = ball.IsValid();
+			Ball ball = player.Ball;
+			bool ballValid = ball.IsValid();
+			stateInterp = stateInterp.LerpTo( ballValid ? -0.01f : 1.01f, Time.Delta * 10f ).Clamp( 0f, 1f );
+			if ( !ballValid )
+				return;
 
-			stateInterp = stateInterp.LerpTo( ballExists ? -0.01f : 1.01f, Time.Delta * 10f ).Clamp( 0f, 1f );
+			Vector3 velocity = ball.Velocity;
 
-			Vector3 mins = Vector3.One*10000f;
-			Vector3 maxs = -mins;
-			foreach (Ball curBall in Ball.All)
-			{
-				if ( curBall == ball )
-					continue;
+			float vVel = CurrentView.Rotation.Forward.Dot( velocity );
+			float hVel = CurrentView.Rotation.Right.Dot( velocity );
 
-				Vector3 pos = curBall.Model.Position;
+			float vT = vVel / Ball.MaxSpeed;
+			float hT = hVel / Ball.MaxSpeed;
 
-				if ( pos.x < mins.x )
-					mins.x = pos.x;
-				else if ( pos.x > maxs.x )
-					maxs.x = pos.x;
+			pitch = pitch.LerpTo( vT * 10f, Time.Delta * 10f );
+			roll = roll.LerpTo( -hT * 15f, Time.Delta * 10f );
 
-				if ( pos.y < mins.y )
-					mins.y = pos.y;
-				if ( pos.y > maxs.y )
-					maxs.y = pos.y;
+			lastBallRot = Input.Rotation * Rotation.FromRoll( roll );
+			Vector3 camPos = ball.Position + lastBallRot.Backward * 200;
 
-				if ( pos.z < mins.z )
-					mins.z = pos.z;
-				if ( pos.z > maxs.z )
-					maxs.z = pos.z;
-			}
+			TraceResult cameraTrace = Trace.Ray( ball.Position, camPos )
+				.Radius( 8f ).WorldOnly().Run();
 
-			if ( ballExists )
-			{
-				ModelEntity model = ball.Model;
+			lastBallPos = cameraTrace.EndPos;
 
-				Vector3 velocity = ball.Velocity;
+			lastBallFov = 75 + pitch;
 
-				float vVel = CurrentView.Rotation.Forward.Dot( velocity );
-				float hVel = CurrentView.Rotation.Right.Dot( velocity );
-
-				float vT = vVel / Ball.MaxSpeed;
-				float hT = hVel / Ball.MaxSpeed;
-
-				pitch = pitch.LerpTo( vT * 10f, Time.Delta * 10f );
-				roll = roll.LerpTo( -hT * 15f, Time.Delta * 10f );
-
-				lastBallRot = Input.Rotation * Rotation.FromRoll( roll );
-				Vector3 camPos = model.Position + lastBallRot.Backward * 200;
-
-				TraceResult cameraTrace = Trace.Ray( model.Position, camPos )
-					.Radius( 8f ).WorldOnly().Run();
-
-				lastBallPos = cameraTrace.EndPos;
-
-				lastBallFov = 75 + pitch;
-
-				Viewer = null;
-			}
+			Viewer = null;
 
 			float n = 1f - stateInterp;
 			Position = n * lastBallPos + stateInterp * idlePos;
 			Rotation = Rotation.Lerp( lastBallRot, idleRot, stateInterp );
 			FieldOfView = n * lastBallFov + stateInterp * idleFov;
-
 		}
 
 		public override void BuildInput( InputBuilder input )

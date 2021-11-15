@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace Ballers
 {
-	public partial class Ball
+	public partial class Ball : ModelEntity
 	{
-		public ModelEntity Model { get; private set; }
 		public AnimSceneObject Terry { get; private set; }
 
 		private string clothesData;
@@ -68,31 +67,16 @@ namespace Ballers
 			if ( !IsClient )
 				return;
 
-			Model = new ModelEntity( "models/ball.vmdl" );
 			Terry = new AnimSceneObject( Sandbox.Model.Load( "models/citizen/citizen.vmdl"), Transform.Zero );
 
 			DressTerry();
-
-			if ( !Owner.IsValid() )
-				return;
-
-
-			int id = (int)(Owner.PlayerId & 255);
-			Random seedColor = new Random( id );
-			float hue = (float)seedColor.NextDouble() * 360f;
-
-			Color ballColor = new ColorHsv( hue, 0.8f, 1f );
-			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, 0.8f, 1f );
-
-			Model.SceneObject.SetValue( "tint", ballColor );
-			Model.SceneObject.SetValue( "tint2", ballColor2 );
 		}
 
 		public void UpdateTerry()
 		{
 			if ( Terry.IsValid() )
 			{
-				Terry.Position = Model.Position - Vector3.Up * 35f;
+				Terry.Position = Position - Vector3.Up * 35f;
 
 				float speed = Velocity.Length;
 				var forward = Terry.Rotation.Forward.Dot( Velocity );
@@ -115,7 +99,7 @@ namespace Ballers
 				if (speed > 64f)
 				{
 					var aimDir = Velocity.WithZ(0).Normal; // Owner == Local.Client ? Input.Rotation.Forward : Velocity.Normal;
-					var aimPos = Model.Position + aimDir * 200f;
+					var aimPos = Position + aimDir * 200f;
 					var localPos = Terry.Transform.PointToLocal( aimPos );
 					Terry.SetAnimVector( "aim_eyes", localPos );
 					Terry.SetAnimVector( "aim_head", localPos );
@@ -139,20 +123,12 @@ namespace Ballers
 
 		public void UpdateModel()
 		{
-			if ( !IsClient )
-				return;
-
-			if ( Model.IsValid() )
+			if ( Velocity.LengthSquared > 0.0f )
 			{
-				Model.Position = Position;
-
-				if ( IsClient && Velocity.LengthSquared > 0.0f )
-				{
-					var dir = Velocity.Normal;
-					var axis = new Vector3( -dir.y, dir.x, 0.0f );
-					var angle = (Velocity.Length * Time.Delta) / (50.0f * (float)Math.PI);
-					Model.Rotation = Rotation.FromAxis( axis, 180.0f * angle ) * Model.Rotation;
-				}
+				var dir = Velocity.Normal;
+				var axis = new Vector3( -dir.y, dir.x, 0.0f );
+				var angle = (Velocity.Length * Time.Delta) / (50.0f * (float)Math.PI);
+				Rotation = Rotation.FromAxis( axis, 180.0f * angle ) * Rotation;
 			}
 		}
 
@@ -160,9 +136,6 @@ namespace Ballers
 		{
 			if ( !IsClient )
 				return;
-
-			if ( Model.IsValid() )
-				Model.Delete();
 
 			if ( Terry.IsValid() )
 				Terry.Delete();

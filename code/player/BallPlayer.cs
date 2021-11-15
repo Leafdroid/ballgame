@@ -6,13 +6,7 @@ namespace Ballers
 {
 	public partial class BallPlayer : Player
 	{
-		public Ball Ball => Ball.Find( Client.NetworkIdent );
-
-		public override void ClientSpawn()
-		{
-			base.ClientSpawn();
-			Ball.RequestBalls();
-		}
+		[Net] public Ball Ball { get; set; }
 
 		public void Kill()
 		{
@@ -21,24 +15,19 @@ namespace Ballers
 			TakeDamage( dmg );
 		}
 
-		public async void RespawnDelay()
-		{
-			await GameTask.DelaySeconds( .5f );
-			Respawn();
-		}
-
 		public override void Respawn()
 		{
-			EnableDrawing = false;
-			EnableTraceAndQueries = false;
+			//SetModel( "models/citizen/citizen.vmdl" );
 
+			EnableDrawing = false;
+
+			Ball = Ball.Create(this);
 			Controller = new BallController();
 			Camera = new BallCamera();
 
 			EnableAllCollisions = false;
+			EnableTraceAndQueries = false;
 			Transmit = TransmitType.Always;
-
-			Ball.Create( Client );
 
 			base.Respawn();
 		}
@@ -57,8 +46,8 @@ namespace Ballers
 		{
 			base.OnKilled();
 
-			if ( IsServer && Ball.Find( Client.NetworkIdent ).IsValid() )
-				Ball.Find( Client.NetworkIdent ).Delete();
+			if ( Ball.IsValid() )
+				Ball.Delete();
 		}
 	}
 }

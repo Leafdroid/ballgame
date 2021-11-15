@@ -5,39 +5,80 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Ballers
 {
-	public partial class Ball
+	public partial class Ball : ModelEntity
 	{
-		public bool QueueDeletion => queueDeletion;
-		private bool queueDeletion = false;
+		public static float Acceleration = 750;
+		public static float AirControl = 1f;
+		public static float MaxSpeed = 1100f;
 
-		public Client Owner { get; private set; }
-		public int NetworkIdent => Owner.NetworkIdent;
+		public static float Friction = 0.25f;
+		public static float Drag = 0.1f;
+		public static float WallBounce = 0.25f;
+		public static float FloorBounce = 0.25f;
 
-		public Vector3 Position { get; set; }
-		public Vector3 Velocity { get; set; }
-		public Vector3 MoveDirection { get; set; }
-
-		public Vector3 ServerPosition { get; set; }
-		public Vector3 ServerVelocity { get; set; }
-
-		public bool IsClient => Host.IsClient;
-		public bool IsServer => Host.IsServer;
-
-		public void Delete()
+		public static Ball Create( BallPlayer player )
 		{
-			queueDeletion = true;
+			var spawnpoint = Entity.All.OfType<SpawnPoint>().OrderBy( x => Guid.NewGuid() ).FirstOrDefault();
 
-			if ( IsServer )
-				ClientDelete( NetworkIdent );
-			else
+			Rotation rotation = Rotation.Identity;
+			Vector3 position = Vector3.Up * 40f;
+			if ( spawnpoint != null )
 			{
-				Sound.FromWorld( WilhelmScream.Name, Model.Position );
-				DeleteModels();
-				//RollingSound.Stop();
-			}	
+				position += spawnpoint.Position;
+			}
+
+			Ball newBall = new Ball() { Owner = player, Position = position };
+			player.Ball = newBall;
+
+			return newBall;
+		}
+
+		private bool hasColor = false;
+
+		public override void Spawn()
+		{
+			base.Spawn();
+
+			Predictable = true;
+
+			SetModel( "models/ball.vmdl" );
+
+			EnableAllCollisions = false;
+			EnableTraceAndQueries = false;
+			Transmit = TransmitType.Always;
+		}
+
+		public override void ClientSpawn()
+		{
+			base.ClientSpawn();
+
+			Predictable = true;
+		}
+
+		[Event.Frame]
+		public void OnFrame()
+		{
+			if ( hasColor )
+				return;
+
+			if ( !SceneObject.IsValid() )
+				return;
+
+			int id = (int)(Owner.Client.PlayerId & 255);
+			Random seedColor = new Random( id );
+			float hue = (float)seedColor.NextDouble() * 360f;
+
+			Color ballColor = new ColorHsv( hue, 0.8f, 1f );
+			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, 0.8f, 1f );
+
+			SceneObject.SetValue( "tint", ballColor );
+			SceneObject.SetValue( "tint2", ballColor2 );
+
+			hasColor = true;
 		}
 
 		public static readonly SoundEvent WilhelmScream = new( "sounds/ball/wilhelm.vsnd" )
@@ -45,26 +86,6 @@ namespace Ballers
 			DistanceMax = 1536f,
 		};
 
-		public void Tick()
-		{
-			//if (IsServer)
-				//DebugOverlay.Sphere( Position, 40f, Color.White.WithAlpha(0.5f) );
-		}
-
-		public void Frame()
-		{
-			if (Owner != Local.Client)
-			{
-				float t = (Time.Delta*15f).Clamp( 0f, 1f );
-				Position = Position.LerpTo( ServerPosition, t );
-				Velocity = Velocity.LerpTo( ServerVelocity, t );
-				UpdateModel();
-			}
-				
-			UpdateTerry();
-		}
-
-		public override int GetHashCode() => NetworkIdent;
 		public override string ToString() => $"Ball {NetworkIdent} ({Owner.Name})";
 	}
 }

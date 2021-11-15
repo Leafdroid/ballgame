@@ -8,11 +8,9 @@ using System.Threading.Tasks;
 
 namespace Ballers
 {
-	public partial class Ball
+	public partial class Ball : ModelEntity
 	{
 		public bool Grounded;
-		//public Sound RollingSound;
-		private float soundInterp = 0f;
 
 		public void SimulatePhysics()
 		{
@@ -30,9 +28,6 @@ namespace Ballers
 			Velocity += (MoveDirection * acceleration) * dt;
 			Move();
 			Velocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed ).WithZ( Velocity.z );
-
-			//if ( IsClient && Time.Now >= BallersGame.StartTime )
-				//SendData( NetworkIdent, Position, Velocity );
 		}
 
 		public void Move()
@@ -58,10 +53,10 @@ namespace Ballers
 				if ( moveTrace.Hit )
 				{
 					float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
-					ClientImpactSound( Owner.NetworkIdent, hitForce );
+					ClientImpactSound( this, hitForce );
 				}
 			}
-			else
+			else if (Local.Client == Owner)
 			{
 				TraceResult moveTrace = mover.TraceDirection( mover.Velocity * Time.Delta );
 				if ( moveTrace.Hit )
@@ -74,29 +69,8 @@ namespace Ballers
 			Velocity = mover.Velocity;
 			Position = mover.Position;
 
-			if ( IsServer )
-				ClientData( NetworkIdent, Position, Velocity, MoveDirection );
-
-			if ( IsClient  )
-			{
-				UpdateModel();
-				//RollSound();
-			}
+			UpdateModel();
 		}
-
-		/*
-		private void RollSound()
-		{
-			soundInterp = soundInterp.LerpTo( Grounded ? 1.1f : -0.1f, 0.25f );
-			soundInterp = soundInterp.Clamp( 0f, 1f );
-
-			float speed = Velocity.WithZ( 0 ).Length / MaxSpeed;
-			float volume = speed * 0.5f * soundInterp;
-			RollingSound.SetVolume( 0f ); // volume
-			float pitch = soundInterp + speed * 10f;
-			RollingSound.SetPitch( pitch );
-		}
-		*/
 
 		private void ImpactSound(float force)
 		{
@@ -104,22 +78,21 @@ namespace Ballers
 			{
 				float volume = ((force - 150f) / (MaxSpeed - 150f)).Clamp( 0f, 1f );
 
-				Sound impactSound = Model.PlaySound( BounceSound.Name );
+				Sound impactSound = PlaySound( BounceSound.Name );
 				impactSound.SetVolume( volume );
 			}
 		}
 
 		[ClientRpc]
-		public static void ClientImpactSound( int netIdent, float force )
+		public static void ClientImpactSound( Ball ball, float force )
 		{
-			Ball ball = Find( netIdent );
 			if ( ball.IsValid() && ball.Owner != Local.Client )
 			{
 				if ( force > 150f )
 				{
 					float volume = ((force - 150f) / (MaxSpeed - 150f)).Clamp( 0f, 1f );
 
-					Sound impactSound = ball.Model.PlaySound( BounceSound.Name );
+					Sound impactSound = ball.PlaySound( BounceSound.Name );
 					impactSound.SetVolume( volume );
 				}
 			}

@@ -34,52 +34,6 @@ namespace Ballers
 			}
 		}
 
-		public static float StartTime = 0f;
-		static HashSet<int> finished = new();
-
-		[ClientRpc]
-		public static void ClientStartTime(float time)
-		{
-			StartTime = time;
-		}
-
-		[ServerCmd("RaceTest")]
-		public static void KillPlayers()
-		{
-			StartTime = Time.Now + 5f;
-			ClientStartTime( StartTime );
-
-			finished.Clear();
-			foreach ( BallPlayer player in Entity.All.Where( e => e is BallPlayer ) )
-			{
-				player.Kill();
-				player.RespawnDelay();
-			}
-		}
-
-		static float lastTime = 0;
-
-		[Event.Tick]
-		public static void Ticky()
-		{
-			
-			foreach ( BallPlayer player in Entity.All.Where( e => e is BallPlayer ) )
-			{
-				if (player.LifeState == LifeState.Alive && player.Position.x > 2000 && !finished.Contains( player.Client.NetworkIdent ) )
-				{
-					if ( finished.Count == 0 )
-						lastTime = Time.Now;
-
-					finished.Add( player.Client.NetworkIdent );
-					float finishTime = Time.Now - StartTime;
-					float seconds = Time.Now - lastTime;
-					string behind = $"({seconds} seconds behind first place)";
-					Log.Info($"{player.Client.Name} finished in {finishTime} seconds! {behind}");
-				}
-			}
-		}
-
-
 		public override void ClientJoined( Client client )
 		{
 			base.ClientJoined( client );
@@ -94,9 +48,12 @@ namespace Ballers
 		{
 			base.ClientDisconnect( cl, reason );
 
-			Ball ball = Ball.Find( cl.NetworkIdent );
-			if ( ball.IsValid() )
-				ball.Delete();
+			if ( cl.Pawn is BallPlayer player )
+			{
+				Ball ball = player.Ball;
+				if ( ball.IsValid() )
+					ball.Delete();
+			}
 		}
 
 	}
