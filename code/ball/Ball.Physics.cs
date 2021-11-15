@@ -145,4 +145,24 @@ namespace Ballers
 			Volume = 0.05f,
 		};
 	}
+
+	public static class TraceExtensions
+	{
+		public static Trace Only(this Trace trace, Entity entity)
+		{
+			if ( entity.IsValid() )
+			{
+				string idTag = $"ID:{entity.NetworkIdent}";
+				if ( !entity.Tags.Has( idTag ) )
+					entity.Tags.Add( idTag );
+
+				// only hit specified entity
+				return trace.EntitiesOnly().WithTag( idTag );
+			}
+			
+			// hit no entities if specified entity is invalid
+			return trace.WithTag("");
+		}
+	}
+
 }
