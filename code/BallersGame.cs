@@ -38,9 +38,6 @@ namespace Ballers
 		{
 			base.Simulate( client );
 
-			if ( IsClient )
-				return;
-
 			foreach ( MoveLinear move in MoveLinear.All )
 				move.Simulate();
 		}

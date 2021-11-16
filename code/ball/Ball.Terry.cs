@@ -144,15 +144,15 @@ namespace Ballers
 				Terry.SetAnimFloat( "aimat_weight", 0.5f ); // old
 				Terry.SetAnimFloat( "aim_body_weight", 0.5f );
 
-				// rotation
-				Rotation idealRotation = Rotation.LookAt( Velocity.WithZ( 0 ), Vector3.Up );
-				float turnSpeed = 0.01f;
-				Terry.Rotation = Rotation.Slerp( Terry.Rotation, idealRotation, speed * Time.Delta * turnSpeed );
-				Terry.Rotation = Terry.Rotation.Clamp( idealRotation, 90f, out var change );
-
-				// look direction
-				if (speed > 64f)
+				if ( speed > 32f )
 				{
+					// rotation
+					Rotation idealRotation = Rotation.LookAt( Velocity.WithZ( 0 ), Vector3.Up );
+					float turnSpeed = 0.01f;
+					Terry.Rotation = Rotation.Slerp( Terry.Rotation, idealRotation, speed * Time.Delta * turnSpeed );
+					Terry.Rotation = Terry.Rotation.Clamp( idealRotation, 90f, out var change );
+
+					// look direction
 					var aimDir = Velocity.WithZ(0).Normal; // Owner == Local.Client ? Input.Rotation.Forward : Velocity.Normal;
 					var aimPos = Position + aimDir * 200f;
 					var localPos = Terry.Transform.PointToLocal( aimPos );

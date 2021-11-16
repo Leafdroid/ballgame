@@ -25,17 +25,37 @@ namespace Ballers
 		[Net] public Angles MoveAngles { get; private set; }
 		public Rotation MoveRotation => Rotation.From( MoveAngles );
 		public Vector3 MoveDirection => MoveRotation.Forward;
+		public ModelEntity ClientModel { get; private set; }
 
 		public override void Spawn()
 		{
 			base.Spawn();
+
 			All.Add( this );
 		}
 
 		public override void ClientSpawn()
 		{
 			base.ClientSpawn();
+
+			EnableDrawing = false;
+
+			ClientModel = new ModelEntity();
+			ClientModel.SetModel( GetModel() );
+			ClientModel.EnableAllCollisions = false;
+			ClientModel.EnableTraceAndQueries = false;
+
 			All.Add( this );
+		}
+
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+
+			if ( IsClient && ClientModel.IsValid() )
+			{
+				ClientModel.Delete();
+			}
 		}
 
 		/*
@@ -73,6 +93,9 @@ namespace Ballers
 
 		public void Simulate()
 		{
+			if ( IsClient )
+				return;
+			
 			float moveTime = Speed / MoveDistance;
 			float rad = Time.Now * moveTime * MathF.PI;
 			float sine = MathF.Sin( rad );
@@ -82,19 +105,31 @@ namespace Ballers
 			Vector3 position = StartPosition.LerpTo( EndPosition, t );
 			Vector3 velocity = MoveDirection * (Speed * cosine);
 
-			bool closing = cosine <= 0f;
-
 			Position = position;
 			Velocity = velocity;
+		}
 
+		[Event.Frame]
+		public void Frame()
+		{
+			float moveTime = Speed / MoveDistance;
+			float rad = Time.Now * moveTime * MathF.PI;
+			float sine = MathF.Sin( rad );
+			float cosine = MathF.Cos( rad );
+			float t = sine * 0.5f + 0.5f;
+			bool closing = cosine <= 0f;
+
+			Vector3 position = StartPosition.LerpTo( EndPosition, t );
+
+			ClientModel.Position = position;
+			DebugOverlay.Text( position, Velocity.ToString(), Color.White );
 
 			Color color = closing ? Color.Red : Color.Green;
-			DebugOverlay.Text( position, Velocity.ToString(), Color.White );
+
 			DebugOverlay.Sphere( StartPosition, 2f, color );
 			DebugOverlay.Sphere( EndPosition, 2f, color );
 			DebugOverlay.Sphere( position, 1f, color );
 			DebugOverlay.Line( StartPosition, EndPosition, color );
 		}
 	}
-
 }

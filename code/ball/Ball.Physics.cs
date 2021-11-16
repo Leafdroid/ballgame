@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Ballers
 {
@@ -12,21 +13,8 @@ namespace Ballers
 	{
 		public bool Grounded;
 
-		public void SimulatePlatforms()
-		{
-			if ( IsServer )
-				return;
-
-			foreach(Entity ent in All)
-			{
-				DebugOverlay.Text( ent.Position, ent.GetType().ToString() );
-			}
-		}
-
 		public void SimulatePhysics()
 		{
-			SimulatePlatforms();
-
 			float dt = Time.Delta;
 
 			float directionSpeed = Velocity.Dot( MoveDirection );
@@ -52,6 +40,29 @@ namespace Ballers
 			if ( Grounded = groundTrace.Hit )
 				friction = Friction;
 
+			/*
+			foreach ( MoveLinear platform in MoveLinear.All )
+			{
+				Vector3 relativeVelocity = platform.Velocity - Velocity;
+
+				Vector3 moveTo = Position - relativeVelocity * Time.Delta;
+				TraceResult pTrace = Trace.Ray( Position, moveTo )
+					.Only( platform ).Radius( 40f ).Run();
+
+				if ( pTrace.Hit )
+				{
+					float hitForce = pTrace.Normal.Dot( relativeVelocity );
+
+					DebugOverlay.Text( platform.Position + Vector3.Up * 64f, hitForce.ToString() );
+					DebugOverlay.Sphere( Position, 40f, Color.Red );
+
+					if ( hitForce > 0 )
+						mover.Position = pTrace.EndPos + pTrace.Normal;
+					mover.Velocity += pTrace.Normal * hitForce;
+				}
+			}
+			*/
+
 			mover.ApplyFriction( friction, Time.Delta );
 
 			// Apply gravity
@@ -60,23 +71,15 @@ namespace Ballers
 			mover.TryMove( Time.Delta );
 			mover.TryUnstuck();
 
-			if (IsServer)
+			TraceResult moveTrace = mover.TraceDirection( mover.Velocity * Time.Delta );
+			
+			if ( moveTrace.Hit )
 			{
-				TraceResult moveTrace = mover.TraceDirection( mover.Velocity * Time.Delta  );
-				if ( moveTrace.Hit )
-				{
-					float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
+				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
+				if ( IsServer )
 					ClientImpactSound( this, hitForce );
-				}
-			}
-			else if (Local.Client == Owner)
-			{
-				TraceResult moveTrace = mover.TraceDirection( mover.Velocity * Time.Delta );
-				if ( moveTrace.Hit )
-				{
-					float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
+				else if (Local.Client == Owner.Client)
 					ImpactSound( hitForce );
-				}
 			}
 
 			Velocity = mover.Velocity;
@@ -99,7 +102,7 @@ namespace Ballers
 		[ClientRpc]
 		public static void ClientImpactSound( Ball ball, float force )
 		{
-			if ( ball.IsValid() && ball.Owner != Local.Client )
+			if ( ball.IsValid() && ball.Owner.Client != Local.Client )
 			{
 				if ( force > 150f )
 				{

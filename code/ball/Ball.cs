@@ -97,8 +97,8 @@ namespace Ballers
 			Random seedColor = new Random( id );
 			float hue = (float)seedColor.NextDouble() * 360f;
 
-			Color ballColor = new ColorHsv( hue, 0.8f, 1f );
-			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, 0.8f, 1f );
+			Color ballColor = new ColorHsv( hue, 0.75f, 1f );
+			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, 0.75f, 1f );
 
 			SceneObject.SetValue( "tint", ballColor );
 			SceneObject.SetValue( "tint2", ballColor2 );
