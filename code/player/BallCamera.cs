@@ -7,28 +7,14 @@ namespace Sandbox
 	{
 		private float pitch = 0f;
 		private float roll = 0f;
-		private float stateInterp = 0f;
-
-		private Vector3 idlePos = new Vector3( -1800, -500, 700 );
-		private Rotation idleRot = Rotation.From( new Angles( 25, 20, 0 ) );
-		private float idleFov = 75f;
-
-		private Vector3 lastBallPos;
-		private Rotation lastBallRot;
-		private float lastBallFov;
 
 		public override void Update()
 		{
-			//if ( Host.IsServer )
-				//return;
-			
 			if ( Local.Client.Pawn is not BallPlayer player )
 				return;
 
 			Ball ball = player.Ball;
-			bool ballValid = ball.IsValid();
-			stateInterp = stateInterp.LerpTo( ballValid ? -0.01f : 1.01f, Time.Delta * 10f ).Clamp( 0f, 1f );
-			if ( !ballValid )
+			if ( !ball.IsValid() )
 				return;
 
 			Vector3 velocity = ball.Velocity;
@@ -42,22 +28,18 @@ namespace Sandbox
 			pitch = pitch.LerpTo( vT * 10f, Time.Delta * 10f );
 			roll = roll.LerpTo( -hT * 15f, Time.Delta * 10f );
 
-			lastBallRot = Input.Rotation * Rotation.FromRoll( roll );
-			Vector3 camPos = ball.Position + lastBallRot.Backward * 200;
+			Rotation = Input.Rotation * Rotation.FromRoll( roll );
+
+			Vector3 camPos = ball.Position + Rotation.Backward * 200;
 
 			TraceResult cameraTrace = Trace.Ray( ball.Position, camPos )
 				.Radius( 8f ).WorldOnly().Run();
 
-			lastBallPos = cameraTrace.EndPos;
+			Position = cameraTrace.EndPos;
 
-			lastBallFov = 75 + pitch;
+			FieldOfView = 75 + pitch;
 
 			Viewer = null;
-
-			float n = 1f - stateInterp;
-			Position = n * lastBallPos + stateInterp * idlePos;
-			Rotation = Rotation.Lerp( lastBallRot, idleRot, stateInterp );
-			FieldOfView = n * lastBallFov + stateInterp * idleFov;
 		}
 
 		public override void BuildInput( InputBuilder input )

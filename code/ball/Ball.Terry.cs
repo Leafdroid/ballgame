@@ -10,22 +10,77 @@ namespace Ballers
 {
 	public partial class Ball : ModelEntity
 	{
-		public AnimSceneObject Terry { get; private set; }
+		private static Dictionary<int, Clothing> clothingResources = new();
+		private static Clothing FindClothing( int id ) => clothingResources.TryGetValue( id, out Clothing clothing ) ? clothing : null;
 
-		private string clothesData;
+		public AnimSceneObject Terry { get; private set; }
+		private bool dressed = false;
+
+		[Net] public string ClothingData { get; private set; }
 		private Clothing.Container container = new();
 		private List<AnimSceneObject> clothingObjects = new();
 
-		[ClientCmd("findhat")]
-		public static void ClothingTest()
+		[ClientRpc]
+		public static void RegisterClothing(int id, string model, string matGroup, int slotsOver, int slotsUnder, int hideBody )
 		{
-			Clothing item = Resource.FromId<Clothing>( 1918103397 );
-			Log.Info( item != null ? item.Name : "null" );
+			if ( clothingResources.ContainsKey( id ) )
+				return;
+
+			Clothing clothing = new Clothing();
+			clothing.Model = model;
+			clothing.MaterialGroup = matGroup;
+			clothing.SlotsOver = (Clothing.Slots)slotsOver;
+			clothing.SlotsUnder = (Clothing.Slots)slotsUnder;
+			clothing.HideBody = (Clothing.BodyGroups)hideBody;
+
+			clothingResources.Add( id, clothing );
+		}
+
+		public static void DeliverClothing(Client cl)
+		{
+			foreach(Clothing clothing in Clothing.All)
+			{
+				int id = clothing.ResourceId;
+				string model = clothing.Model;
+				string matGroup = clothing.MaterialGroup;
+				int slotsOver = (int)clothing.SlotsOver;
+				int slotsUnder = (int)clothing.SlotsUnder;
+				int hideBody = (int)clothing.HideBody;
+
+				RegisterClothing( id, model, matGroup, slotsOver, slotsUnder, hideBody );
+			}
+		}
+
+		private void Deserialize()
+		{
+			container.Clothing.Clear();
+
+			if ( string.IsNullOrWhiteSpace( ClothingData ) )
+				return;
+
+			try
+			{
+				var entries = System.Text.Json.JsonSerializer.Deserialize<Clothing.Container.Entry[]>( ClothingData );
+
+				foreach ( var entry in entries )
+				{
+					var item = FindClothing( entry.Id );
+					if ( item == null ) continue;
+					container.Clothing.Add( item );
+				}
+			}
+			catch ( Exception e )
+			{
+				Log.Warning( e, "Error deserailizing clothing" );
+			}
 		}
 
 		public void DressTerry()
 		{
-			container.Deserialize( clothesData );
+			if ( clothingResources.Count == 0 )
+				return;
+
+			Deserialize();
 
 			Terry.SetMaterialGroup( "Skin01" );
 
@@ -43,7 +98,7 @@ namespace Ballers
 					continue;
 				}
 
-				var model = Sandbox.Model.Load( c.Model );
+				var model = Model.Load( c.Model );
 
 				var anim = new AnimSceneObject( model, Terry.Transform );
 
@@ -60,22 +115,22 @@ namespace Ballers
 			{
 				Terry.SetBodyGroup( group.name, group.value );
 			}
+
+			dressed = true;
 		}
 
-		public void SetupModels()
+		public void SetupTerry()
 		{
-			if ( !IsClient )
-				return;
-
-			Terry = new AnimSceneObject( Sandbox.Model.Load( "models/citizen/citizen.vmdl"), Transform.Zero );
-
-			DressTerry();
+			Terry = new AnimSceneObject( Model.Load( "models/citizen/citizen.vmdl"), Transform.Zero );
 		}
 
 		public void UpdateTerry()
 		{
 			if ( Terry.IsValid() )
 			{
+				if ( !dressed )
+					DressTerry();
+
 				Terry.Position = Position - Vector3.Up * 35f;
 
 				float speed = Velocity.Length;
@@ -131,15 +186,5 @@ namespace Ballers
 				Rotation = Rotation.FromAxis( axis, 180.0f * angle ) * Rotation;
 			}
 		}
-
-		public void DeleteModels()
-		{
-			if ( !IsClient )
-				return;
-
-			if ( Terry.IsValid() )
-				Terry.Delete();
-		}
-
 	}
 }

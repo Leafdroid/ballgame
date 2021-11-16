@@ -38,6 +38,9 @@ namespace Ballers
 		{
 			base.ClientJoined( client );
 
+			if ( IsServer )
+				Ball.DeliverClothing( client );
+
 			var player = new BallPlayer();
 			client.Pawn = player;
 
@@ -46,14 +49,14 @@ namespace Ballers
 
 		public override void ClientDisconnect( Client cl, NetworkDisconnectionReason reason )
 		{
-			base.ClientDisconnect( cl, reason );
-
 			if ( cl.Pawn is BallPlayer player )
 			{
 				Ball ball = player.Ball;
 				if ( ball.IsValid() )
 					ball.Delete();
 			}
+
+			base.ClientDisconnect( cl, reason );
 		}
 
 	}

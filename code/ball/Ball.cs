@@ -22,6 +22,9 @@ namespace Ballers
 
 		public static Ball Create( BallPlayer player )
 		{
+			if ( !player.IsValid() )
+				return null;
+
 			var spawnpoint = Entity.All.OfType<SpawnPoint>().OrderBy( x => Guid.NewGuid() ).FirstOrDefault();
 
 			Rotation rotation = Rotation.Identity;
@@ -31,10 +34,11 @@ namespace Ballers
 				position += spawnpoint.Position;
 			}
 
-			Ball newBall = new Ball() { Owner = player, Position = position };
-			player.Ball = newBall;
+			string clothingData = player.Client.GetClientData( "avatar" );
+			Ball ball = new Ball() { Owner = player, Position = position, ClothingData = clothingData };
+			player.Ball = ball;
 
-			return newBall;
+			return ball;
 		}
 
 		private bool hasColor = false;
@@ -57,11 +61,32 @@ namespace Ballers
 			base.ClientSpawn();
 
 			Predictable = true;
+
+			SetupTerry();
 		}
+
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+
+			if ( IsClient )
+			{
+				if ( Terry.IsValid() )
+					Terry.Delete();
+
+				PlaySound( WilhelmScream.Name );
+			}
+		}
+
 
 		[Event.Frame]
 		public void OnFrame()
 		{
+			if ( Owner == null )
+				return;
+
+			UpdateTerry();
+
 			if ( hasColor )
 				return;
 
@@ -86,6 +111,6 @@ namespace Ballers
 			DistanceMax = 1536f,
 		};
 
-		public override string ToString() => $"Ball {NetworkIdent} ({Owner.Name})";
+		public override string ToString() => $"{Owner.Name}'s ball";
 	}
 }
