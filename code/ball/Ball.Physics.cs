@@ -12,8 +12,21 @@ namespace Ballers
 	{
 		public bool Grounded;
 
+		public void SimulatePlatforms()
+		{
+			if ( IsServer )
+				return;
+
+			foreach(Entity ent in All)
+			{
+				DebugOverlay.Text( ent.Position, ent.GetType().ToString() );
+			}
+		}
+
 		public void SimulatePhysics()
 		{
+			SimulatePlatforms();
+
 			float dt = Time.Delta;
 
 			float directionSpeed = Velocity.Dot( MoveDirection );

@@ -34,6 +34,18 @@ namespace Ballers
 			}
 		}
 
+		public override void Simulate( Client client )
+		{
+			base.Simulate( client );
+
+			if ( IsClient )
+				return;
+
+			foreach ( MoveLinear move in MoveLinear.All )
+				move.Simulate();
+		}
+
+
 		public override void ClientJoined( Client client )
 		{
 			base.ClientJoined( client );

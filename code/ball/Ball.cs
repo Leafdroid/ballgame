@@ -74,7 +74,7 @@ namespace Ballers
 				if ( Terry.IsValid() )
 					Terry.Delete();
 
-				PlaySound( WilhelmScream.Name );
+				Sound.FromWorld( WilhelmScream.Name, Position );
 			}
 		}
 
