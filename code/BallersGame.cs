@@ -38,10 +38,17 @@ namespace Ballers
 		{
 			base.Simulate( client );
 
-			foreach ( MoveLinear move in MoveLinear.All )
+			foreach ( MovingBrush move in MovingBrush.All )
 				move.Simulate();
 		}
 
+		public override void FrameSimulate( Client client )
+		{
+			base.FrameSimulate( client );
+
+			foreach ( MovingBrush move in MovingBrush.All )
+				move.FrameSimulate();
+		}
 
 		public override void ClientJoined( Client client )
 		{

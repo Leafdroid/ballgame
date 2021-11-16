@@ -6,9 +6,9 @@ namespace Ballers
 {
 
 	[Library( "func_movelinear" )]
-	public partial class MoveLinear : FuncBrush
+	public partial class MovingBrush : FuncBrush
 	{
-		public static readonly new List<MoveLinear> All = new();
+		public static readonly new List<MovingBrush> All = new();
 
 		[Property( "origin" )]
 		[Net] public Vector3 StartPosition { get; private set; }
@@ -58,39 +58,6 @@ namespace Ballers
 			}
 		}
 
-		/*
-		public void BallTrace()
-		{
-			if ( IsServer )
-				return;
-
-			Ball ball = Ball.Find( Local.Client );
-			if ( !ball.IsValid() )
-				return;
-
-			Entity entity = IsServer ? this : ClientModel;
-			//Vector3 position = IsServer ? Position : ClientModel.Position;
-			Vector3 velocity = IsServer ? Velocity : ClientModel.Velocity;
-
-			Vector3 relativeVelocity = velocity - ball.Velocity;
-
-
-			TraceResult ballTrace = Trace.Ray( ball.Position, ball.Position + relativeVelocity * Time.Delta )
-			.Only( entity ).Radius( 40f ).Run();
-
-			Vector3 hitDir = (ballTrace.EndPos - ball.Position).Normal;
-
-			if ( ballTrace.Hit ) 
-			{
-				//ball.Velocity += relativeVelocity;
-
-				DebugOverlay.Line( ballTrace.EndPos, ballTrace.EndPos + hitDir * 32f );
-				//ball.Move();
-				DebugOverlay.Sphere( ballTrace.EndPos, 40f, Color.Red, true );
-			}
-		}
-		*/
-
 		public void Simulate()
 		{
 			if ( IsClient )
@@ -109,8 +76,8 @@ namespace Ballers
 			Velocity = velocity;
 		}
 
-		[Event.Frame]
-		public void Frame()
+		float colorHue = 0f;
+		public void FrameSimulate()
 		{
 			float moveTime = Speed / MoveDistance;
 			float rad = Time.Now * moveTime * MathF.PI;
@@ -122,13 +89,15 @@ namespace Ballers
 			Vector3 position = StartPosition.LerpTo( EndPosition, t );
 
 			ClientModel.Position = position;
-			DebugOverlay.Text( position, Velocity.ToString(), Color.White );
+			//DebugOverlay.Text( position, Velocity.ToString(), Color.White );
 
-			Color color = closing ? Color.Red : Color.Green;
+			colorHue = colorHue.LerpTo( closing ? 0f : 120f, Time.Delta*10f );
+			Color color = new ColorHsv( colorHue, 0.8f, 1f );
 
-			DebugOverlay.Sphere( StartPosition, 2f, color );
-			DebugOverlay.Sphere( EndPosition, 2f, color );
-			DebugOverlay.Sphere( position, 1f, color );
+			DebugOverlay.Circle( StartPosition, CurrentView.Rotation, 2f, color );
+			DebugOverlay.Circle( EndPosition, CurrentView.Rotation, 2f, color );
+			DebugOverlay.Circle( position, CurrentView.Rotation, 1f, color );
+			DebugOverlay.Line( position, ClientModel.WorldSpaceBounds.Center, color );
 			DebugOverlay.Line( StartPosition, EndPosition, color );
 		}
 	}
