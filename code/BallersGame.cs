@@ -34,55 +34,28 @@ namespace Ballers
 			}
 		}
 
-		public static float StartTime = 0f;
-		static HashSet<int> finished = new();
-
-		[ClientRpc]
-		public static void ClientStartTime(float time)
+		public override void Simulate( Client client )
 		{
-			StartTime = time;
+			base.Simulate( client );
+
+			foreach ( MovingBrush move in MovingBrush.All )
+				move.Simulate();
 		}
 
-		[ServerCmd("RaceTest")]
-		public static void KillPlayers()
+		public override void FrameSimulate( Client client )
 		{
-			StartTime = Time.Now + 5f;
-			ClientStartTime( StartTime );
+			base.FrameSimulate( client );
 
-			finished.Clear();
-			foreach ( BallPlayer player in Entity.All.Where( e => e is BallPlayer ) )
-			{
-				player.Kill();
-				player.RespawnDelay();
-			}
+			foreach ( MovingBrush move in MovingBrush.All )
+				move.FrameSimulate();
 		}
-
-		static float lastTime = 0;
-
-		[Event.Tick]
-		public static void Ticky()
-		{
-			
-			foreach ( BallPlayer player in Entity.All.Where( e => e is BallPlayer ) )
-			{
-				if (player.LifeState == LifeState.Alive && player.Position.x > 2000 && !finished.Contains( player.Client.NetworkIdent ) )
-				{
-					if ( finished.Count == 0 )
-						lastTime = Time.Now;
-
-					finished.Add( player.Client.NetworkIdent );
-					float finishTime = Time.Now - StartTime;
-					float seconds = Time.Now - lastTime;
-					string behind = $"({seconds} seconds behind first place)";
-					Log.Info($"{player.Client.Name} finished in {finishTime} seconds! {behind}");
-				}
-			}
-		}
-
 
 		public override void ClientJoined( Client client )
 		{
 			base.ClientJoined( client );
+
+			if ( IsServer )
+				Ball.DeliverClothing( client );
 
 			var player = new BallPlayer();
 			client.Pawn = player;
@@ -92,11 +65,14 @@ namespace Ballers
 
 		public override void ClientDisconnect( Client cl, NetworkDisconnectionReason reason )
 		{
-			base.ClientDisconnect( cl, reason );
+			if ( cl.Pawn is BallPlayer player )
+			{
+				Ball ball = player.Ball;
+				if ( ball.IsValid() )
+					ball.Delete();
+			}
 
-			Ball ball = Ball.Find( cl.NetworkIdent );
-			if ( ball.IsValid() )
-				ball.Delete();
+			base.ClientDisconnect( cl, reason );
 		}
 
 	}

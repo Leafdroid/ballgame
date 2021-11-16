@@ -4,6 +4,7 @@ namespace Ballers
 {
 	public class BallController : PawnController
 	{
+		/*
 		public override void FrameSimulate()
 		{
 			base.FrameSimulate();
@@ -17,6 +18,7 @@ namespace Ballers
 			
 			Position = ball.Model.Position - Vector3.Up * 36;
 		}
+		*/
 
 		public override void Simulate()
 		{
