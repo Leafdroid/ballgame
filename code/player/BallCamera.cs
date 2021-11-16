@@ -11,6 +11,7 @@ namespace Sandbox
 
 		public override void Update()
 		{
+
 			if ( Local.Client.Pawn is not BallPlayer player )
 				return;
 

@@ -17,7 +17,7 @@ namespace Ballers
 
 		public override void Respawn()
 		{
-			//SetModel( "models/citizen/citizen.vmdl" );
+			base.Respawn();
 
 			EnableDrawing = false;
 
@@ -28,8 +28,6 @@ namespace Ballers
 			EnableAllCollisions = false;
 			EnableTraceAndQueries = false;
 			Transmit = TransmitType.Always;
-
-			base.Respawn();
 		}
 
 		public BallPlayer() { }
