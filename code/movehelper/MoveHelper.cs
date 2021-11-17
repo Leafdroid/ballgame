@@ -9,19 +9,12 @@ namespace Ballers
 		public Vector3 Position;
 		public Vector3 Velocity;
 
-		public bool HitWall;
-		public Entity WallEntity;
-
-		public float GroundBounce => Ball.FloorBounce;
-		public float WallBounce => Ball.WallBounce;
-		public float MaxStandableAngle;
 		public Trace Trace;
 
 		public MoveHelper( Vector3 position, Vector3 velocity ) : this()
 		{
 			Velocity = velocity;
 			Position = position;
-			MaxStandableAngle = 45f;
 
 			// Hit everything but other balls
 			Trace = Trace.Ray( 0, 0 )
@@ -47,10 +40,13 @@ namespace Ballers
 
 		public float TryMove( float timestep )
 		{
-			var timeLeft = timestep;
 			float travelFraction = 0;
-			HitWall = false;
-			WallEntity = null;
+
+			foreach ( MovingBrush mover in MovingBrush.All )
+			{
+				DebugOverlay.Sphere( mover.Position, 40f, Color.White );
+
+			}
 
 			using var moveplanes = new VelocityClipPlanes( Velocity );
 
@@ -59,7 +55,7 @@ namespace Ballers
 				if ( Velocity.Length.AlmostEqual( 0.0f ) )
 					break;
 
-				var pm = TraceFromTo( Position, Position + Velocity * timeLeft );
+				var pm = TraceFromTo( Position, Position + Velocity * timestep );
 
 				if ( pm.StartedSolid )
 				{
@@ -77,15 +73,9 @@ namespace Ballers
 					moveplanes.StartBump( Velocity );
 				}
 
-				if ( !HitWall && !pm.StartedSolid && pm.Hit && pm.Normal.Angle( Vector3.Up ) >= MaxStandableAngle )
-				{
-					HitWall = true;
-					WallEntity = pm.Entity;
-				}
+				timestep -= timestep * pm.Fraction;
 
-				timeLeft -= timeLeft * pm.Fraction;
-
-				if ( !moveplanes.TryAdd( pm.Normal, ref Velocity, IsFloor( pm ) ? GroundBounce : WallBounce ) )
+				if ( !moveplanes.TryAdd( pm.Normal, ref Velocity, Ball.Bounciness ) )
 					break;
 			}
 
@@ -93,12 +83,6 @@ namespace Ballers
 				Velocity = 0;
 
 			return travelFraction;
-		}
-
-		public bool IsFloor( TraceResult tr )
-		{
-			if ( !tr.Hit ) return false;
-			return tr.Normal.Angle( Vector3.Up ) < MaxStandableAngle;
 		}
 
 		public void ApplyFriction( float frictionAmount, float delta )

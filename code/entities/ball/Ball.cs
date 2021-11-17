@@ -17,8 +17,7 @@ namespace Ballers
 
 		public static float Friction = 0.25f;
 		public static float Drag = 0.1f;
-		public static float WallBounce = 0.25f;
-		public static float FloorBounce = 0.25f;
+		public static float Bounciness = 0.25f;
 
 		public static Ball Create( BallPlayer player )
 		{

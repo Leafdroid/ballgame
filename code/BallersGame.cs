@@ -34,6 +34,8 @@ namespace Ballers
 
 			foreach ( MovingBrush move in MovingBrush.All )
 				move.Simulate();
+
+			//Lava.Simulate();
 		}
 
 		public override void FrameSimulate( Client client )
@@ -42,6 +44,8 @@ namespace Ballers
 
 			foreach ( MovingBrush move in MovingBrush.All )
 				move.FrameSimulate();
+
+			//Lava.FrameSimulate();
 		}
 
 		public override void ClientJoined( Client client )
