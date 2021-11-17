@@ -23,9 +23,9 @@ namespace Ballers
 				.WorldAndEntities()
 				.HitLayer( CollisionLayer.Solid, true )
 				.HitLayer( CollisionLayer.PLAYER_CLIP, true )
-				.HitLayer( CollisionLayer.GRATE, true );
-				
-				//.WorldOnly();
+				.HitLayer( CollisionLayer.GRATE, true )
+				.HitLayer( CollisionLayer.LADDER, false );
+			//.WorldOnly();
 		}
 
 		public TraceResult TraceFromTo( Vector3 start, Vector3 end )
@@ -42,12 +42,6 @@ namespace Ballers
 		{
 			float travelFraction = 0;
 
-			foreach ( MovingBrush mover in MovingBrush.All )
-			{
-				DebugOverlay.Sphere( mover.Position, 40f, Color.White );
-
-			}
-
 			using var moveplanes = new VelocityClipPlanes( Velocity );
 
 			for ( int bump = 0; bump < moveplanes.Max; bump++ )
@@ -55,8 +49,8 @@ namespace Ballers
 				if ( Velocity.Length.AlmostEqual( 0.0f ) )
 					break;
 
-				var pm = TraceFromTo( Position, Position + Velocity * timestep );
-
+				var pm = Trace.FromTo( Position, Position + Velocity * timestep ).Run();
+		
 				if ( pm.StartedSolid )
 				{
 					Position += pm.Normal * 0.01f;

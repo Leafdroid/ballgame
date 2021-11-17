@@ -35,10 +35,9 @@ namespace Ballers
 		{
 			var mover = new MoveHelper( Position, Velocity );
 
-			float friction = Drag;
-			TraceResult groundTrace = mover.TraceDirection( Vector3.Down );
-			if ( Grounded = groundTrace.Hit )
-				friction = Friction;
+			Grounded = mover.TraceDirection( Vector3.Down ).Hit;
+
+			float friction = Grounded ? Friction : Drag;
 
 			/*
 			foreach ( MoveLinear platform in MoveLinear.All )
@@ -151,6 +150,22 @@ namespace Ballers
 			
 			// hit no entities if specified entity is invalid
 			return trace.WithTag("");
+		}
+
+		public static Trace IgnoreMovingBrushes( this Trace trace )
+		{
+			string[] tags = new string[MovingBrush.All.Count];
+
+			int index = 0;
+			foreach ( MovingBrush brush in MovingBrush.All )
+			{
+				string tag = $"MovingBrush:{brush.NetworkIdent}";
+				tags[index] = tag;
+				if ( !brush.Tags.Has( tag ) )
+					brush.Tags.Add( tag );
+			}
+
+			return trace.WithoutTags( tags );
 		}
 	}
 

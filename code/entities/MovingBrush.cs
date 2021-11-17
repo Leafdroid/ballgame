@@ -1,6 +1,7 @@
 ﻿using Sandbox;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ballers
 {
@@ -31,6 +32,9 @@ namespace Ballers
 		{
 			base.Spawn();
 
+			ClearCollisionLayers();
+			AddCollisionLayer( CollisionLayer.LADDER );
+
 			All.Add( this );
 		}
 
@@ -44,6 +48,9 @@ namespace Ballers
 			ClientModel.SetModel( GetModel() );
 			ClientModel.EnableAllCollisions = false;
 			ClientModel.EnableTraceAndQueries = false;
+
+			ClearCollisionLayers();
+			AddCollisionLayer( CollisionLayer.LADDER );
 
 			All.Add( this );
 		}
@@ -60,9 +67,6 @@ namespace Ballers
 
 		public void Simulate()
 		{
-			if ( IsClient )
-				return;
-			
 			float moveTime = Speed / MoveDistance;
 			float rad = Time.Now * moveTime * MathF.PI;
 			float sine = MathF.Sin( rad );
@@ -72,8 +76,37 @@ namespace Ballers
 			Vector3 position = StartPosition.LerpTo( EndPosition, t );
 			Vector3 velocity = MoveDirection * (Speed * cosine);
 
-			Position = position;
-			Velocity = velocity;
+			if (IsServer)
+			{
+				Position = position;
+				Velocity = velocity;
+			}
+
+			foreach(Ball ball in Entity.All.Where(e => e is Ball))
+			{
+
+				Vector3 relativeVelocity = ball.Velocity - velocity;
+
+				Vector3 movePos = ball.Position + relativeVelocity * Time.Delta;
+
+				TraceResult tr = Trace.Ray( ball.Position, movePos )
+				.Radius( 40f )
+				.HitLayer( CollisionLayer.All, false )
+				.HitLayer( CollisionLayer.LADDER, true )
+				.Only( this )
+				.Run();
+
+				if (tr.Hit)
+				{
+					//DebugOverlay.Sphere( tr.EndPos, 40f, Color.White );
+					float planeVel = velocity.Dot( tr.Normal );
+					var backoff = Vector3.Dot( ball.Velocity, tr.Normal );
+					var o = ball.Velocity - (tr.Normal * backoff) + (tr.Normal * planeVel);
+
+					ball.Position += tr.Normal;
+					ball.Velocity = o;
+				}
+			}
 		}
 
 		float colorHue = 0f;
