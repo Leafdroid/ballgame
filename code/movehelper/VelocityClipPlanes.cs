@@ -144,15 +144,6 @@ namespace Ballers
 			var backoff = Vector3.Dot( vel, norm ) * overbounce;
 			var o = vel - (norm * backoff) + (norm * planeVel);
 
-			// garry: I don't totally understand how we could still
-			//		  be travelling towards the norm, but the hl2 code
-			//		  does another check here, so we're going to too.
-			var adjust = Vector3.Dot( o, norm );
-			if ( adjust >= 1.0f ) return o;
-
-			adjust = MathF.Min( adjust, -1.0f );
-			o -= norm * adjust;
-
 			return o;
 		}
 
