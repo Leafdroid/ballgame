@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Buffers;
 
-namespace Minigolf
+namespace Ballers
 {
 	/// <summary>
 	/// Used to store a list of planes that an object is going to hit, and then
@@ -11,6 +11,7 @@ namespace Minigolf
 	public struct VelocityClipPlanes : IDisposable
 	{
 		Vector3 OrginalVelocity;
+		Vector3 PlaneVelocity;
 		Vector3 BumpVelocity;
 		Vector3[] Planes;
 
@@ -24,11 +25,12 @@ namespace Minigolf
 		/// </summary>
 		public int Count { get; private set; }
 
-		public VelocityClipPlanes( Vector3 originalVelocity, int max = 10 )
+		public VelocityClipPlanes( Vector3 originalVelocity, int max = 5 )
 		{
 			Max = max;
 			OrginalVelocity = originalVelocity;
 			BumpVelocity = originalVelocity;
+			PlaneVelocity = Vector3.Zero;
 			Planes = ArrayPool<Vector3>.Shared.Rent( max );
 			Count = 0;
 		}
@@ -37,8 +39,10 @@ namespace Minigolf
 		/// Try to add this plane and restrain velocity to it (and its brothers)
 		/// </summary>
 		/// <returns>False if we ran out of room and should stop adding planes</returns>
-		public bool TryAdd( Vector3 normal, ref Vector3 velocity, float bounce )
+		public bool TryAdd( Vector3 normal, Vector3 planeVelocity, ref Vector3 velocity, float bounce )
 		{
+			PlaneVelocity = planeVelocity;
+
 			if ( Count == Max )
 			{
 				velocity = 0;
@@ -52,6 +56,7 @@ namespace Minigolf
 			//
 			if ( Count == 1 )
 			{
+				//	BumpVelocity = velocity;
 				BumpVelocity = ClipVelocity( BumpVelocity, normal, 1.0f + bounce );
 				velocity = BumpVelocity;
 
@@ -83,7 +88,7 @@ namespace Minigolf
 			//
 			if ( velocity.Dot( OrginalVelocity ) < 0 )
 			{
-				velocity = OrginalVelocity;
+				velocity = 0;
 			}
 
 			return true;
@@ -129,44 +134,27 @@ namespace Minigolf
 			Count = 0;
 		}
 
-		Vector3 ClipVelocity( Vector3 v, Vector3 normal, float overBounce = 1.0f )
-		{
-			float backoff = v.Dot( normal );
-
-			if ( overBounce != 1.0 )
-			{
-				if ( backoff < 0 )
-				{
-					backoff *= overBounce;
-				}
-				else
-				{
-					backoff /= overBounce;
-				}
-			}
-
-			return v - backoff * normal;
-		}
-
 		/// <summary>
 		/// Clip the velocity to the normal
 		/// </summary>
-		//public static Vector3 ClipVelocity( Vector3 vel, Vector3 norm, float overbounce = 1.0f )
-		//{
-		//	var backoff = Vector3.Dot( vel, norm ) * overbounce;
-		//	var o = vel - (norm * backoff);
+		Vector3 ClipVelocity( Vector3 vel, Vector3 norm, float overbounce = 1.0f )
+		{
+			float planeVel = PlaneVelocity.Dot( norm );
 
-		//	// garry: I don't totally understand how we could still
-		//	//		  be travelling towards the norm, but the hl2 code
-		//	//		  does another check here, so we're going to too.
-		//	var adjust = Vector3.Dot( o, norm );
-		//	if ( adjust >= 1.0f ) return o;
+			var backoff = Vector3.Dot( vel, norm ) * overbounce;
+			var o = vel - (norm * backoff) + (norm * planeVel);
 
-		//	adjust = MathF.Min( adjust, -1.0f );
-		//	o -= norm * adjust;
+			// garry: I don't totally understand how we could still
+			//		  be travelling towards the norm, but the hl2 code
+			//		  does another check here, so we're going to too.
+			var adjust = Vector3.Dot( o, norm );
+			if ( adjust >= 1.0f ) return o;
 
-		//	return o;
-		//}
+			adjust = MathF.Min( adjust, -1.0f );
+			o -= norm * adjust;
+
+			return o;
+		}
 
 		public void Dispose()
 		{

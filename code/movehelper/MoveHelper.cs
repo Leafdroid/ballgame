@@ -75,7 +75,9 @@ namespace Ballers
 
 				timestep -= timestep * pm.Fraction;
 
-				if ( !moveplanes.TryAdd( pm.Normal, ref Velocity, Ball.Bounciness ) )
+				bool hitEntity = pm.Hit && pm.Entity.IsValid();
+
+				if ( !moveplanes.TryAdd( pm.Normal, hitEntity ? pm.Entity.Velocity : Vector3.Zero, ref Velocity, Ball.Bounciness ) )
 					break;
 			}
 
