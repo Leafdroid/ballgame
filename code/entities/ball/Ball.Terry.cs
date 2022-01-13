@@ -169,9 +169,12 @@ namespace Ballers
 
 				Terry.Position = Position - Vector3.Up * 35f;
 
-				float speed = Velocity.Length;
-				var forward = Terry.Rotation.Forward.Dot( Velocity );
-				var sideward = Terry.Rotation.Right.Dot( Velocity );
+				Vector3 velocity = Velocity.WithZ( 0 );
+				Vector3 direction = velocity.Normal;
+
+				float speed = velocity.Length;
+				var forward = Terry.Rotation.Forward.Dot( velocity );
+				var sideward = Terry.Rotation.Right.Dot( velocity );
 				var angle = MathF.Atan2( sideward, forward ).RadianToDegree().NormalizeDegrees();
 
 				// base stance
@@ -183,14 +186,17 @@ namespace Ballers
 				if ( speed > 32f )
 				{
 					// rotation
-					Rotation idealRotation = Rotation.LookAt( Velocity.WithZ( 0 ), Vector3.Up );
+					Rotation idealRotation = Rotation.LookAt( velocity, Vector3.Up );
 					float turnSpeed = 0.01f;
 					Terry.Rotation = Rotation.Slerp( Terry.Rotation, idealRotation, speed * Time.Delta * turnSpeed );
 					Terry.Rotation = Terry.Rotation.Clamp( idealRotation, 90f, out var change );
 
 					// look direction
-					var aimDir = Velocity.WithZ( 0 ).Normal; // Owner == Local.Client ? Input.Rotation.Forward : Velocity.Normal;
-					var aimPos = Position + aimDir * 200f;
+
+					//if ( Owner.IsValid() && Owner.Client == Local.Client )
+					//direction = MoveDirection;
+
+					var aimPos = Position + direction * 200f;
 					var localPos = Terry.Transform.PointToLocal( aimPos );
 					Terry.SetAnimVector( "aim_eyes", localPos );
 					Terry.SetAnimVector( "aim_head", localPos );
@@ -200,7 +206,7 @@ namespace Ballers
 				// walk animation
 				Terry.SetAnimFloat( "move_direction", angle );
 				Terry.SetAnimFloat( "move_speed", speed );
-				Terry.SetAnimFloat( "move_groundspeed", Velocity.WithZ( 0 ).Length );
+				Terry.SetAnimFloat( "move_groundspeed", speed );
 				Terry.SetAnimFloat( "move_y", sideward );
 				Terry.SetAnimFloat( "move_x", forward );
 				Terry.SetAnimFloat( "move_z", 0 );

@@ -7,7 +7,7 @@ namespace Ballers
 {
 
 	[Library( "func_movelinear" )]
-	public partial class MovingBrush : FuncBrush
+	public partial class MovingBrush : BrushEntity
 	{
 		public static readonly new List<MovingBrush> All = new();
 

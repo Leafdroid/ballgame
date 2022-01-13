@@ -11,6 +11,19 @@ namespace Ballers
 {
 	public partial class Ball : ModelEntity
 	{
+		public const float Acceleration = 700f; // yeah
+		public const float AirControl = 1f; // acceleration multiplier in air
+		public const float MaxSpeed = 1100f; // this is the max speed the ball can accelerate to by itself
+
+		public const float Friction = 0.25f; // resistance multiplier on ground
+		public const float Drag = 0.1f; // resistance multiplier in air
+		public const float Bounciness = 0.35f; // elasticity of collisions, aka how much boing 
+
+		public const float Mass = 60f; // how heavy!!
+
+		//public static float Grip => MathF.Sin( Time.Now ) * .25f + .75f;
+
+
 		public bool Grounded;
 
 		public void SimulatePhysics()
