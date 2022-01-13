@@ -19,13 +19,12 @@ namespace Ballers
 			// Hit everything but other balls
 			Trace = Trace.Ray( 0, 0 )
 				.Radius( 40f )
-
 				.WorldAndEntities()
 				.HitLayer( CollisionLayer.Solid, true )
 				.HitLayer( CollisionLayer.PLAYER_CLIP, true )
 				.HitLayer( CollisionLayer.GRATE, true )
-				.HitLayer( CollisionLayer.LADDER, false );
-			//.WorldOnly();
+				.HitLayer( CollisionLayer.LADDER, false )
+				.WorldOnly();
 		}
 
 		public TraceResult TraceFromTo( Vector3 start, Vector3 end )
@@ -44,13 +43,45 @@ namespace Ballers
 
 			using var moveplanes = new VelocityClipPlanes( Velocity );
 
+
 			for ( int bump = 0; bump < moveplanes.Max; bump++ )
 			{
 				if ( Velocity.Length.AlmostEqual( 0.0f ) )
 					break;
 
-				var pm = Trace.FromTo( Position, Position + Velocity * timestep ).Run();
-		
+				/*
+				foreach ( MovingBrush brush in MovingBrush.All )
+				{
+
+					Vector3 relativeVelocity = Velocity - brush.Velocity;
+
+					Vector3 movePos = Position + relativeVelocity * timestep;
+
+					TraceResult tr = Trace.Ray( Position, movePos )
+					.Radius( 40f )
+					.HitLayer( CollisionLayer.All, false )
+					.HitLayer( CollisionLayer.LADDER, true )
+					.Only( brush )
+					.Run();
+
+					if ( tr.Hit )
+					{
+						//DebugOverlay.Sphere( tr.EndPos, 40f, Color.White );
+						float planeVel = brush.Velocity.Dot( tr.Normal );
+	
+						float normalVel = -tr.Normal.Dot( relativeVelocity );
+						DebugOverlay.Text( tr.EndPos, normalVel.ToString() );
+
+						Position += tr.Normal * 0.1f;
+
+						if ( !moveplanes.TryAdd( tr.Normal, tr.Normal*normalVel, ref Velocity, Ball.Bounciness ) )
+							break;
+					}
+				}
+				*/
+
+				var pm = Trace.FromTo( Position, Position + Velocity * timestep ).IgnoreMovingBrushes().Run();
+
 				if ( pm.StartedSolid )
 				{
 					Position += pm.Normal * 0.01f;
@@ -71,7 +102,9 @@ namespace Ballers
 
 				bool hitEntity = pm.Hit && pm.Entity.IsValid();
 
-				if ( !moveplanes.TryAdd( pm.Normal, hitEntity ? pm.Entity.Velocity : Vector3.Zero, ref Velocity, Ball.Bounciness ) )
+				Vector3 vel = hitEntity ? pm.Entity.Velocity : Vector3.Zero;
+
+				if ( !moveplanes.TryAdd( pm.Normal, vel, ref Velocity, Ball.Bounciness ) )
 					break;
 			}
 

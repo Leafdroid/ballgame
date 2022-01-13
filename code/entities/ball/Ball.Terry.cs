@@ -21,7 +21,7 @@ namespace Ballers
 		private List<AnimSceneObject> clothingObjects = new();
 
 		[ClientRpc]
-		public static void RegisterClothing(int id, string model, string matGroup, int slotsOver, int slotsUnder, int hideBody )
+		public static void RegisterClothing( int id, string model, string matGroup, int slotsOver, int slotsUnder, int hideBody )
 		{
 			if ( clothingResources.ContainsKey( id ) )
 				return;
@@ -36,9 +36,9 @@ namespace Ballers
 			clothingResources.Add( id, clothing );
 		}
 
-		public static void DeliverClothing(Client cl)
+		public static void DeliverClothing( Client cl )
 		{
-			foreach(Clothing clothing in Clothing.All)
+			foreach ( Clothing clothing in Clothing.All )
 			{
 				int id = clothing.ResourceId;
 				string model = clothing.Model;
@@ -119,9 +119,45 @@ namespace Ballers
 			dressed = true;
 		}
 
+		public void DressRagdoll( ModelEntity ragdoll )
+		{
+			if ( clothingResources.Count == 0 )
+				return;
+
+			Deserialize();
+
+			ragdoll.SetMaterialGroup( "Skin01" );
+
+			foreach ( var model in clothingObjects )
+			{
+				model?.Delete();
+			}
+			clothingObjects.Clear();
+
+			foreach ( var c in container.Clothing )
+			{
+				if ( c.Model == "models/citizen/citizen.vmdl" )
+				{
+					ragdoll.SetMaterialGroup( c.MaterialGroup );
+					continue;
+				}
+				var anim = new ModelEntity( c.Model, ragdoll );
+
+				if ( !string.IsNullOrEmpty( c.MaterialGroup ) )
+					anim.SetMaterialGroup( c.MaterialGroup );
+			}
+
+			foreach ( var group in container.GetBodyGroups() )
+			{
+				Terry.SetBodyGroup( group.name, group.value );
+			}
+
+			dressed = true;
+		}
+
 		public void SetupTerry()
 		{
-			Terry = new AnimSceneObject( Model.Load( "models/citizen/citizen.vmdl"), Transform.Zero );
+			Terry = new AnimSceneObject( Model.Load( "models/citizen/citizen.vmdl" ), Transform.Zero );
 		}
 
 		public void UpdateTerry()
@@ -153,7 +189,7 @@ namespace Ballers
 					Terry.Rotation = Terry.Rotation.Clamp( idealRotation, 90f, out var change );
 
 					// look direction
-					var aimDir = Velocity.WithZ(0).Normal; // Owner == Local.Client ? Input.Rotation.Forward : Velocity.Normal;
+					var aimDir = Velocity.WithZ( 0 ).Normal; // Owner == Local.Client ? Input.Rotation.Forward : Velocity.Normal;
 					var aimPos = Position + aimDir * 200f;
 					var localPos = Terry.Transform.PointToLocal( aimPos );
 					Terry.SetAnimVector( "aim_eyes", localPos );
@@ -176,13 +212,44 @@ namespace Ballers
 			}
 		}
 
+		[ClientRpc]
+		private void Ragdoll()
+		{
+			var ent = new ModelEntity();
+			ent.Position = Terry.Position;
+			ent.Rotation = Terry.Rotation;
+			ent.MoveType = MoveType.Physics;
+			ent.UsePhysicsCollision = true;
+			ent.EnableAllCollisions = true;
+			ent.CollisionGroup = CollisionGroup.Debris;
+			ent.Model = Terry.Model;
+
+			DressRagdoll( ent );
+
+			/*
+			ent.CopyBonesFrom( Terry );
+			ent.CopyBodyGroups( Terry );
+			ent.CopyMaterialGroup( Terry );
+			ent.TakeDecalsFrom( Terry );
+			*/
+
+			ent.EnableAllCollisions = true;
+			ent.SurroundingBoundsMode = SurroundingBoundsType.Physics;
+			ent.PhysicsGroup.Velocity = Velocity;
+
+			ent.SetInteractsAs( CollisionLayer.Debris );
+			ent.SetInteractsWith( CollisionLayer.WORLD_GEOMETRY );
+			ent.SetInteractsExclude( CollisionLayer.Player | CollisionLayer.Debris );
+
+			ent.DeleteAsync( 6.5f );
+		}
 		public void UpdateModel()
 		{
 			if ( Velocity.LengthSquared > 0.0f )
 			{
 				var dir = Velocity.Normal;
 				var axis = new Vector3( -dir.y, dir.x, 0.0f );
-				var angle = (Velocity.Length * Time.Delta) / (50.0f * (float)Math.PI);
+				var angle = (Velocity.Length * Time.Delta) / (40.0f * (float)Math.PI);
 				Rotation = Rotation.FromAxis( axis, 180.0f * angle ) * Rotation;
 			}
 		}

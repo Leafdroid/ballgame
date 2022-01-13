@@ -8,16 +8,22 @@ namespace Sandbox
 		private float pitch = 0f;
 		private float roll = 0f;
 
+		private int zoom = 20;
+
+		private const int minZoom = 10;
+		private const int maxZoom = 30;
 
 		public override void Update()
 		{
-
 			if ( Local.Client.Pawn is not BallPlayer player )
 				return;
 
 			Ball ball = player.Ball;
 			if ( !ball.IsValid() )
 				return;
+
+			zoom -= Input.MouseWheel;
+			zoom = zoom.Clamp( minZoom, maxZoom );
 
 			Vector3 velocity = ball.Velocity;
 
@@ -32,7 +38,7 @@ namespace Sandbox
 
 			Rotation = Input.Rotation * Rotation.FromRoll( roll );
 
-			Vector3 camPos = ball.Position + Rotation.Backward * 200;
+			Vector3 camPos = ball.Position + (Rotation.Backward * 10 * zoom + Rotation.Up * 0.5f * zoom);
 
 			TraceResult cameraTrace = Trace.Ray( ball.Position, camPos )
 				.Radius( 8f ).WorldOnly().Run();

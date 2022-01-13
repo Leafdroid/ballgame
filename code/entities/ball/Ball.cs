@@ -11,31 +11,63 @@ namespace Ballers
 {
 	public partial class Ball : ModelEntity
 	{
-		public static float Acceleration = 750;
-		public static float AirControl = 1f;
-		public static float MaxSpeed = 1100f;
+		public static readonly new List<Ball> All = new();
 
-		public static float Friction = 0.25f;
-		public static float Drag = 0.1f;
-		public static float Bounciness = 0.25f;
+		public const float Acceleration = 700f; // yeah
+		public const float AirControl = 1f; // acceleration multiplier in air
+		public const float MaxSpeed = 1100f; // this is the max speed the ball can accelerate to by itself
 
-		public static Ball Create( BallPlayer player )
+		public const float Friction = 0.25f; // resistance multiplier on ground
+		public const float Drag = 0.1f; // resistance multiplier in air
+		public const float Bounciness = 0.65f; // elasticity of collisions, aka how much boing 
+
+		public const float Mass = 60f; // how heavy!!
+
+		public static float Grip => MathF.Sin( Time.Now ) * .5f + .5f;
+
+		public static Ball Create( Client client, ControlType controller = ControlType.Player )
 		{
-			if ( !player.IsValid() )
-				return null;
+			ReplayData replayData = null;
+			BallPlayer player = null;
 
-			var spawnpoint = Entity.All.OfType<SpawnPoint>().OrderBy( x => Guid.NewGuid() ).FirstOrDefault();
-
-			Rotation rotation = Rotation.Identity;
-			Vector3 position = Vector3.Up * 40f;
-			if ( spawnpoint != null )
+			if ( controller == ControlType.Player )
 			{
-				position += spawnpoint.Position;
+				if ( !client.Pawn.IsValid() )
+					return null;
+
+				player = client.Pawn as BallPlayer;
+
+				if ( !player.IsValid() )
+					return null;
+			}
+			else
+			{
+				replayData = ReplayData.FromFile( client );
+				if ( replayData == null )
+					return null;
 			}
 
-			string clothingData = player.Client.GetClientData( "avatar" );
-			Ball ball = new Ball() { Owner = player, Position = position, ClothingData = clothingData };
-			player.Ball = ball;
+
+			// .OrderBy( x => Guid.NewGuid() )
+			var spawnpoint = Entity.All.OfType<SpawnPoint>().FirstOrDefault();
+
+			Vector3 position = Vector3.Up * 40f;
+			if ( spawnpoint != null )
+				position += spawnpoint.Position;
+
+			Ball ball = null;
+
+			if ( controller == ControlType.Player )
+			{
+				string clothingData = player.Client.GetClientData( "avatar" );
+				ball = new Ball() { Owner = player, Position = position, ClothingData = clothingData, Controller = controller };
+				player.Ball = ball;
+			}
+			else if ( controller == ControlType.Replay )
+			{
+				ball = new Ball() { Position = position, Controller = controller };
+				ball.ReplayData = replayData;
+			}
 
 			return ball;
 		}
@@ -49,41 +81,70 @@ namespace Ballers
 			Predictable = true;
 
 			SetModel( "models/ball.vmdl" );
+			PhysicsEnabled = false;
 
 			EnableAllCollisions = false;
 			EnableTraceAndQueries = false;
 			Transmit = TransmitType.Always;
+
+			All.Add( this );
 		}
 
 		public override void ClientSpawn()
 		{
 			base.ClientSpawn();
 
+			PhysicsEnabled = false;
 			Predictable = true;
 
 			SetupTerry();
+
+			All.Add( this );
 		}
 
+		private bool popped = false;
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
 
-			if ( IsClient )
+			if ( IsClient && !popped )
 			{
+				Ragdoll();
+
 				if ( Terry.IsValid() )
 					Terry.Delete();
 
-				Sound.FromWorld( WilhelmScream.Name, Position );
+				//Sound.FromWorld( WilhelmScream.Name, Position );
+				BallGib.Create( this );
+				popped = true;
 			}
+
+			if ( All.Contains( this ) )
+				All.Remove( this );
 		}
 
-
-		[Event.Frame]
-		public void OnFrame()
+		static Dictionary<long, float> CustomHues = new Dictionary<long, float>
 		{
-			if ( Owner == null )
-				return;
+				{ 76561198042411895, 0f },
+		};
 
+		private float GetHue()
+		{
+			int id = Rand.Int( 65535 );
+			if ( Owner.IsValid() )
+			{
+				if ( CustomHues.TryGetValue( Owner.Client.PlayerId, out float hue ) )
+					return hue;
+
+				id = (int)(Owner.Client.PlayerId & 65535);
+			}
+
+			Random seedColor = new Random( id );
+			return (float)seedColor.NextDouble() * 360f;
+		}
+
+		public void FrameSimulate()
+		{
 			UpdateTerry();
 
 			if ( hasColor )
@@ -92,12 +153,12 @@ namespace Ballers
 			if ( !SceneObject.IsValid() )
 				return;
 
-			int id = (int)(Owner.Client.PlayerId & 255);
-			Random seedColor = new Random( id );
-			float hue = (float)seedColor.NextDouble() * 360f;
+			float hue = GetHue();
 
-			Color ballColor = new ColorHsv( hue, 0.75f, 1f );
-			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, 0.75f, 1f );
+			float saturation = Controller == ControlType.Player ? 0.75f : 0.4f;
+
+			Color ballColor = new ColorHsv( hue, saturation, 1f );
+			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, saturation, 1f );
 
 			SceneObject.SetValue( "tint", ballColor );
 			SceneObject.SetValue( "tint2", ballColor2 );
@@ -110,6 +171,6 @@ namespace Ballers
 			DistanceMax = 1536f,
 		};
 
-		public override string ToString() => $"{Owner.Name}'s ball";
+		public override string ToString() => $"{ (Owner.IsValid() ? Owner.Name : "Unknown") }'s ball";
 	}
 }

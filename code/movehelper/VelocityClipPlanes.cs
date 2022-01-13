@@ -11,7 +11,6 @@ namespace Ballers
 	public struct VelocityClipPlanes : IDisposable
 	{
 		Vector3 OrginalVelocity;
-		Vector3 PlaneVelocity;
 		Vector3 BumpVelocity;
 		Vector3[] Planes;
 
@@ -25,12 +24,11 @@ namespace Ballers
 		/// </summary>
 		public int Count { get; private set; }
 
-		public VelocityClipPlanes( Vector3 originalVelocity, int max = 5 )
+		public VelocityClipPlanes( Vector3 originalVelocity, int max = 10 )
 		{
 			Max = max;
 			OrginalVelocity = originalVelocity;
 			BumpVelocity = originalVelocity;
-			PlaneVelocity = Vector3.Zero;
 			Planes = ArrayPool<Vector3>.Shared.Rent( max );
 			Count = 0;
 		}
@@ -41,8 +39,6 @@ namespace Ballers
 		/// <returns>False if we ran out of room and should stop adding planes</returns>
 		public bool TryAdd( Vector3 normal, Vector3 planeVelocity, ref Vector3 velocity, float bounce )
 		{
-			PlaneVelocity = planeVelocity;
-
 			if ( Count == Max )
 			{
 				velocity = 0;
@@ -57,7 +53,7 @@ namespace Ballers
 			if ( Count == 1 )
 			{
 				//	BumpVelocity = velocity;
-				BumpVelocity = ClipVelocity( BumpVelocity, normal, 1.0f + bounce );
+				BumpVelocity = ClipVelocity( BumpVelocity, planeVelocity, normal, 1.0f + bounce );
 				velocity = BumpVelocity;
 
 				return true;
@@ -67,7 +63,7 @@ namespace Ballers
 			// clip to all of the planes we've put in
 			//
 			velocity = BumpVelocity;
-			if ( TryClip( ref velocity ) )
+			if ( TryClip( ref velocity, planeVelocity ) )
 			{
 				// Hit the floor and the wall, go along the join
 				if ( Count == 2 )
@@ -98,11 +94,11 @@ namespace Ballers
 		/// Try to clip our velocity to all the planes, so we're not travelling into them
 		/// Returns true if we clipped properly
 		/// </summary>
-		bool TryClip( ref Vector3 velocity )
+		bool TryClip( ref Vector3 velocity, Vector3 planeVelocity )
 		{
 			for ( int i = 0; i < Count; i++ )
 			{
-				velocity = ClipVelocity( BumpVelocity, Planes[i] );
+				velocity = ClipVelocity( BumpVelocity, planeVelocity, Planes[i] );
 
 				if ( MovingTowardsAnyPlane( velocity, i ) )
 					return false;
@@ -137,12 +133,16 @@ namespace Ballers
 		/// <summary>
 		/// Clip the velocity to the normal
 		/// </summary>
-		Vector3 ClipVelocity( Vector3 vel, Vector3 norm, float overbounce = 1.0f )
+		Vector3 ClipVelocity( Vector3 vel, Vector3 planeVelocity, Vector3 norm, float overbounce = 1.0f )
 		{
-			float planeVel = PlaneVelocity.Dot( norm );
+			float planeVel = planeVelocity.Dot( norm );
+			var rel = (norm * planeVel);
 
 			var backoff = Vector3.Dot( vel, norm ) * overbounce;
-			var o = vel - (norm * backoff) + (norm * planeVel);
+			var o = vel - (norm * backoff) + rel;
+
+			//if ( (o + rel).Dot( planeVel ) < 0f )
+				//o += rel;
 
 			return o;
 		}

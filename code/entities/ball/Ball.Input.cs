@@ -11,29 +11,76 @@ namespace Ballers
 {
 	public partial class Ball : ModelEntity
 	{
-		public Vector3 MoveDirection { get; set; }
-
-		private struct InputState
+		public enum ControlType
 		{
-			public int forwards;
-			public int sidewards;
-
-			public void Reset()
-			{
-				forwards = 0;
-				sidewards = 0;
-			}
+			Player,
+			Replay
 		}
 
-		private InputState currentInput;
+		public ControlType Controller { get; set; }
+		public Vector3 MoveDirection { get; set; }
+		public ReplayData ReplayData { get; set; } = new ReplayData();
 
-		public void Simulate( )
+		private const float angToByte = 255f / 360f;
+		private const float byteToAng = 360f / 255f;
+
+		public class BallInput
 		{
-			currentInput.forwards = (Input.Down( InputButton.Forward ) ? 1 : 0) + (Input.Down( InputButton.Back ) ? -1 : 0);
-			currentInput.sidewards = (Input.Down( InputButton.Left ) ? 1 : 0) + (Input.Down( InputButton.Right ) ? -1 : 0);
+			public ushort data { get; private set; } = 0;
 
-			Vector3 moveDir = new Vector3( currentInput.forwards, currentInput.sidewards, 0 );
-			MoveDirection = (moveDir * Input.Rotation).WithZ( 0 ).Normal;
+			public void Update( float forward, float left, float yaw )
+			{
+				bool moving = forward != 0 || left != 0;
+
+				data = (ushort)(moving ? 256 : 0);
+
+				if ( !moving )
+					return;
+
+				Vector3 rawDirection = new Vector3( forward, left, 0 ).Normal * Rotation.FromYaw( yaw );
+				float directionYaw = rawDirection.EulerAngles.yaw;
+
+				data += (byte)(MathF.Round( directionYaw * angToByte ) % 255);
+			}
+
+			public void Update( ushort data ) => this.data = data;
+
+			public void Parse( out Vector3 direction )
+			{
+				bool moving = (data & 256) == 256;
+
+				if ( moving )
+				{
+					float yaw = (data & 255) * byteToAng;
+					direction = Rotation.FromYaw( yaw ).Forward;
+				}
+				else
+				{
+					direction = Vector3.Zero;
+				}
+			}
+
+			public static bool operator ==( BallInput a, BallInput b ) => a.data == b.data;
+			public static bool operator !=( BallInput a, BallInput b ) => a.data != b.data;
+		}
+
+		public BallInput ActiveInput { get; private set; } = new BallInput();
+
+		public void Simulate()
+		{
+			if ( Controller == ControlType.Player )
+			{
+				ActiveInput.Update( Input.Forward, Input.Left, Input.Rotation.Yaw() );
+				ReplayData.AddData( ActiveInput );
+			}
+			else if ( Controller == ControlType.Replay )
+			{
+				ushort input = ReplayData.GetNext();
+				ActiveInput.Update( input );
+			}
+
+			ActiveInput.Parse( out Vector3 moveDirection );
+			MoveDirection = moveDirection;
 
 			SimulatePhysics();
 		}

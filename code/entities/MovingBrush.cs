@@ -76,36 +76,10 @@ namespace Ballers
 			Vector3 position = StartPosition.LerpTo( EndPosition, t );
 			Vector3 velocity = MoveDirection * (Speed * cosine);
 
-			if (IsServer)
+			if ( IsServer )
 			{
 				Position = position;
 				Velocity = velocity;
-			}
-
-			foreach(Ball ball in Entity.All.Where(e => e is Ball))
-			{
-
-				Vector3 relativeVelocity = ball.Velocity - velocity;
-
-				Vector3 movePos = ball.Position + relativeVelocity * Time.Delta;
-
-				TraceResult tr = Trace.Ray( ball.Position, movePos )
-				.Radius( 40f )
-				.HitLayer( CollisionLayer.All, false )
-				.HitLayer( CollisionLayer.LADDER, true )
-				.Only( this )
-				.Run();
-
-				if (tr.Hit)
-				{
-					//DebugOverlay.Sphere( tr.EndPos, 40f, Color.White );
-					float planeVel = velocity.Dot( tr.Normal );
-					var backoff = Vector3.Dot( ball.Velocity, tr.Normal );
-					var o = ball.Velocity - (tr.Normal * backoff) + (tr.Normal * planeVel);
-
-					ball.Position += tr.Normal;
-					ball.Velocity = o;
-				}
 			}
 		}
 
@@ -124,7 +98,7 @@ namespace Ballers
 			ClientModel.Position = position;
 			//DebugOverlay.Text( position, Velocity.ToString(), Color.White );
 
-			colorHue = colorHue.LerpTo( closing ? 0f : 120f, Time.Delta*10f );
+			colorHue = colorHue.LerpTo( closing ? 0f : 120f, Time.Delta * 10f );
 			Color color = new ColorHsv( colorHue, 0.8f, 1f );
 
 			DebugOverlay.Circle( StartPosition, CurrentView.Rotation, 2f, color );

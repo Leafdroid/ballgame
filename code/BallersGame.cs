@@ -35,7 +35,9 @@ namespace Ballers
 			foreach ( MovingBrush move in MovingBrush.All )
 				move.Simulate();
 
-			//Lava.Simulate();
+			if ( client.IsListenServerHost || Host.IsClient )
+				foreach ( Ball ball in Ball.All.Where( ball => ball.Controller == Ball.ControlType.Replay ) )
+					ball.Simulate();
 		}
 
 		public override void FrameSimulate( Client client )
@@ -45,7 +47,8 @@ namespace Ballers
 			foreach ( MovingBrush move in MovingBrush.All )
 				move.FrameSimulate();
 
-			//Lava.FrameSimulate();
+			foreach ( Ball ball in Ball.All )
+				ball.FrameSimulate();
 		}
 
 		public override void ClientJoined( Client client )

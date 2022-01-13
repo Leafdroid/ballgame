@@ -17,7 +17,8 @@ namespace Ballers
 		{
 			float dt = Time.Delta;
 
-			float directionSpeed = Velocity.Dot( MoveDirection );
+			Vector3 clampedVelocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed );
+			float directionSpeed = clampedVelocity.Dot( MoveDirection );
 
 			float acceleration = Acceleration;
 			if ( !Grounded )
@@ -26,59 +27,62 @@ namespace Ballers
 			float t = 1f - directionSpeed / MaxSpeed;
 			acceleration *= t;
 
-			Velocity += (MoveDirection * acceleration) * dt;
+			Velocity += MoveDirection * acceleration * dt;
+			//Velocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed ).WithZ( Velocity.z );
 			Move();
-			Velocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed ).WithZ( Velocity.z );
+
 		}
 
 		public void Move()
 		{
+			float dt = Time.Delta;
+
 			var mover = new MoveHelper( Position, Velocity );
 
 			Grounded = mover.TraceDirection( Vector3.Down ).Hit;
 
 			float friction = Grounded ? Friction : Drag;
 
-			/*
-			foreach ( MoveLinear platform in MoveLinear.All )
-			{
-				Vector3 relativeVelocity = platform.Velocity - Velocity;
+			mover.ApplyFriction( friction, dt );
 
-				Vector3 moveTo = Position - relativeVelocity * Time.Delta;
-				TraceResult pTrace = Trace.Ray( Position, moveTo )
-					.Only( platform ).Radius( 40f ).Run();
+			mover.Velocity += PhysicsWorld.Gravity * dt;
 
-				if ( pTrace.Hit )
-				{
-					float hitForce = pTrace.Normal.Dot( relativeVelocity );
-
-					DebugOverlay.Text( platform.Position + Vector3.Up * 64f, hitForce.ToString() );
-					DebugOverlay.Sphere( Position, 40f, Color.Red );
-
-					if ( hitForce > 0 )
-						mover.Position = pTrace.EndPos + pTrace.Normal;
-					mover.Velocity += pTrace.Normal * hitForce;
-				}
-			}
-			*/
-
-			mover.ApplyFriction( friction, Time.Delta );
-
-			// Apply gravity
-			mover.Velocity += PhysicsWorld.Gravity * Time.Delta;
-
-			mover.TryMove( Time.Delta );
+			mover.TryMove( dt );
 			mover.TryUnstuck();
 
-			TraceResult moveTrace = mover.TraceDirection( mover.Velocity * Time.Delta );
-			
+			TraceResult moveTrace = mover.Trace
+				.HitLayer( CollisionLayer.LADDER, true )
+				.FromTo( mover.Position, mover.Position + mover.Velocity * dt )
+				.Run();
+
 			if ( moveTrace.Hit )
 			{
 				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
 				if ( IsServer )
 					ClientImpactSound( this, hitForce );
-				else if (Local.Client == Owner.Client)
+				else if ( Local.Client == Owner.Client )
 					ImpactSound( hitForce );
+
+				/* silly popping on big bang
+				if ( hitForce > 250f )
+				{
+					if ( Host.IsServer )
+					{
+						(Owner as BallPlayer).Kill();
+					}
+					else if ( Owner == Local.Client.Pawn && !popped )
+					{
+						Ragdoll();
+
+						if ( Terry.IsValid() )
+							Terry.Delete();
+
+						//Sound.FromWorld( WilhelmScream.Name, Position );
+						BallGib.Create( this );
+						popped = true;
+					}
+				}
+				*/
 			}
 
 			Velocity = mover.Velocity;
@@ -87,30 +91,24 @@ namespace Ballers
 			UpdateModel();
 		}
 
-		private void ImpactSound(float force)
+		private void ImpactSound( float force )
 		{
 			if ( force > 150f )
 			{
-				float volume = ((force - 150f) / (MaxSpeed - 150f)).Clamp( 0f, 1f );
+				float volume = ((force - 150f) / (MaxSpeed - 150f) * 1.2f).Clamp( 0f, 1f );
+				float pitch = ((force - 150f) / (MaxSpeed - 150f) * 3f).Clamp( 0.8f, 0.85f );
 
 				Sound impactSound = PlaySound( BounceSound.Name );
 				impactSound.SetVolume( volume );
+				impactSound.SetPitch( pitch );
 			}
 		}
 
 		[ClientRpc]
 		public static void ClientImpactSound( Ball ball, float force )
 		{
-			if ( ball.IsValid() && ball.Owner.Client != Local.Client )
-			{
-				if ( force > 150f )
-				{
-					float volume = ((force - 150f) / (MaxSpeed - 150f)).Clamp( 0f, 1f );
-
-					Sound impactSound = ball.PlaySound( BounceSound.Name );
-					impactSound.SetVolume( volume );
-				}
-			}
+			if ( ball.IsValid() && (ball.Owner == null || ball.Owner.Client != Local.Client) )
+				ball.ImpactSound( force );
 		}
 
 		public static readonly SoundEvent BounceSound = new()
@@ -136,7 +134,7 @@ namespace Ballers
 
 	public static class TraceExtensions
 	{
-		public static Trace Only(this Trace trace, Entity entity)
+		public static Trace Only( this Trace trace, Entity entity )
 		{
 			if ( entity.IsValid() )
 			{
@@ -147,9 +145,9 @@ namespace Ballers
 				// only hit specified entity
 				return trace.EntitiesOnly().WithTag( idTag );
 			}
-			
+
 			// hit no entities if specified entity is invalid
-			return trace.WithTag("");
+			return trace.WithTag( "" );
 		}
 
 		public static Trace IgnoreMovingBrushes( this Trace trace )

@@ -21,7 +21,7 @@ namespace Ballers
 
 			EnableDrawing = false;
 
-			Ball = Ball.Create(this);
+			Ball = Ball.Create( Client );
 			Controller = new BallController();
 			Camera = new BallCamera();
 
@@ -36,14 +36,14 @@ namespace Ballers
 		{
 			base.Simulate( cl );
 
-			if ( Position.z < -1024f )
+			if ( Position.z < -512 )
 			{
 				Kill();
 				return;
 			}
 
 			if ( Ball.IsValid() )
-				Ball.Simulate();	
+				Ball.Simulate();
 		}
 
 		public override void OnKilled()
