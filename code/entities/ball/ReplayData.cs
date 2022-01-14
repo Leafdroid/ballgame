@@ -20,11 +20,16 @@ namespace Ballers
 		private int index = 0;
 		private int readRepeats = 0;
 
-		public ushort GetNext()
+		public ushort GetNext( out bool finished )
 		{
+			finished = false;
 			int count = inputs.Count();
 			if ( index == count )
+			{
+				finished = true;
 				return 0;
+			}
+
 
 			ushort data = inputs[index];
 			ushort repeats = (ushort)(data >> 9);
@@ -61,7 +66,7 @@ namespace Ballers
 			*/
 		}
 
-		public void AddData( Ball.BallInput input )
+		public void AddData( BallInput input )
 		{
 			if ( firstTick == -1 )
 				firstTick = Time.Tick;
@@ -159,6 +164,9 @@ namespace Ballers
 		public static void SaveReplay()
 		{
 			if ( ConsoleSystem.Caller.Pawn is not BallPlayer player )
+				return;
+
+			if ( !player.Ball.IsValid() )
 				return;
 
 			player.Ball.ReplayData.Write( ConsoleSystem.Caller );

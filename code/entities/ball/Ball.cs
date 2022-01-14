@@ -39,9 +39,11 @@ namespace Ballers
 			// .OrderBy( x => Guid.NewGuid() )
 			var spawnpoint = Entity.All.OfType<SpawnPoint>().FirstOrDefault();
 
-			Vector3 position = Vector3.Up * 40f;
+			Vector3 position = Vector3.Up * 80f;
 			if ( spawnpoint != null )
 				position += spawnpoint.Position;
+
+			//position = new Vector3( 0, -2700, 540 );
 
 			Ball ball = null;
 
@@ -95,37 +97,26 @@ namespace Ballers
 		{
 			base.OnDestroy();
 
-			if ( IsClient && !popped )
+			if ( IsClient && Controller == ControlType.Player && !popped )
 			{
 				Ragdoll();
-
-				if ( Terry.IsValid() )
-					Terry.Delete();
-
 				//Sound.FromWorld( WilhelmScream.Name, Position );
-				BallGib.Create( this );
+				BallDome.Create( this );
 				popped = true;
 			}
+
+			if ( Terry.IsValid() )
+				Terry.Delete();
 
 			if ( All.Contains( this ) )
 				All.Remove( this );
 		}
 
-		static Dictionary<long, float> CustomHues = new Dictionary<long, float>
-		{
-				{ 76561198042411895, 0f },
-		};
-
 		private float GetHue()
 		{
 			int id = Rand.Int( 65535 );
-			if ( Owner.IsValid() )
-			{
-				if ( CustomHues.TryGetValue( Owner.Client.PlayerId, out float hue ) )
-					return hue;
-
+			if ( Owner.IsValid() && Owner.Client.IsValid() )
 				id = (int)(Owner.Client.PlayerId & 65535);
-			}
 
 			Random seedColor = new Random( id );
 			return (float)seedColor.NextDouble() * 360f;

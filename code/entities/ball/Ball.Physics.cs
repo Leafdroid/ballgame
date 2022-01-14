@@ -15,14 +15,13 @@ namespace Ballers
 		public const float AirControl = 1f; // acceleration multiplier in air
 		public const float MaxSpeed = 1100f; // this is the max speed the ball can accelerate to by itself
 
-		public const float Friction = 0.25f; // resistance multiplier on ground
+		public const float Friction = 0.15f; // resistance multiplier on ground
+		public const float Viscosity = 2.5f; // resistance multiplier in water
 		public const float Drag = 0.1f; // resistance multiplier in air
-		public const float Bounciness = 0.35f; // elasticity of collisions, aka how much boing 
+		public const float Bounciness = .35f; // elasticity of collisions, aka how much boing 
+		public const float Buoyancy = 2.5f; // floatiness
 
-		public const float Mass = 60f; // how heavy!!
-
-		//public static float Grip => MathF.Sin( Time.Now ) * .25f + .75f;
-
+		public const float Mass = 50f; // how heavy!!
 
 		public bool Grounded;
 
@@ -43,7 +42,6 @@ namespace Ballers
 			Velocity += MoveDirection * acceleration * dt;
 			//Velocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed ).WithZ( Velocity.z );
 			Move();
-
 		}
 
 		public void Move()
@@ -54,7 +52,23 @@ namespace Ballers
 
 			Grounded = mover.TraceDirection( Vector3.Down ).Hit;
 
+			TraceResult waterTrace = Trace.Ray( Position + Vector3.Up * 80f, Position )
+				.Radius( 40f )
+				.HitLayer( CollisionLayer.All, false )
+				.HitLayer( CollisionLayer.STATIC_LEVEL, false )
+				.HitLayer( CollisionLayer.Water, true )
+				.Run();
+
 			float friction = Grounded ? Friction : Drag;
+
+			if ( waterTrace.Hit )
+			{
+				float waterLevel = (waterTrace.EndPos.z - Position.z) * 0.0125f;
+				float underwaterVolume = 0.5f - 0.5f * MathF.Cos( MathF.PI * waterLevel );
+				mover.Velocity -= PhysicsWorld.Gravity * underwaterVolume * Buoyancy * dt;
+
+				friction = Viscosity * underwaterVolume + friction * (1f - underwaterVolume);
+			}
 
 			mover.ApplyFriction( friction, dt );
 

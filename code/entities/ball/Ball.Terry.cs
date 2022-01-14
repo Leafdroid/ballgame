@@ -169,6 +169,12 @@ namespace Ballers
 
 				Terry.Position = Position - Vector3.Up * 35f;
 
+				/*
+				bool isLocal = IsClient && Owner.IsValid() && Owner.Client == Local.Client;
+				Vector3 hVel = Velocity.WithZ( 0 );
+				Vector3 velocity = ((isLocal ? MoveDirection : NetDirection) * Acceleration * 0.5f + hVel * 1.5f) * 0.5f;
+				*/
+
 				Vector3 velocity = Velocity.WithZ( 0 );
 				Vector3 direction = velocity.Normal;
 
@@ -249,13 +255,30 @@ namespace Ballers
 
 			ent.DeleteAsync( 6.5f );
 		}
+
+		private float mode = 0f;
 		public void UpdateModel()
 		{
-			if ( Velocity.LengthSquared > 0.0f )
+			Vector3 spinVelocity = Velocity;
+
+			/*
+			bool isLocal = IsClient && Owner.IsValid() && Owner.Client == Local.Client;
+			Vector3 hVel = Velocity.WithZ( 0 );
+			Vector3 moveDir = (isLocal ? MoveDirection : NetDirection);
+			Vector3 spinVel = hVel;
+			if ( moveDir != Vector3.Zero )
+				spinVel = (moveDir * Acceleration + hVel) * 0.5f;
+
+			mode += (moveDir != Vector3.Zero ? Time.Delta : -Time.Delta) * 2f;
+			mode = mode < 0f ? 0f : (mode > 1f ? 1f : mode);
+
+			Vector3 spinVelocity = ((moveDir * Acceleration * 0.5f + hVel * 1.5f) * 0.5f) * mode + hVel * (1f - mode);
+			*/
+			if ( spinVelocity.LengthSquared > 0.0f )
 			{
-				var dir = Velocity.Normal;
+				var dir = spinVelocity.Normal;
 				var axis = new Vector3( -dir.y, dir.x, 0.0f );
-				var angle = (Velocity.Length * Time.Delta) / (40.0f * (float)Math.PI);
+				var angle = (spinVelocity.Length * Time.Delta) / (40.0f * (float)Math.PI);
 				Rotation = Rotation.FromAxis( axis, 180.0f * angle ) * Rotation;
 			}
 		}

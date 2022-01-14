@@ -9,10 +9,10 @@ using System.Linq;
 
 namespace Ballers
 {
-	public partial class BallGib : ModelEntity
+	public partial class BallDome : ModelEntity
 	{
 		public const float PopForce = 300f; // pop!
-		private TimeSince LifeTime { get; set; } = 0;
+		private TimeSince lifeTime { get; set; } = 0;
 
 		public static readonly SoundEvent Pop = new( "sounds/ball/pop.vsnd" )
 		{
@@ -24,7 +24,6 @@ namespace Ballers
 			DistanceMax = 256f,
 			Volume = 0.8f
 		};
-
 
 		public static void Create( Ball ball )
 		{
@@ -44,7 +43,7 @@ namespace Ballers
 
 			Sound.FromWorld( Pop.Name, ball.Position );
 
-			BallGib dome1 = new BallGib() { Position = pos, Rotation = rot, Velocity = vel };
+			BallDome dome1 = new BallDome() { Position = pos, Rotation = rot, Velocity = vel };
 			dome1.SceneObject.SetValue( "tint2", ball.SceneObject.GetVectorValue( "tint2" ) );
 			dome1.PhysicsBody.AngularVelocity = axis * angle * 2f;
 			dome1.PhysicsBody.Mass = Ball.Mass * 0.5f;
@@ -52,7 +51,7 @@ namespace Ballers
 			vel += rot.Down * PopForce * 2f;
 			rot = rot * Rotation.FromPitch( 180f );
 
-			BallGib dome2 = new BallGib() { Position = pos, Rotation = rot, Velocity = vel };
+			BallDome dome2 = new BallDome() { Position = pos, Rotation = rot, Velocity = vel };
 			dome2.SceneObject.SetValue( "tint2", ball.SceneObject.GetVectorValue( "tint" ) );
 			dome2.PhysicsBody.AngularVelocity = axis * angle * 2f;
 			dome2.PhysicsBody.Mass = Ball.Mass * 0.5f;
@@ -71,20 +70,6 @@ namespace Ballers
 			PhysicsBody.AngularDrag = 0;
 		}
 
-		protected override void OnDestroy()
-		{
-			base.OnDestroy();
-
-			// make fancy blink sprite thing when shrinking out of existance
-		}
-
-		private float Bezier( float a, float b, float c, float t )
-		{
-			float n = 1f - t;
-			float d = a * n + b * t;
-			float e = b * n + c * t;
-			return d * n + e * t;
-		}
 		private float Bezier( float a, float b, float c, float d, float t )
 		{
 			float n = 1f - t;
@@ -102,19 +87,19 @@ namespace Ballers
 		{
 			//DebugOverlay.Sphere( PhysicsBody.MassCenter, 8f, Color.White );
 
-			if ( LifeTime <= 0.25f )
+			if ( lifeTime <= 0.25f )
 			{
-				float t = LifeTime * 3f;
+				float t = lifeTime * 3f;
 				if ( t > 1f )
 					t = 1f;
 
 				Scale = Bezier( 1f, 1.3f, 0.9f, 1f, t );
 			}
-			else if ( LifeTime > 6 )
+			else if ( lifeTime > 6 )
 			{
 
 
-				float t = (LifeTime - 6f) * 2.5f;
+				float t = (lifeTime - 6f) * 2.5f;
 				if ( t > 1f )
 					t = 1f;
 
@@ -127,15 +112,6 @@ namespace Ballers
 					Delete();
 				}
 			}
-		}
-
-		[ClientCmd( "gibby" )]
-		public static void SpawnGib()
-		{
-			BallPlayer player = Local.Client.Pawn as BallPlayer;
-
-			if ( player.IsValid() && player.Ball.IsValid() )
-				BallGib.Create( player.Ball );
 		}
 	}
 }

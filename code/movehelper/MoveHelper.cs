@@ -19,10 +19,10 @@ namespace Ballers
 			// Hit everything but other balls
 			Trace = Trace.Ray( 0, 0 )
 				.Radius( 40f )
-				.WorldAndEntities()
 				.HitLayer( CollisionLayer.Solid, true )
 				.HitLayer( CollisionLayer.PLAYER_CLIP, true )
 				.HitLayer( CollisionLayer.GRATE, true )
+				.HitLayer( CollisionLayer.STATIC_LEVEL, true )
 				.HitLayer( CollisionLayer.LADDER, false )
 				.WorldOnly();
 		}

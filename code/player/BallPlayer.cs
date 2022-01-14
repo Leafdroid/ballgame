@@ -36,11 +36,13 @@ namespace Ballers
 		{
 			base.Simulate( cl );
 
-			if ( Position.z < -512 )
+			/*
+			if ( Position.z < -2048 )
 			{
 				Kill();
 				return;
 			}
+			*/
 
 			if ( Ball.IsValid() )
 				Ball.Simulate();

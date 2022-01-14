@@ -13,11 +13,14 @@ namespace Ballers
 
 		[Property( "origin" )]
 		[Net] public Vector3 StartPosition { get; private set; }
+
+		[Property( "angles" )]
+		[Net] public Angles StartAngles { get; private set; }
+
 		public Vector3 EndPosition => StartPosition + MoveDirection * MoveDistance;
 
 		[Property( "speed" )]
 		[Net] public float Speed { get; private set; }
-		public Vector3 ClientVelocity { get; set; }
 
 		[Property( "movedistance" )]
 		[Net] public float MoveDistance { get; private set; }
@@ -32,6 +35,7 @@ namespace Ballers
 		{
 			base.Spawn();
 
+			Rotation = StartAngles.ToRotation();
 			ClearCollisionLayers();
 			AddCollisionLayer( CollisionLayer.LADDER );
 
@@ -45,6 +49,7 @@ namespace Ballers
 			EnableDrawing = false;
 
 			ClientModel = new ModelEntity();
+			ClientModel.Rotation = StartAngles.ToRotation();
 			ClientModel.SetModel( GetModel() );
 			ClientModel.EnableAllCollisions = false;
 			ClientModel.EnableTraceAndQueries = false;
