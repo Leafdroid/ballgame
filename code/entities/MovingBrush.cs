@@ -38,6 +38,7 @@ namespace Ballers
 		public override void Spawn()
 		{
 			base.Spawn();
+			Rotation = StartAngles.ToRotation();
 			SharedSpawn();
 		}
 
