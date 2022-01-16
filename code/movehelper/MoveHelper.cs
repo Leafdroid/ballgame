@@ -127,7 +127,8 @@ namespace Ballers
 					switch ( pm.Entity )
 					{
 						case BumperBrush bumper:
-							planeVelocity = pm.Normal * 1000f; // bumper.Force;
+							bumper.Bonk( Ball, pm.EndPos - pm.Normal * 40f );
+							planeVelocity = pm.Normal * bumper.Force;
 							break;
 						case var ent:
 							planeVelocity = ent.Velocity;

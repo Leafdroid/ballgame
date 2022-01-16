@@ -121,15 +121,11 @@ namespace Ballers
 			}
 		}
 
-
-
-		/*
 		int lastTick = 0;
 		int lastRealTick = 0;
 		[Event.Tick]
 		public void Frame()
 		{
-			
 			if ( IsServer )
 				return;
 
@@ -140,8 +136,8 @@ namespace Ballers
 			}
 			else
 				AtTick( lastTick + Time.Tick - lastRealTick );
-			
-			
+
+			/*
 			DebugOverlay.Text( position, Velocity.ToString(), Color.White );
 			
 			colorHue = colorHue.LerpTo( closing ? 0f : 120f, Time.Delta * 10f );
@@ -152,8 +148,7 @@ namespace Ballers
 			DebugOverlay.Circle( position, CurrentView.Rotation, 1f, color );
 			DebugOverlay.Line( position, ClientModel.WorldSpaceBounds.Center, color );
 			DebugOverlay.Line( StartPosition, EndPosition, color );
-			
+			*/
 		}
-		*/
 	}
 }

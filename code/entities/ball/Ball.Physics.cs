@@ -132,13 +132,6 @@ namespace Ballers
 			Volume = 1f,
 			DistanceMax = 2048f,
 		};
-
-		public static readonly SoundEvent RollingSoundEvent = new( "sounds/ball/shitroll.vsnd" )
-		{
-			DistanceMax = 1024f,
-			Pitch = 3f,
-			Volume = 0.05f,
-		};
 	}
 
 	public static class TraceExtensions
