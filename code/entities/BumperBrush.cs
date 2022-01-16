@@ -27,7 +27,7 @@ namespace Ballers
 
 		public static readonly SoundEvent BonkSound = new( "sounds/ball/bonk.vsnd" )
 		{
-			Pitch = 1.1f,
+			Pitch = 1f,
 			PitchRandom = 0.05f,
 			Volume = 1f,
 			DistanceMax = 2048f,
