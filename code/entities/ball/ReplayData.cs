@@ -144,7 +144,7 @@ namespace Ballers
 		}
 
 		[ServerCmd( "playreplay" )]
-		public static void GetReplay()
+		public static void PlayReplay()
 		{
 			if ( ConsoleSystem.Caller.Pawn is not BallPlayer player )
 				return;

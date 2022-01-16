@@ -9,7 +9,7 @@ namespace Ballers
 	[Library( "func_movelinear" )]
 	public partial class MovingBrush : BrushEntity
 	{
-		public static List<MovingBrush> All = new();
+		public static new List<MovingBrush> All = new();
 
 		[Property( "origin" )]
 		[Net] public Vector3 StartPosition { get; private set; }
@@ -60,28 +60,20 @@ namespace Ballers
 
 		public void AtTick( int tick )
 		{
-			//DebugOverlay.Sphere( Position, 50f, Color.White );
-
 			float moveTime = Speed / MoveDistance;
 
 			float interval = Global.TickInterval;
 			float rad = tick * interval * moveTime * MathF.PI * 0.5f;
-			//float rad = Time.Now * moveTime * MathF.PI;
 
 			float sine = MathF.Sin( rad );
 			float cosine = MathF.Cos( rad );
 			float t = sine * 0.5f + 0.5f;
 
-			Vector3 position = StartPosition.LerpTo( TargetPosition, t );
-			Vector3 velocity = MoveDirection * (Speed * cosine);
-
 			if ( IsServer || Local.Pawn == Owner )
 			{
-				Position = position;
-				Velocity = velocity;
+				Position = StartPosition.LerpTo( TargetPosition, t );
+				Velocity = MoveDirection * (Speed * cosine);
 			}
-
-			return;
 		}
 
 		//float colorHue = 0f;

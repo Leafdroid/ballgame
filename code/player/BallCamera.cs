@@ -41,7 +41,7 @@ namespace Sandbox
 			Vector3 camPos = ball.Position + (Rotation.Backward * 10 * zoom + Rotation.Up * 0.5f * zoom);
 
 			TraceResult cameraTrace = Trace.Ray( ball.Position, camPos )
-				.Radius( 8f ).WorldOnly().Run();
+				.Radius( 10f ).WithoutTags( "cameraPhase" ).Run();
 
 			Position = cameraTrace.EndPos;
 

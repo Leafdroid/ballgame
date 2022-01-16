@@ -43,6 +43,17 @@ namespace Ballers
 
 		public void Move()
 		{
+			TraceResult triggerTrace = Trace.Ray( Position, Position )
+				.Radius( 40f )
+				.HitLayer( CollisionLayer.All, false )
+				.HitLayer( CollisionLayer.Trigger, true )
+				.Run();
+
+			if ( triggerTrace.Hit )
+			{
+				//Log.Info(triggerTrace.);
+			}
+
 			float dt = Time.Delta;
 
 			var mover = new MoveHelper( Position, Velocity, this );
@@ -52,7 +63,7 @@ namespace Ballers
 			TraceResult waterTrace = Trace.Ray( Position + Vector3.Up * 80f, Position )
 				.Radius( 40f )
 				.HitLayer( CollisionLayer.All, false )
-				.HitLayer( CollisionLayer.STATIC_LEVEL, false )
+				//.HitLayer( CollisionLayer.STATIC_LEVEL, false )
 				.HitLayer( CollisionLayer.Water, true )
 				.Run();
 

@@ -25,6 +25,7 @@ namespace Ballers
 				.HitLayer( CollisionLayer.PLAYER_CLIP, true )
 				.HitLayer( CollisionLayer.GRATE, true )
 				.HitLayer( CollisionLayer.STATIC_LEVEL, true )
+				.HitLayer( CollisionLayer.WORLD_GEOMETRY, true )
 				.HitLayer( CollisionLayer.LADDER, false );
 			//.WorldOnly();
 		}
