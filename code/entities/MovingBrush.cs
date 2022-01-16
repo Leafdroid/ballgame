@@ -65,7 +65,7 @@ namespace Ballers
 			float moveTime = Speed / MoveDistance;
 
 			float interval = Global.TickInterval;
-			float rad = (tick * interval) * moveTime * MathF.PI;
+			float rad = tick * interval * moveTime * MathF.PI * 0.5f;
 			//float rad = Time.Now * moveTime * MathF.PI;
 
 			float sine = MathF.Sin( rad );
