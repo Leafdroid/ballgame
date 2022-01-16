@@ -27,7 +27,6 @@ namespace Ballers
 		public override void Simulate( Client cl )
 		{
 			ActiveTick = PredictTick;
-			ActiveTick++;
 
 			if ( IsClient && (Owner != Local.Pawn) )
 				return;
@@ -48,6 +47,7 @@ namespace Ballers
 
 			SimulatePhysics();
 
+			ActiveTick++;
 			PredictTick++;
 		}
 
