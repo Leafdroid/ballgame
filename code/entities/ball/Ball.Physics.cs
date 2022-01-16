@@ -12,12 +12,12 @@ namespace Ballers
 	public partial class Ball : ModelEntity
 	{
 		public const float Acceleration = 700f; // yeah
-		public const float AirControl = 1f; // acceleration multiplier in air
+		public const float AirControl = 0.85f; // acceleration multiplier in air
 		public const float MaxSpeed = 1100f; // this is the max speed the ball can accelerate to by itself
 
-		public const float Friction = 0.15f; // resistance multiplier on ground
-		public const float Viscosity = 3.5f; // resistance multiplier in water
-		public const float Drag = 0.1f; // resistance multiplier in air
+		public const float Friction = 0.1f;//0.15f; // resistance multiplier on ground
+		public const float Viscosity = 3f; // resistance multiplier in water
+		public const float Drag = 0.05f; // resistance multiplier in air
 		public const float Bounciness = .35f; // elasticity of collisions, aka how much boing 
 		public const float Buoyancy = 2.5f; // floatiness
 
