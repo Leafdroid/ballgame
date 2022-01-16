@@ -10,9 +10,11 @@ namespace Ballers
 		public Vector3 Velocity;
 
 		public Trace Trace;
+		public Ball Ball;
 
-		public MoveHelper( Vector3 position, Vector3 velocity ) : this()
+		public MoveHelper( Vector3 position, Vector3 velocity, Ball ball ) : this()
 		{
+			Ball = ball;
 			Velocity = velocity;
 			Position = position;
 
@@ -23,8 +25,8 @@ namespace Ballers
 				.HitLayer( CollisionLayer.PLAYER_CLIP, true )
 				.HitLayer( CollisionLayer.GRATE, true )
 				.HitLayer( CollisionLayer.STATIC_LEVEL, true )
-				.HitLayer( CollisionLayer.LADDER, false )
-				.WorldOnly();
+				.HitLayer( CollisionLayer.LADDER, false );
+			//.WorldOnly();
 		}
 
 		public TraceResult TraceFromTo( Vector3 start, Vector3 end )
@@ -49,9 +51,10 @@ namespace Ballers
 				if ( Velocity.Length.AlmostEqual( 0.0f ) )
 					break;
 
-				/*
+
 				foreach ( MovingBrush brush in MovingBrush.All )
 				{
+					brush.AtTick( Ball.ActiveTick );
 
 					Vector3 relativeVelocity = Velocity - brush.Velocity;
 
@@ -59,7 +62,6 @@ namespace Ballers
 
 					TraceResult tr = Trace.Ray( Position, movePos )
 					.Radius( 40f )
-					.HitLayer( CollisionLayer.All, false )
 					.HitLayer( CollisionLayer.LADDER, true )
 					.Only( brush )
 					.Run();
@@ -67,20 +69,34 @@ namespace Ballers
 					if ( tr.Hit )
 					{
 						//DebugOverlay.Sphere( tr.EndPos, 40f, Color.White );
-						float planeVel = brush.Velocity.Dot( tr.Normal );
-	
-						float normalVel = -tr.Normal.Dot( relativeVelocity );
-						DebugOverlay.Text( tr.EndPos, normalVel.ToString() );
+						float planeVel = brush.Velocity.Normal.Dot( tr.Normal );
+						if ( planeVel < 0 )
+							planeVel = 0;
 
-						Position += tr.Normal * 0.1f;
+						//float normalVel = -tr.Normal.Dot( relativeVelocity );
+						//DebugOverlay.Text( tr.EndPos, normalVel.ToString() );
 
-						if ( !moveplanes.TryAdd( tr.Normal, tr.Normal*normalVel, ref Velocity, Ball.Bounciness ) )
+						if ( planeVel > 0 )
+							Position += tr.Normal * planeVel;
+
+						if ( relativeVelocity.Normal.Dot( tr.Normal ) < 0f )
+							Velocity -= relativeVelocity * planeVel;
+
+						Ball.PlayImpactSound( relativeVelocity.Dot( -tr.Normal ) );
+
+						//moveplanes.TryAdd( tr.Normal, brush.Velocity, ref Velocity, Ball.Bounciness );
+
+						if ( !moveplanes.TryAdd( tr.Normal, brush.Velocity, ref Velocity, Ball.Bounciness ) )
 							break;
+
 					}
 				}
-				*/
 
-				var pm = Trace.FromTo( Position, Position + Velocity * timestep ).IgnoreMovingBrushes().Run();
+
+
+				var pm = Trace.FromTo( Position, Position + Velocity * timestep )
+					.HitLayer( CollisionLayer.LADDER, false )
+					.Run();
 
 				if ( pm.StartedSolid )
 				{

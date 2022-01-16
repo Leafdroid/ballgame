@@ -1,12 +1,10 @@
 {
-  "SharedAssets": "*",
+  "SharedAssets": "*.*",
   "Title": "Ball Game",
   "Type": "game",
   "Org": "local",
   "Ident": "ballgame",
-  "FullIdent": "local.ballgame",
   "Schema": 1,
-  "NeedsUpgrade": false,
   "HasAssets": true,
   "AssetsPath": "",
   "HasCode": true,

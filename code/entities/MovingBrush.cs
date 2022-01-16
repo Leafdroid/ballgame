@@ -9,15 +9,13 @@ namespace Ballers
 	[Library( "func_movelinear" )]
 	public partial class MovingBrush : BrushEntity
 	{
-		public static readonly new List<MovingBrush> All = new();
+		public static List<MovingBrush> All = new();
 
 		[Property( "origin" )]
 		[Net] public Vector3 StartPosition { get; private set; }
 
 		[Property( "angles" )]
 		[Net] public Angles StartAngles { get; private set; }
-
-		public Vector3 EndPosition => StartPosition + MoveDirection * MoveDistance;
 
 		[Property( "speed" )]
 		[Net] public float Speed { get; private set; }
@@ -27,82 +25,84 @@ namespace Ballers
 
 		[Property( "movedir" )]
 		[Net] public Angles MoveAngles { get; private set; }
+
+		public Vector3 TargetPosition => StartPosition + MoveDirection * MoveDistance;
 		public Rotation MoveRotation => Rotation.From( MoveAngles );
 		public Vector3 MoveDirection => MoveRotation.Forward;
-		public ModelEntity ClientModel { get; private set; }
+
+		public MovingBrush()
+		{
+			All.Add( this );
+		}
 
 		public override void Spawn()
 		{
 			base.Spawn();
+			SharedSpawn();
+		}
 
-			Rotation = StartAngles.ToRotation();
+		private void SharedSpawn()
+		{
+			EnableTraceAndQueries = true;
+			EnableAllCollisions = true;
+			EnableDrawing = true;
+
 			ClearCollisionLayers();
+			RemoveCollisionLayer( CollisionLayer.All );
 			AddCollisionLayer( CollisionLayer.LADDER );
-
-			All.Add( this );
 		}
 
 		public override void ClientSpawn()
 		{
 			base.ClientSpawn();
-
-			EnableDrawing = false;
-
-			ClientModel = new ModelEntity();
-			ClientModel.Rotation = StartAngles.ToRotation();
-			ClientModel.SetModel( GetModel() );
-			ClientModel.EnableAllCollisions = false;
-			ClientModel.EnableTraceAndQueries = false;
-
-			ClearCollisionLayers();
-			AddCollisionLayer( CollisionLayer.LADDER );
-
-			All.Add( this );
+			SharedSpawn();
 		}
 
-		protected override void OnDestroy()
+		public void AtTick( int tick )
 		{
-			base.OnDestroy();
+			//DebugOverlay.Sphere( Position, 50f, Color.White );
 
-			if ( IsClient && ClientModel.IsValid() )
-			{
-				ClientModel.Delete();
-			}
-		}
-
-		public void Simulate()
-		{
 			float moveTime = Speed / MoveDistance;
-			float rad = Time.Now * moveTime * MathF.PI;
+
+			float interval = Global.TickInterval;
+			float rad = (tick * interval) * moveTime * MathF.PI;
+			//float rad = Time.Now * moveTime * MathF.PI;
+
 			float sine = MathF.Sin( rad );
 			float cosine = MathF.Cos( rad );
 			float t = sine * 0.5f + 0.5f;
 
-			Vector3 position = StartPosition.LerpTo( EndPosition, t );
+			Vector3 position = StartPosition.LerpTo( TargetPosition, t );
 			Vector3 velocity = MoveDirection * (Speed * cosine);
 
-			if ( IsServer )
+			if ( IsServer || Local.Pawn == Owner )
 			{
 				Position = position;
 				Velocity = velocity;
 			}
+
+			return;
 		}
 
-		float colorHue = 0f;
-		public void FrameSimulate()
+		//float colorHue = 0f;
+
+		/*
+		int lastTick = 0;
+		int lastRealTick = 0;
+		[Event.Frame]
+		public void Frame()
 		{
-			float moveTime = Speed / MoveDistance;
-			float rad = Time.Now * moveTime * MathF.PI;
-			float sine = MathF.Sin( rad );
-			float cosine = MathF.Cos( rad );
-			float t = sine * 0.5f + 0.5f;
-			bool closing = cosine <= 0f;
+			if ( Local.Pawn is BallPlayer player && player.Ball.IsValid() )
+			{
+				AtTick( player.Ball.ActiveTick );
+				lastTick = player.Ball.ActiveTick;
+				lastRealTick = Time.Tick;
+			}
+			else
+				AtTick( lastTick + Time.Tick - lastRealTick );
 
-			Vector3 position = StartPosition.LerpTo( EndPosition, t );
-
-			ClientModel.Position = position;
 			//DebugOverlay.Text( position, Velocity.ToString(), Color.White );
-
+			/*
 			colorHue = colorHue.LerpTo( closing ? 0f : 120f, Time.Delta * 10f );
 			Color color = new ColorHsv( colorHue, 0.8f, 1f );
 
@@ -111,6 +111,8 @@ namespace Ballers
 			DebugOverlay.Circle( position, CurrentView.Rotation, 1f, color );
 			DebugOverlay.Line( position, ClientModel.WorldSpaceBounds.Center, color );
 			DebugOverlay.Line( StartPosition, EndPosition, color );
-		}
+			*/
+		//}
+
 	}
 }

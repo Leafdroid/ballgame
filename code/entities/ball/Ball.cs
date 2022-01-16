@@ -11,10 +11,13 @@ namespace Ballers
 {
 	public partial class Ball : ModelEntity
 	{
-		public static readonly new List<Ball> All = new();
+		public static new List<Ball> All = new();
 
 		public static Ball Create( Client client, ControlType controller = ControlType.Player )
 		{
+			if ( Host.IsClient )
+				return null;
+
 			ReplayData replayData = null;
 			BallPlayer player = null;
 
@@ -122,7 +125,8 @@ namespace Ballers
 			return (float)seedColor.NextDouble() * 360f;
 		}
 
-		public void FrameSimulate()
+		[Event.Frame]
+		public void Frame()
 		{
 			UpdateTerry();
 

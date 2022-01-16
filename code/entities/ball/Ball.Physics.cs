@@ -23,12 +23,10 @@ namespace Ballers
 
 		public const float Mass = 50f; // how heavy!!
 
-		public bool Grounded;
+		public bool Grounded { get; private set; }
 
 		public void SimulatePhysics()
 		{
-			float dt = Time.Delta;
-
 			Vector3 clampedVelocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed );
 			float directionSpeed = clampedVelocity.Dot( MoveDirection );
 
@@ -39,8 +37,7 @@ namespace Ballers
 			float t = 1f - directionSpeed / MaxSpeed;
 			acceleration *= t;
 
-			Velocity += MoveDirection * acceleration * dt;
-			//Velocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed ).WithZ( Velocity.z );
+			Velocity += MoveDirection * acceleration * Time.Delta;
 			Move();
 		}
 
@@ -48,7 +45,7 @@ namespace Ballers
 		{
 			float dt = Time.Delta;
 
-			var mover = new MoveHelper( Position, Velocity );
+			var mover = new MoveHelper( Position, Velocity, this );
 
 			Grounded = mover.TraceDirection( Vector3.Down ).Hit;
 
@@ -75,47 +72,31 @@ namespace Ballers
 			mover.Velocity += PhysicsWorld.Gravity * dt;
 
 			mover.TryMove( dt );
-			mover.TryUnstuck();
+			mover.TryUnstuck(); // apparently this isnt needed i think
 
 			TraceResult moveTrace = mover.Trace
-				.HitLayer( CollisionLayer.LADDER, true )
+				//.HitLayer( CollisionLayer.LADDER, floatq )
 				.FromTo( mover.Position, mover.Position + mover.Velocity * dt )
 				.Run();
 
 			if ( moveTrace.Hit )
 			{
 				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
-				if ( IsServer )
-					ClientImpactSound( this, hitForce );
-				else if ( Local.Client == Owner.Client )
-					ImpactSound( hitForce );
-
-				/* silly popping on big bang
-				if ( hitForce > 250f )
-				{
-					if ( Host.IsServer )
-					{
-						(Owner as BallPlayer).Kill();
-					}
-					else if ( Owner == Local.Client.Pawn && !popped )
-					{
-						Ragdoll();
-
-						if ( Terry.IsValid() )
-							Terry.Delete();
-
-						//Sound.FromWorld( WilhelmScream.Name, Position );
-						BallGib.Create( this );
-						popped = true;
-					}
-				}
-				*/
+				PlayImpactSound( hitForce );
 			}
 
 			Velocity = mover.Velocity;
 			Position = mover.Position;
 
 			UpdateModel();
+		}
+
+		public void PlayImpactSound( float force )
+		{
+			if ( IsServer )
+				ClientImpactSound( this, force );
+			else if ( Local.Client == Owner.Client )
+				ImpactSound( force );
 		}
 
 		private void ImpactSound( float force )
@@ -175,22 +156,6 @@ namespace Ballers
 
 			// hit no entities if specified entity is invalid
 			return trace.WithTag( "" );
-		}
-
-		public static Trace IgnoreMovingBrushes( this Trace trace )
-		{
-			string[] tags = new string[MovingBrush.All.Count];
-
-			int index = 0;
-			foreach ( MovingBrush brush in MovingBrush.All )
-			{
-				string tag = $"MovingBrush:{brush.NetworkIdent}";
-				tags[index] = tag;
-				if ( !brush.Tags.Has( tag ) )
-					brush.Tags.Add( tag );
-			}
-
-			return trace.WithoutTags( tags );
 		}
 	}
 

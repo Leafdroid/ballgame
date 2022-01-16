@@ -135,14 +135,30 @@ namespace Ballers
 		/// </summary>
 		Vector3 ClipVelocity( Vector3 vel, Vector3 planeVelocity, Vector3 norm, float overbounce = 1.0f )
 		{
-			float planeVel = planeVelocity.Dot( norm );
-			var rel = (norm * planeVel);
+			float planeSpeed = planeVelocity.Dot( -norm );
+			//if ( planeVel < 0f )
+			//planeVel = 0f;
+
+			/*
+			var relative = norm * planeSpeed;
 
 			var backoff = Vector3.Dot( vel, norm ) * overbounce;
-			var o = vel - (norm * backoff) + rel;
+			var o = vel - (norm * backoff) + relative;
+			*/
 
-			//if ( (o + rel).Dot( planeVel ) < 0f )
-				//o += rel;
+
+			float backoff = Vector3.Dot( vel, norm ) * overbounce;
+			float toClip = backoff + planeSpeed;
+
+			float normVel = vel.Distance( norm );
+
+			if ( normVel - backoff < toClip )
+				toClip -= (normVel - backoff);
+
+			if ( toClip > 0 )
+				return vel;
+
+			var o = vel - (norm * toClip);
 
 			return o;
 		}

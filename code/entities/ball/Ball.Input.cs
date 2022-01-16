@@ -21,13 +21,15 @@ namespace Ballers
 		public Vector3 MoveDirection { get; set; }
 		[Net] public Vector3 NetDirection { get; set; }
 		public ReplayData ReplayData { get; set; } = new ReplayData();
-
+		public int ActiveTick { get; private set; } = 0;
 		public BallInput ActiveInput { get; private set; } = new BallInput();
 
 		public void Simulate()
 		{
 			if ( IsClient && (Owner != Local.Pawn) )
 				return;
+
+			ActiveTick++;
 
 			if ( Controller == ControlType.Player )
 			{
