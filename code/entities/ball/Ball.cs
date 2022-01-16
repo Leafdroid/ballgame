@@ -83,6 +83,7 @@ namespace Ballers
 			All.Add( this );
 		}
 
+
 		public override void ClientSpawn()
 		{
 			base.ClientSpawn();

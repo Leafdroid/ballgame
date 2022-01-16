@@ -57,20 +57,22 @@ namespace Ballers
 				{
 					brush.AtTick( Ball.ActiveTick );
 
-					Vector3 relativeVelocity = Velocity - brush.Velocity;
+					ModelEntity targetEnt = Host.IsServer ? brush : brush.ClientEntity;
+
+					Vector3 relativeVelocity = Velocity - targetEnt.Velocity;
 
 					Vector3 movePos = Position + relativeVelocity * timestep;
 
 					TraceResult tr = Trace.Ray( Position, movePos )
 					.Radius( 40f )
 					.HitLayer( CollisionLayer.LADDER, true )
-					.Only( brush )
+					.Only( targetEnt )
 					.Run();
 
 					if ( tr.Hit )
 					{
 						//DebugOverlay.Sphere( tr.EndPos, 40f, Color.White );
-						float planeVel = brush.Velocity.Normal.Dot( tr.Normal );
+						float planeVel = targetEnt.Velocity.Normal.Dot( tr.Normal );
 						if ( planeVel < 0 )
 							planeVel = 0;
 
@@ -87,7 +89,7 @@ namespace Ballers
 
 						//moveplanes.TryAdd( tr.Normal, brush.Velocity, ref Velocity, Ball.Bounciness );
 
-						if ( !moveplanes.TryAdd( tr.Normal, brush.Velocity, ref Velocity, Ball.Bounciness ) )
+						if ( !moveplanes.TryAdd( tr.Normal, targetEnt.Velocity, ref Velocity ) )
 							break;
 
 					}
@@ -117,11 +119,23 @@ namespace Ballers
 
 				timestep -= timestep * pm.Fraction;
 
+				Vector3 planeVelocity = Vector3.Zero;
+
 				bool hitEntity = pm.Hit && pm.Entity.IsValid();
+				if ( hitEntity && !pm.Entity.IsWorld )
+				{
+					switch ( pm.Entity )
+					{
+						case BumperBrush bumper:
+							planeVelocity = pm.Normal * 1000f; // bumper.Force;
+							break;
+						case var ent:
+							planeVelocity = ent.Velocity;
+							break;
+					}
+				}
 
-				Vector3 vel = hitEntity ? pm.Entity.Velocity : Vector3.Zero;
-
-				if ( !moveplanes.TryAdd( pm.Normal, vel, ref Velocity, Ball.Bounciness ) )
+				if ( !moveplanes.TryAdd( pm.Normal, planeVelocity, ref Velocity ) )
 					break;
 			}
 

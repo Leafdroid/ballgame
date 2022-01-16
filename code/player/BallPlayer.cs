@@ -45,7 +45,7 @@ namespace Ballers
 			*/
 
 			if ( Ball.IsValid() )
-				Ball.Simulate();
+				Ball.Simulate( cl );
 		}
 
 		public override void OnKilled()

@@ -32,13 +32,10 @@ namespace Ballers
 		{
 			base.Simulate( client );
 
-			if ( client.IsListenServerHost || Host.IsClient )
+			if ( Host.IsServer )
 			{
-				//foreach ( MovingBrush move in MovingBrush.All )
-				//move.Simulate();
-
 				foreach ( Ball ball in Ball.All.Where( ball => ball.Controller == Ball.ControlType.Replay ) )
-					ball.Simulate();
+					ball.Simulate( client );
 			}
 
 		}

@@ -37,7 +37,7 @@ namespace Ballers
 		/// Try to add this plane and restrain velocity to it (and its brothers)
 		/// </summary>
 		/// <returns>False if we ran out of room and should stop adding planes</returns>
-		public bool TryAdd( Vector3 normal, Vector3 planeVelocity, ref Vector3 velocity, float bounce )
+		public bool TryAdd( Vector3 normal, Vector3 planeVelocity, ref Vector3 velocity )
 		{
 			if ( Count == Max )
 			{
@@ -53,7 +53,7 @@ namespace Ballers
 			if ( Count == 1 )
 			{
 				//	BumpVelocity = velocity;
-				BumpVelocity = ClipVelocity( BumpVelocity, planeVelocity, normal, 1.0f + bounce );
+				BumpVelocity = ClipVelocity( BumpVelocity, planeVelocity, normal );
 				velocity = BumpVelocity;
 
 				return true;
@@ -133,21 +133,11 @@ namespace Ballers
 		/// <summary>
 		/// Clip the velocity to the normal
 		/// </summary>
-		Vector3 ClipVelocity( Vector3 vel, Vector3 planeVelocity, Vector3 norm, float overbounce = 1.0f )
+		Vector3 ClipVelocity( Vector3 vel, Vector3 planeVelocity, Vector3 norm )
 		{
 			float planeSpeed = planeVelocity.Dot( -norm );
-			//if ( planeVel < 0f )
-			//planeVel = 0f;
 
-			/*
-			var relative = norm * planeSpeed;
-
-			var backoff = Vector3.Dot( vel, norm ) * overbounce;
-			var o = vel - (norm * backoff) + relative;
-			*/
-
-
-			float backoff = Vector3.Dot( vel, norm ) * overbounce;
+			float backoff = Vector3.Dot( vel, norm ) * (1f + Ball.Bounciness);
 			float toClip = backoff + planeSpeed;
 
 			float normVel = vel.Distance( norm );

@@ -19,17 +19,18 @@ namespace Ballers
 
 		[Net] public ControlType Controller { get; set; }
 		public Vector3 MoveDirection { get; set; }
-		[Net] public Vector3 NetDirection { get; set; }
 		public ReplayData ReplayData { get; set; } = new ReplayData();
 		public int ActiveTick { get; private set; } = 0;
+		[Net, Predicted] public int PredictTick { get; private set; } = 0;
 		public BallInput ActiveInput { get; private set; } = new BallInput();
 
-		public void Simulate()
+		public override void Simulate( Client cl )
 		{
+			ActiveTick = PredictTick;
+			ActiveTick++;
+
 			if ( IsClient && (Owner != Local.Pawn) )
 				return;
-
-			ActiveTick++;
 
 			if ( Controller == ControlType.Player )
 			{
@@ -39,23 +40,15 @@ namespace Ballers
 			else if ( Controller == ControlType.Replay )
 			{
 				ushort input = ReplayData.GetNext( out bool finished );
-				/*
-				if ( finished )
-				{
-					Delete();
-					return;
-				}*/
-
 				ActiveInput.Update( input );
 			}
 
 			ActiveInput.Parse( out Vector3 moveDirection );
 			MoveDirection = moveDirection;
 
-			if ( IsServer )
-				NetDirection = moveDirection;
-
 			SimulatePhysics();
+
+			PredictTick++;
 		}
 
 		public static readonly SoundEvent PopSound = new( "sounds/ball/pop.vsnd" );
