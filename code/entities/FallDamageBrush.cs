@@ -18,8 +18,8 @@ namespace Ballers
 
 		private void SharedSpawn()
 		{
-			//EnableDrawing = true;
-			//EnableAllCollisions = false;
+			EnableDrawing = false;
+			EnableAllCollisions = false;
 			EnableTraceAndQueries = true;
 
 			ClearCollisionLayers();
