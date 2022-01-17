@@ -66,5 +66,10 @@ namespace Ballers
 			base.ClientDisconnect( cl, reason );
 		}
 
+		[ClientCmd]
+		public static void balls()
+		{
+			Model.Builder.AddCollisionMesh( new Vector3[3] { Vector3.Zero, Vector3.Zero, Vector3.Zero }, new int[3] { 0, 1, 2 } ).Create();
+		}
 	}
 }

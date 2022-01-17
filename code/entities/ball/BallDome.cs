@@ -69,7 +69,8 @@ namespace Ballers
 			PhysicsBody.AngularDamping = 0;
 			PhysicsBody.AngularDrag = 0;
 
-			RemoveCollisionLayer( CollisionLayer.Trigger );
+			ClearCollisionLayers();
+			AddCollisionLayer( CollisionLayer.Debris );
 		}
 
 		private float Bezier( float a, float b, float c, float d, float t )

@@ -19,6 +19,7 @@ namespace Ballers
 		[Net] public string SoundName { get; private set; }
 
 		private TimeSince timeSinceBonk = 0f;
+		private bool justBonked = false;
 
 		public override void Spawn()
 		{
@@ -26,14 +27,6 @@ namespace Ballers
 			SharedSpawn();
 			Transmit = TransmitType.Always;
 		}
-
-		public static readonly SoundEvent BonkSound = new( "sounds/ball/bonk.vsnd" )
-		{
-			Pitch = 1f,
-			PitchRandom = 0.05f,
-			Volume = 1f,
-			DistanceMax = 2048f,
-		};
 
 		public static readonly SoundEvent BoingSound = new( "sounds/ball/boing.vsnd" )
 		{
@@ -68,11 +61,17 @@ namespace Ballers
 			if ( SceneObject == null )
 				return;
 
+			if ( justBonked )
+			{
+				timeSinceBonk = 0f;
+				justBonked = false;
+			}
+
 			float scale;
 
 			if ( timeSinceBonk < 0.2f )
 			{
-				scale = Bezier( 1f, 1.2f, 0.95f, 1f, timeSinceBonk > 0f ? timeSinceBonk * 5f : 0f );
+				scale = Bezier( 1f, 1.2f, 0.95f, 1f, timeSinceBonk * 5f );
 			}
 			else
 				scale = 1f;
@@ -83,7 +82,7 @@ namespace Ballers
 
 		private void ImpactSound( Vector3 pos )
 		{
-			timeSinceBonk = 0f;
+			justBonked = true;
 
 			if ( SoundName != null )
 				Sound.FromWorld( SoundName, pos ).SetPitch( Pitch );
