@@ -15,8 +15,7 @@ namespace Ballers
 		[Property( "soundname" )]
 		[Net] public string SoundName { get; private set; }
 
-		private float TimeSinceBonk => Time.Now - lastBonk;
-		private float lastBonk = 0f;
+		private TimeSince timeSinceBonk = 0f;
 
 		public override void Spawn()
 		{
@@ -45,7 +44,7 @@ namespace Ballers
 		{
 			if ( IsServer )
 				ClientImpactSound( this, bonker, pos );
-			else if ( Local.Client == bonker.Owner.Client )
+			else if ( Local.Pawn == bonker.Owner )
 				ImpactSound( pos );
 		}
 
@@ -68,9 +67,9 @@ namespace Ballers
 
 			float scale;
 
-			if ( TimeSinceBonk < 0.2f )
+			if ( timeSinceBonk < 0.2f )
 			{
-				scale = Bezier( 1f, 1.2f, 0.9f, 1f, TimeSinceBonk * 5f );
+				scale = Bezier( 1f, 1.2f, 0.95f, 1f, timeSinceBonk > 0f ? timeSinceBonk * 5f : 0f );
 			}
 			else
 				scale = 1f;
@@ -81,19 +80,21 @@ namespace Ballers
 
 		private void ImpactSound( Vector3 pos )
 		{
+			timeSinceBonk = 0f;
+
 			if ( SoundName != null )
 				Sound.FromWorld( SoundName, pos );
 			else
 				Sound.FromWorld( BoingSound.Name, pos );
-
-			lastBonk = Time.Now;
 		}
 
 		[ClientRpc]
 		public static void ClientImpactSound( BumperBrush bumper, Ball ball, Vector3 pos )
 		{
-			if ( ball.IsValid() && (ball.Owner == null || ball.Owner.Client != Local.Client) )
+			if ( ball.IsValid() && ball.Owner != Local.Pawn )
+			{
 				bumper.ImpactSound( pos );
+			}
 		}
 
 		private void SharedSpawn()

@@ -116,7 +116,7 @@ namespace Ballers
 
 			}
 
-			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) )
+			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) && Owner.IsValid() )
 			{
 				(Owner as BallPlayer).Kill();
 				return;
