@@ -15,8 +15,8 @@ namespace Ballers
 		[Property( "pitch" )]
 		[Net] public float Pitch { get; private set; } = 1f;
 
-		[Property( "soundname" )]
-		[Net] public string SoundName { get; private set; }
+		[Property( "sound" )]
+		[Net] public string SoundPath { get; private set; }
 
 		private TimeSince timeSinceBonk = 0f;
 		private bool justBonked = false;
@@ -82,8 +82,8 @@ namespace Ballers
 		{
 			justBonked = true;
 
-			if ( SoundName != null )
-				Sound.FromWorld( SoundName, pos ).SetPitch( Pitch );
+			if ( SoundPath != null )
+				Sound.FromWorld( SoundPath, pos ).SetPitch( Pitch );
 			else
 				Sound.FromWorld( BoingSound.Name, pos ).SetPitch( Pitch );
 		}
