@@ -41,14 +41,6 @@ namespace Ballers
 				ImpactSound( pos );
 		}
 
-		protected override void OnDestroy()
-		{
-			base.OnDestroy();
-
-			if ( IsClient && clientModel != null )
-				clientModel.Delete();
-		}
-
 		private float Bezier( float a, float b, float c, float d, float t )
 		{
 			float n = 1f - t;
@@ -63,7 +55,7 @@ namespace Ballers
 		[Event.Frame]
 		public void Frame()
 		{
-			if ( clientModel == null )
+			if ( SceneObject == null )
 				return;
 
 			float scale;
@@ -76,8 +68,8 @@ namespace Ballers
 			else
 				scale = 1f;
 
-			if ( scale != clientModel.Transform.Scale )
-				clientModel.Transform = new Transform( Position, Rotation, scale );
+			if ( scale != SceneObject.Transform.Scale )
+				SceneObject.Transform = new Transform( Position, Rotation, scale );
 		}
 
 		private void ImpactSound( Vector3 pos )
@@ -99,20 +91,16 @@ namespace Ballers
 
 		private void SharedSpawn()
 		{
-			EnableDrawing = false;
+			EnableDrawing = true;
 			ClearCollisionLayers();
 			RemoveCollisionLayer( CollisionLayer.All );
 			AddCollisionLayer( CollisionLayer.STATIC_LEVEL );
 		}
 
-		SceneObject clientModel;
-
 		public override void ClientSpawn()
 		{
 			base.ClientSpawn();
 			SharedSpawn();
-
-			clientModel = new SceneObject( Model, Transform );
 		}
 	}
 }
