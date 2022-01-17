@@ -113,11 +113,13 @@ namespace Ballers
 				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
 				PlayImpactSound( hitForce );
 
-				if ( fallDamage )
-				{
-					(Owner as BallPlayer).Kill();
-					return;
-				}
+
+			}
+
+			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) )
+			{
+				(Owner as BallPlayer).Kill();
+				return;
 			}
 
 			Velocity = mover.Velocity;
