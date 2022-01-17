@@ -113,7 +113,7 @@ namespace Ballers
 				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
 				PlayImpactSound( hitForce );
 
-				if ( IsServer && fallDamage )
+				if ( fallDamage )
 				{
 					(Owner as BallPlayer).Kill();
 					return;
