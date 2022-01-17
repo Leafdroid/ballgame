@@ -16,7 +16,7 @@ namespace Ballers
 		[Property( "soundname" )]
 		[Net] public string SoundName { get; private set; }
 
-		public TimeSince TimeSinceBonk { get; private set; } = 0f;
+		private TimeSince timeSinceBonk = 0f;
 
 		public override void Spawn()
 		{
@@ -68,9 +68,10 @@ namespace Ballers
 
 			float scale;
 
-			if ( TimeSinceBonk < 0.2f )
+			if ( timeSinceBonk < 0.2f )
 			{
-				scale = Bezier( 1f, 1.2f, 0.9f, 1f, TimeSinceBonk * 5f );
+				scale = Bezier( 1f, 1.2f, 0.9f, 1f, timeSinceBonk * 5f );
+				Log.Info( timeSinceBonk * 5f );
 			}
 			else
 				scale = 1f;
@@ -86,7 +87,7 @@ namespace Ballers
 			else
 				Sound.FromWorld( BonkSound.Name, pos );
 
-			TimeSinceBonk = 0f;
+			timeSinceBonk = 0f;
 		}
 
 		[ClientRpc]

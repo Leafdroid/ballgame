@@ -104,8 +104,9 @@ namespace Ballers
 		{
 			if ( force > 150f )
 			{
-				float volume = ((force - 150f) / (MaxSpeed - 150f) * 1.2f).Clamp( 0f, 1f );
-				float pitch = ((force - 150f) / (MaxSpeed - 150f) * 3f).Clamp( 0.8f, 0.85f );
+				float scale = (force - 150f) / 1000f;
+				float volume = (scale * 1.2f).Clamp( 0f, 1f );
+				float pitch = (scale * 3f).Clamp( 0.8f, 0.85f );
 
 				Sound impactSound = PlaySound( BounceSound.Name );
 				impactSound.SetVolume( volume );
