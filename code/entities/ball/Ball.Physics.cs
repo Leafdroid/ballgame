@@ -111,17 +111,21 @@ namespace Ballers
 
 			if ( moveTrace.Hit )
 			{
-				if ( fallDamage )
-					Delete();
-
 				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
 				PlayImpactSound( hitForce );
+			}
+
+			if ( Grounded && fallDamage )
+			{
+				Delete();
+				return;
 			}
 
 			Velocity = mover.Velocity;
 			Position = mover.Position;
 
 			UpdateModel();
+
 		}
 
 		public void PlayImpactSound( float force )
