@@ -12,6 +12,9 @@ namespace Ballers
 		[Property( "force" )]
 		[Net] public float Force { get; private set; }
 
+		[Property( "pitch" )]
+		[Net] public float Pitch { get; private set; } = 1f;
+
 		[Property( "soundname" )]
 		[Net] public string SoundName { get; private set; }
 
@@ -83,9 +86,9 @@ namespace Ballers
 			timeSinceBonk = 0f;
 
 			if ( SoundName != null )
-				Sound.FromWorld( SoundName, pos );
+				Sound.FromWorld( SoundName, pos ).SetPitch( Pitch );
 			else
-				Sound.FromWorld( BoingSound.Name, pos );
+				Sound.FromWorld( BoingSound.Name, pos ).SetPitch( Pitch );
 		}
 
 		[ClientRpc]
