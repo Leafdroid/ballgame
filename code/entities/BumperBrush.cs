@@ -100,7 +100,6 @@ namespace Ballers
 		{
 			EnableDrawing = true;
 			ClearCollisionLayers();
-			RemoveCollisionLayer( CollisionLayer.All );
 			AddCollisionLayer( CollisionLayer.STATIC_LEVEL );
 		}
 

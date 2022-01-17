@@ -7,7 +7,7 @@ namespace Ballers
 {
 
 	[Library( "func_falldamage" )]
-	public partial class FallDamageBrush : BrushEntity
+	public class FallDamageBrush : BrushEntity
 	{
 		public override void Spawn()
 		{
@@ -18,11 +18,12 @@ namespace Ballers
 
 		private void SharedSpawn()
 		{
-			EnableDrawing = false;
+			//EnableDrawing = true;
+			//EnableAllCollisions = false;
+			EnableTraceAndQueries = true;
+
 			ClearCollisionLayers();
-			RemoveCollisionLayer( CollisionLayer.All );
 			AddCollisionLayer( CollisionLayer.Trigger );
-			Tags.Add( "fallDamage" );
 		}
 
 		public override void ClientSpawn()

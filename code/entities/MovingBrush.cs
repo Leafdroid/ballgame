@@ -68,7 +68,6 @@ namespace Ballers
 		private void SharedSpawn()
 		{
 			ClearCollisionLayers();
-			RemoveCollisionLayer( CollisionLayer.All );
 			AddCollisionLayer( CollisionLayer.LADDER );
 		}
 
@@ -89,8 +88,9 @@ namespace Ballers
 			clientEnt.SetupPhysicsFromModel( PhysicsMotionType.Keyframed );
 			clientEnt.EnableAllCollisions = true;
 			clientEnt.Transform = Transform;
+
 			clientEnt.ClearCollisionLayers();
-			clientEnt.RemoveCollisionLayer( CollisionLayer.All );
+			//clientEnt.RemoveCollisionLayer( CollisionLayer.All );
 			clientEnt.AddCollisionLayer( CollisionLayer.LADDER );
 			ClientEntity = clientEnt;
 		}

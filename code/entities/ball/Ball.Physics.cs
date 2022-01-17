@@ -47,7 +47,6 @@ namespace Ballers
 
 			TraceResult[] triggerTraces = Trace.Ray( Position, Position )
 				.Radius( 40f )
-				.HitLayer( CollisionLayer.All, false )
 				.HitLayer( CollisionLayer.Trigger, true )
 				.RunAll();
 
@@ -113,12 +112,12 @@ namespace Ballers
 			{
 				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
 				PlayImpactSound( hitForce );
-			}
 
-			if ( Grounded && fallDamage )
-			{
-				Delete();
-				return;
+				if ( IsServer && fallDamage )
+				{
+					(Owner as BallPlayer).Kill();
+					return;
+				}
 			}
 
 			Velocity = mover.Velocity;

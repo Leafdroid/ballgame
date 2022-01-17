@@ -245,13 +245,13 @@ namespace Ballers
 			ent.TakeDecalsFrom( Terry );
 			*/
 
-			ent.EnableAllCollisions = true;
 			ent.SurroundingBoundsMode = SurroundingBoundsType.Physics;
 			ent.PhysicsGroup.Velocity = Velocity;
 
 			ent.SetInteractsAs( CollisionLayer.Debris );
 			ent.SetInteractsWith( CollisionLayer.WORLD_GEOMETRY );
 			ent.SetInteractsExclude( CollisionLayer.Player | CollisionLayer.Debris );
+			ent.RemoveCollisionLayer( CollisionLayer.Trigger );
 
 			ent.DeleteAsync( 6.5f );
 		}
