@@ -82,7 +82,6 @@ namespace Ballers
 			TraceResult waterTrace = Trace.Ray( Position + Vector3.Up * 80f, Position )
 				.Radius( 40f )
 				.HitLayer( CollisionLayer.All, false )
-				//.HitLayer( CollisionLayer.STATIC_LEVEL, false )
 				.HitLayer( CollisionLayer.Water, true )
 				.Run();
 
@@ -112,8 +111,6 @@ namespace Ballers
 			{
 				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
 				PlayImpactSound( hitForce );
-
-
 			}
 
 			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) && Owner.IsValid() )
@@ -126,7 +123,6 @@ namespace Ballers
 			Position = mover.Position;
 
 			UpdateModel();
-
 		}
 
 		public void PlayImpactSound( float force )
