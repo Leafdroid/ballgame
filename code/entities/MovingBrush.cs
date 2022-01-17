@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace Ballers
 {
-	// TODO: Add clientside duplicate for each client to predict client simulation
 
 	[Library( "func_movelinear" )]
 	public partial class MovingBrush : BrushEntity

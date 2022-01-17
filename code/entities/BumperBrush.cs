@@ -5,7 +5,6 @@ using System.Linq;
 
 namespace Ballers
 {
-	// TODO: Add clientside duplicate for each client to predict client simulation
 
 	[Library( "func_bumper" )]
 	public partial class BumperBrush : BrushEntity
@@ -37,7 +36,7 @@ namespace Ballers
 		{
 			Pitch = 0.95f,
 			PitchRandom = 0.05f,
-			Volume = 1f,
+			Volume = 0.65f,
 			DistanceMax = 2048f,
 		};
 

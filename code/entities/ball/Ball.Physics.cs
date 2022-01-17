@@ -25,7 +25,7 @@ namespace Ballers
 
 		public bool Grounded { get; private set; }
 
-		public void SimulatePhysics()
+		private void SimulatePhysics()
 		{
 			Vector3 clampedVelocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed );
 			float directionSpeed = clampedVelocity.Dot( MoveDirection );
@@ -41,8 +41,38 @@ namespace Ballers
 			Move();
 		}
 
-		public void Move()
+		private void TraceTriggers( out bool fallDamage )
 		{
+			fallDamage = false;
+
+			TraceResult[] triggerTraces = Trace.Ray( Position, Position )
+				.Radius( 40f )
+				.HitLayer( CollisionLayer.All, false )
+				.HitLayer( CollisionLayer.Trigger, true )
+				.RunAll();
+
+			if ( triggerTraces == null )
+				return;
+
+			foreach ( var trace in triggerTraces )
+			{
+				if ( trace.Entity.IsValid() )
+				{
+					switch ( trace.Entity )
+					{
+						case FallDamageBrush:
+							fallDamage = true;
+							break;
+						default:
+							continue;
+					}
+				}
+			}
+		}
+
+		private void Move()
+		{
+			TraceTriggers( out bool fallDamage );
 
 			float dt = Time.Delta;
 
@@ -76,12 +106,14 @@ namespace Ballers
 			mover.TryUnstuck(); // apparently this isnt needed i think
 
 			TraceResult moveTrace = mover.Trace
-				//.HitLayer( CollisionLayer.LADDER, floatq )
 				.FromTo( mover.Position, mover.Position + mover.Velocity * dt )
 				.Run();
 
 			if ( moveTrace.Hit )
 			{
+				if ( fallDamage )
+					Delete();
+
 				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
 				PlayImpactSound( hitForce );
 			}
