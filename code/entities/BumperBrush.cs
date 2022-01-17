@@ -70,9 +70,7 @@ namespace Ballers
 			float scale;
 
 			if ( timeSinceBonk < 0.2f )
-			{
 				scale = Bezier( 1f, 1.2f, 0.95f, 1f, timeSinceBonk * 5f );
-			}
 			else
 				scale = 1f;
 

@@ -196,18 +196,18 @@ namespace Ballers
 					float turnSpeed = 0.01f;
 					Terry.Rotation = Rotation.Slerp( Terry.Rotation, idealRotation, speed * Time.Delta * turnSpeed );
 					Terry.Rotation = Terry.Rotation.Clamp( idealRotation, 90f, out var change );
-
-					// look direction
-
-					//if ( Owner.IsValid() && Owner.Client == Local.Client )
-					//direction = MoveDirection;
-
-					var aimPos = Position + direction * 200f;
-					var localPos = Terry.Transform.PointToLocal( aimPos );
-					Terry.SetAnimVector( "aim_eyes", localPos );
-					Terry.SetAnimVector( "aim_head", localPos );
-					Terry.SetAnimVector( "aim_body", localPos );
 				}
+
+				// look direction
+				var lookDirection = direction;
+				if ( Controller == ControlType.Player )
+					lookDirection = (direction * 0.3f + Owner.EyeRot.Forward * 0.7f);
+
+				var aimPos = Position + lookDirection * 200f;
+				var localPos = Terry.Transform.PointToLocal( aimPos );
+				Terry.SetAnimVector( "aim_eyes", localPos );
+				Terry.SetAnimVector( "aim_head", localPos );
+				Terry.SetAnimVector( "aim_body", localPos );
 
 				// walk animation
 				Terry.SetAnimFloat( "move_direction", angle );
