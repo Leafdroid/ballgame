@@ -33,6 +33,14 @@ namespace Ballers
 			DistanceMax = 2048f,
 		};
 
+		public static readonly SoundEvent BoingSound = new( "sounds/ball/boing.vsnd" )
+		{
+			Pitch = 0.95f,
+			PitchRandom = 0.05f,
+			Volume = 1f,
+			DistanceMax = 2048f,
+		};
+
 		public void Bonk( Ball bonker, Vector3 pos )
 		{
 			if ( IsServer )
@@ -77,7 +85,7 @@ namespace Ballers
 			if ( SoundName != null )
 				Sound.FromWorld( SoundName, pos );
 			else
-				Sound.FromWorld( BonkSound.Name, pos );
+				Sound.FromWorld( BoingSound.Name, pos );
 
 			timeSinceBonk = 0f;
 		}
