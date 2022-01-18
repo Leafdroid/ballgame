@@ -11,7 +11,7 @@ namespace Ballers
 {
 	public partial class Ball : Player
 	{
-		public const float Acceleration = 600f; // yeah
+		public const float Acceleration = 700f; // yeah
 		public const float AirControl = 0.85f; // acceleration multiplier in air
 		public const float MaxSpeed = 1100f; // this is the max speed the ball can accelerate to by itself
 

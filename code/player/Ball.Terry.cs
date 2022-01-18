@@ -230,12 +230,7 @@ namespace Ballers
 
 			DressRagdoll( ent );
 
-			/*
-			ent.CopyBonesFrom( Terry );
-			ent.CopyBodyGroups( Terry );
-			ent.CopyMaterialGroup( Terry );
-			ent.TakeDecalsFrom( Terry );
-			*/
+			// TODO: Copy bones (not possible yet)
 
 			ent.SurroundingBoundsMode = SurroundingBoundsType.Physics;
 			ent.PhysicsGroup.Velocity = Velocity;
@@ -247,24 +242,10 @@ namespace Ballers
 			ent.DeleteAsync( 6.5f );
 		}
 
-		private float mode = 0f;
 		public void UpdateModel()
 		{
 			Vector3 spinVelocity = Velocity;
 
-			/*
-			bool isLocal = IsClient && Owner.IsValid() && Owner.Client == Local.Client;
-			Vector3 hVel = Velocity.WithZ( 0 );
-			Vector3 moveDir = (isLocal ? MoveDirection : NetDirection);
-			Vector3 spinVel = hVel;
-			if ( moveDir != Vector3.Zero )
-				spinVel = (moveDir * Acceleration + hVel) * 0.5f;
-
-			mode += (moveDir != Vector3.Zero ? Time.Delta : -Time.Delta) * 2f;
-			mode = mode < 0f ? 0f : (mode > 1f ? 1f : mode);
-
-			Vector3 spinVelocity = ((moveDir * Acceleration * 0.5f + hVel * 1.5f) * 0.5f) * mode + hVel * (1f - mode);
-			*/
 			if ( spinVelocity.LengthSquared > 0.0f )
 			{
 				var dir = spinVelocity.Normal;
