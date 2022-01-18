@@ -143,6 +143,7 @@ namespace Ballers
 			return container;
 		}
 
+		/*
 		[ServerCmd( "playreplay" )]
 		public static void PlayReplay()
 		{
@@ -159,6 +160,7 @@ namespace Ballers
 
 			Ball.Create( ConsoleSystem.Caller, Ball.ControlType.Replay );
 		}
+		
 
 		[ServerCmd( "savereplay" )]
 		public static void SaveReplay()
@@ -179,5 +181,6 @@ namespace Ballers
 			foreach ( Ball ball in Entity.All.Where( b => b is Ball ball && ball.Controller == Ball.ControlType.Replay ) )
 				ball.Delete();
 		}
+		*/
 	}
 }

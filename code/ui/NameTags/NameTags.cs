@@ -65,7 +65,7 @@ namespace Sandbox.UI
 					break;
 			}
 
-			foreach( var player in deleteList )
+			foreach ( var player in deleteList )
 			{
 				ActiveTags[player].Delete();
 				ActiveTags.Remove( player );
@@ -94,15 +94,11 @@ namespace Sandbox.UI
 			if ( player.LifeState != LifeState.Alive )
 				return false;
 
-			if ( player is not BallPlayer ballPlayer )
-				return false;
-
-			Ball ball = ballPlayer.Ball;
-			if ( !ball.IsValid() )
+			if ( player is not Ball ballPlayer )
 				return false;
 
 
-			var labelPos = ball.Position + Vector3.Up * 45;
+			var labelPos = ballPlayer.Position + Vector3.Up * 45;
 
 
 			//

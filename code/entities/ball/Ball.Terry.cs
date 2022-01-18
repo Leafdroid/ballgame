@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Ballers
 {
-	public partial class Ball : ModelEntity
+	public partial class Ball : Player
 	{
 		private static Dictionary<int, Clothing> clothingResources = new();
 		private static Clothing FindClothing( int id ) => clothingResources.TryGetValue( id, out Clothing clothing ) ? clothing : null;
@@ -201,7 +201,7 @@ namespace Ballers
 				// look direction
 				var lookDirection = direction;
 				if ( Controller == ControlType.Player )
-					lookDirection = (direction * 0.3f + Owner.EyeRot.Forward * 0.7f);
+					lookDirection = (direction * 0.3f + EyeRot.Forward * 0.7f);
 
 				var aimPos = Position + lookDirection * 200f;
 				var localPos = Terry.Transform.PointToLocal( aimPos );

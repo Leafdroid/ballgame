@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Ballers
 {
-	public partial class Ball : ModelEntity
+	public partial class Ball : Player
 	{
 		public const float Acceleration = 600f; // yeah
 		public const float AirControl = 0.85f; // acceleration multiplier in air
@@ -115,7 +115,7 @@ namespace Ballers
 
 			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) && Owner.IsValid() )
 			{
-				(Owner as BallPlayer).Kill();
+				//(Owner as BallPlayer).Kill();
 				return;
 			}
 

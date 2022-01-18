@@ -40,7 +40,7 @@ namespace Ballers
 		{
 			if ( IsServer )
 				ClientImpactSound( this, bonker, pos );
-			else if ( Local.Pawn == bonker.Owner )
+			else if ( Local.Pawn == bonker )
 				ImpactSound( pos );
 		}
 
@@ -91,7 +91,7 @@ namespace Ballers
 		[ClientRpc]
 		public static void ClientImpactSound( BumperBrush bumper, Ball ball, Vector3 pos )
 		{
-			if ( ball.IsValid() && ball.Owner != Local.Pawn )
+			if ( ball.IsValid() && ball != Local.Pawn )
 			{
 				bumper.ImpactSound( pos );
 			}

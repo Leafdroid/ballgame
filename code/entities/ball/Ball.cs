@@ -9,10 +9,11 @@ using System.Linq;
 
 namespace Ballers
 {
-	public partial class Ball : ModelEntity
+	public partial class Ball : Player
 	{
 		public static new List<Ball> All = new();
 
+		/*
 		public static Ball Create( Client client, ControlType controller = ControlType.Player )
 		{
 			if ( Host.IsClient )
@@ -64,50 +65,58 @@ namespace Ballers
 
 			return ball;
 		}
+		*/
 
-		private bool hasColor = false;
-
-		public override void Spawn()
+		public override void Respawn()
 		{
-			base.Spawn();
+			Host.AssertServer();
 
-			Predictable = true;
+			ClothingData = Client.GetClientData( "avatar" );
 
 			SetModel( "models/ball.vmdl" );
+
+			Camera = new BallCamera();
+
 			PhysicsEnabled = false;
 
+			// for water collision effects!
+			SetupPhysicsFromSphere( PhysicsMotionType.Keyframed, Vector3.Zero, 40f );
 			EnableAllCollisions = false;
-			EnableTraceAndQueries = false;
+			EnableTraceAndQueries = true;
+			ClearCollisionLayers();
+			SetInteractsWith( CollisionLayer.Water );
+
+			EnableShadowCasting = true;
 			Transmit = TransmitType.Always;
 
-			All.Add( this );
-		}
+			Position = Vector3.Up * 80f;
+			var spawnpoint = Entity.All.OfType<SpawnPoint>().FirstOrDefault();
+			if ( spawnpoint != null )
+				Position += spawnpoint.Position;
 
+			ResetInterpolation();
+		}
 
 		public override void ClientSpawn()
 		{
 			base.ClientSpawn();
 
-			PhysicsEnabled = false;
-			Predictable = true;
-
 			SetupTerry();
-
-			All.Add( this );
 		}
 
-		private bool popped = false;
+		//private bool popped = false;
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
 
+			/*
 			if ( IsClient && Controller == ControlType.Player && !popped )
 			{
 				Ragdoll();
-				//Sound.FromWorld( WilhelmScream.Name, Position );
 				BallDome.Create( this );
 				popped = true;
 			}
+			*/
 
 			if ( Terry.IsValid() )
 				Terry.Delete();
@@ -116,27 +125,19 @@ namespace Ballers
 				All.Remove( this );
 		}
 
+		private bool isColored = false;
 		private float GetHue()
 		{
 			int id = Rand.Int( 65535 );
-			if ( Owner.IsValid() && Owner.Client.IsValid() )
-				id = (int)(Owner.Client.PlayerId & 65535);
+			if ( Client.IsValid() )
+				id = (int)(Client.PlayerId & 65535);
 
 			Random seedColor = new Random( id );
 			return (float)seedColor.NextDouble() * 360f;
 		}
 
-		[Event.Frame]
-		public void Frame()
+		private void SetupColors()
 		{
-			UpdateTerry();
-
-			if ( hasColor )
-				return;
-
-			if ( !SceneObject.IsValid() )
-				return;
-
 			float hue = GetHue();
 
 			float saturation = Controller == ControlType.Player ? 0.75f : 0.4f;
@@ -147,14 +148,19 @@ namespace Ballers
 			SceneObject.SetValue( "tint", ballColor );
 			SceneObject.SetValue( "tint2", ballColor2 );
 
-			hasColor = true;
+			isColored = true;
 		}
 
-		public static readonly SoundEvent WilhelmScream = new( "sounds/ball/wilhelm.vsnd" )
+		[Event.Frame]
+		public void Frame()
 		{
-			DistanceMax = 1536f,
-		};
+			UpdateTerry();
 
-		public override string ToString() => $"{ (Owner.IsValid() ? Owner.Name : "Unknown") }'s ball";
+			if ( !SceneObject.IsValid() )
+				return;
+
+			if ( !isColored )
+				SetupColors();
+		}
 	}
 }
