@@ -55,6 +55,7 @@ namespace Ballers
 			return abbc * n + bccd * t;
 		}
 
+		private static float[] animationKeys = new float[6] { 1f, 1.4f, 0.6f, 1.2f, 0.9f, 1f };
 		[Event.Frame]
 		public void Frame()
 		{
@@ -67,7 +68,6 @@ namespace Ballers
 				justBonked = false;
 			}
 
-			float[] animationKeys = new float[6] { 1f, 1.4f, 0.6f, 1.2f, 0.9f, 1f };
 			float scale;
 
 			if ( timeSinceBonk < 0.25f )
