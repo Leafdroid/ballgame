@@ -21,7 +21,7 @@ namespace Ballers
 		public Vector3 MoveDirection { get; set; }
 		public ReplayData ReplayData { get; set; } = new ReplayData();
 		[Net, Predicted] public float PredictedStart { get; private set; }
-		[Net, Predicted] public int ActiveTick { get; private set; }
+		[Net] public int ActiveTick { get; private set; }
 		public float SimulationTime => Time.Now - PredictedStart;
 		public int PredictionTick => (int)(Global.TickRate * SimulationTime);
 

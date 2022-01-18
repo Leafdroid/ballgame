@@ -16,7 +16,7 @@ namespace Ballers
 		public AnimSceneObject Terry { get; private set; }
 		private bool dressed = false;
 
-		[Net] public string ClothingData { get; private set; }
+		[Net] public string ClothingData { get; set; }
 		private Clothing.Container container = new();
 		private List<AnimSceneObject> clothingObjects = new();
 

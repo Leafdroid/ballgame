@@ -79,12 +79,22 @@ namespace Ballers
 			ActiveTick = 0;
 			EnableDrawing = true;
 
-			ClothingData = Client.GetClientData( "avatar" );
-
 			SetModel( "models/ball.vmdl" );
 
-			Camera = new BallCamera();
-			ReplayData = new ReplayData();
+			//Controller = Client.IsValid() ? ControlType.Player : ControlType.Replay;
+			if ( Controller == ControlType.Player )
+			{
+				ReplayData = new ReplayData();
+				Camera = new BallCamera();
+			}
+			else
+			{
+				if ( !ReplayGhosts.Contains( this ) )
+					ReplayGhosts.Add( this );
+			}
+
+			if ( Client.IsValid() )
+				ClothingData = Client.GetClientData( "avatar" );
 
 			PhysicsEnabled = false;
 
@@ -154,7 +164,7 @@ namespace Ballers
 		[ClientRpc]
 		public void PopRpc( bool predicted = true )
 		{
-			if ( !predicted || Client != Local.Client )
+			if ( !predicted || Client != Local.Client || Controller == ControlType.Replay )
 				Pop();
 		}
 
@@ -173,7 +183,7 @@ namespace Ballers
 		{
 			float hue = GetHue();
 
-			float saturation = Controller == ControlType.Player ? 0.75f : 0.4f;
+			float saturation = Controller == ControlType.Player ? 0.8f : 0.35f;
 
 			Color ballColor = new ColorHsv( hue, saturation, 1f );
 			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, saturation, 1f );

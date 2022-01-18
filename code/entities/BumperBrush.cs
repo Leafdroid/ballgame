@@ -121,7 +121,7 @@ namespace Ballers
 		[ClientRpc]
 		public static void ClientImpactSound( BumperBrush bumper, Ball ball, Vector3 pos )
 		{
-			if ( ball.IsValid() && ball != Local.Pawn )
+			if ( ball != Local.Pawn || ball.Controller == Ball.ControlType.Replay )
 			{
 				bumper.ImpactSound( pos );
 			}

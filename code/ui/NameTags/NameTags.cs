@@ -22,7 +22,11 @@ namespace Sandbox.UI
 
 			var client = player.Client;
 
-			NameLabel = Add.Label( $"{client.Name}" );
+			if ( player is Ball ball && ball.Controller == Ball.ControlType.Replay )
+				NameLabel = Add.Label( $"{client.Name}'s ghost" );
+			else
+				NameLabel = Add.Label( $"{client.Name}" );
+
 			Avatar = Add.Image( $"avatar:{client.PlayerId}" );
 		}
 

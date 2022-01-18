@@ -154,7 +154,7 @@ namespace Ballers
 		[ClientRpc]
 		public static void ClientImpactSound( Ball ball, float force )
 		{
-			if ( ball.IsValid() && (ball.Owner == null || ball.Owner.Client != Local.Client) )
+			if ( ball.Client != Local.Client || ball.Controller == ControlType.Replay )
 				ball.ImpactSound( force );
 		}
 
