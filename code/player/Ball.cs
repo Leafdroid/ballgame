@@ -132,11 +132,11 @@ namespace Ballers
 
 		public void Pop( bool predicted = true )
 		{
+			if ( (IsServer || !predicted) && Popped )
+				return;
+
 			if ( IsServer )
 				PopRpc( predicted );
-
-			if ( IsServer && Popped )
-				return;
 
 			if ( IsClient )
 			{
@@ -195,11 +195,12 @@ namespace Ballers
 				SetupColors();
 		}
 
-		[ServerCmd]
-		public static void PopAll()
+
+		[ServerCmd( "kill" )]
+		public static void Kill()
 		{
-			foreach ( Ball ball in All.Where( e => e is Ball ) )
-				ball.Pop( false );
+			if ( ConsoleSystem.Caller != null && ConsoleSystem.Caller.Pawn is Ball player )
+				player.Pop( false );
 		}
 	}
 }
