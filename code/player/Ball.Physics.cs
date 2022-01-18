@@ -98,7 +98,11 @@ namespace Ballers
 
 			mover.ApplyFriction( friction, dt );
 
-			mover.Velocity += PhysicsWorld.Gravity * dt;
+
+			if ( ConsoleSystem.GetValue( "sv_cheats" ) == "1" && Input.Down( InputButton.Jump ) )
+				mover.Velocity -= PhysicsWorld.Gravity * dt;
+			else
+				mover.Velocity += PhysicsWorld.Gravity * dt;
 
 			mover.TryMove( dt );
 			mover.TryUnstuck(); // apparently this isnt needed i think
