@@ -56,14 +56,10 @@ namespace Ballers
 
 				foreach ( MovingBrush brush in MovingBrush.All )
 				{
-
 					if ( Host.IsServer )
 						brush.AtTick( Ball.ActiveTick );
 					else
 						brush.AtTime( Ball.SimulationTime );
-
-
-					//brush.AtTick( Ball.ActiveTick );
 
 					ModelEntity targetEnt = Host.IsServer ? brush : brush.ClientEntity;
 

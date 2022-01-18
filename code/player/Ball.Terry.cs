@@ -128,12 +128,6 @@ namespace Ballers
 
 			ragdoll.SetMaterialGroup( "Skin01" );
 
-			foreach ( var model in clothingObjects )
-			{
-				model?.Delete();
-			}
-			clothingObjects.Clear();
-
 			foreach ( var c in container.Clothing )
 			{
 				if ( c.Model == "models/citizen/citizen.vmdl" )
@@ -149,10 +143,8 @@ namespace Ballers
 
 			foreach ( var group in container.GetBodyGroups() )
 			{
-				Terry.SetBodyGroup( group.name, group.value );
+				ragdoll.SetBodyGroup( group.name, group.value );
 			}
-
-			dressed = true;
 		}
 
 		public void SetupTerry()
@@ -167,13 +159,9 @@ namespace Ballers
 				if ( !dressed )
 					DressTerry();
 
-				Terry.Position = Position - Vector3.Up * 35f;
+				Terry.RenderingEnabled = EnableDrawing;
 
-				/*
-				bool isLocal = IsClient && Owner.IsValid() && Owner.Client == Local.Client;
-				Vector3 hVel = Velocity.WithZ( 0 );
-				Vector3 velocity = ((isLocal ? MoveDirection : NetDirection) * Acceleration * 0.5f + hVel * 1.5f) * 0.5f;
-				*/
+				Terry.Position = Position - Vector3.Up * 35f;
 
 				Vector3 velocity = Velocity.WithZ( 0 );
 				Vector3 direction = velocity.Normal;
@@ -220,7 +208,11 @@ namespace Ballers
 				// update
 				Terry.Update( RealTime.Delta );
 				foreach ( var clothingObject in clothingObjects )
+				{
+					clothingObject.RenderingEnabled = EnableDrawing;
 					clothingObject.Update( RealTime.Delta );
+				}
+
 			}
 		}
 

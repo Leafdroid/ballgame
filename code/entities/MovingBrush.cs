@@ -132,8 +132,11 @@ namespace Ballers
 			if ( IsServer )
 				return;
 
-			if ( Local.Pawn is Ball player && player.IsValid() )
+			if ( Local.Pawn is Ball player && !player.Popped )
 			{
+				if ( lastRealTick != Time.Tick - 1 )
+					ClientEntity.ResetInterpolation();
+
 				lastTick = player.ActiveTick;
 				lastRealTick = Time.Tick;
 			}

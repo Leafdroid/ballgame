@@ -113,9 +113,9 @@ namespace Ballers
 				PlayImpactSound( hitForce );
 			}
 
-			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) && Owner.IsValid() )
+			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) )
 			{
-				//(Owner as BallPlayer).Kill();
+				Pop();
 				return;
 			}
 

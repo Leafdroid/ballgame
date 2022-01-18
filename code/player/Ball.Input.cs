@@ -29,6 +29,9 @@ namespace Ballers
 
 		public override void Simulate( Client cl )
 		{
+			if ( Popped )
+				return;
+
 			if ( ActiveTick == 0 )
 				PredictedStart = Time.Now;
 

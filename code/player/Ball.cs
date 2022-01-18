@@ -11,7 +11,7 @@ namespace Ballers
 {
 	public partial class Ball : Player
 	{
-		public static new List<Ball> All = new();
+		public static new List<Ball> ReplayGhosts = new();
 
 		/*
 		public static Ball Create( Client client, ControlType controller = ControlType.Player )
@@ -67,15 +67,24 @@ namespace Ballers
 		}
 		*/
 
+		[Net] public bool Popped { get; private set; }
+
 		public override void Respawn()
 		{
 			Host.AssertServer();
+
+			Velocity = Vector3.Zero;
+
+			Popped = false;
+			ActiveTick = 0;
+			EnableDrawing = true;
 
 			ClothingData = Client.GetClientData( "avatar" );
 
 			SetModel( "models/ball.vmdl" );
 
 			Camera = new BallCamera();
+			ReplayData = new ReplayData();
 
 			PhysicsEnabled = false;
 
@@ -90,7 +99,7 @@ namespace Ballers
 			Transmit = TransmitType.Always;
 
 			Position = Vector3.Up * 80f;
-			var spawnpoint = Entity.All.OfType<SpawnPoint>().FirstOrDefault();
+			var spawnpoint = All.OfType<SpawnPoint>().FirstOrDefault();
 			if ( spawnpoint != null )
 				Position += spawnpoint.Position;
 
@@ -104,25 +113,48 @@ namespace Ballers
 			SetupTerry();
 		}
 
-		//private bool popped = false;
 		protected override void OnDestroy()
 		{
 			base.OnDestroy();
 
-			/*
-			if ( IsClient && Controller == ControlType.Player && !popped )
-			{
-				Ragdoll();
-				BallDome.Create( this );
-				popped = true;
-			}
-			*/
-
 			if ( Terry.IsValid() )
 				Terry.Delete();
 
-			if ( All.Contains( this ) )
-				All.Remove( this );
+			if ( ReplayGhosts.Contains( this ) )
+				ReplayGhosts.Remove( this );
+		}
+
+		public async void RespawnAsync( float time )
+		{
+			await GameTask.DelaySeconds( time );
+			Respawn();
+		}
+
+		public void Pop( bool predicted = true )
+		{
+			if ( IsServer )
+				PopRpc( predicted );
+
+			if ( IsServer && Popped )
+				return;
+
+			if ( IsClient )
+			{
+				Ragdoll();
+				BallDome.Create( this );
+			}
+			else
+				RespawnAsync( 2f );
+
+			Popped = true;
+			EnableDrawing = false;
+		}
+
+		[ClientRpc]
+		public void PopRpc( bool predicted = true )
+		{
+			if ( !predicted || Client != Local.Client )
+				Pop();
 		}
 
 		private bool isColored = false;
@@ -161,6 +193,13 @@ namespace Ballers
 
 			if ( !isColored )
 				SetupColors();
+		}
+
+		[ServerCmd]
+		public static void PopAll()
+		{
+			foreach ( Ball ball in All.Where( e => e is Ball ) )
+				ball.Pop( false );
 		}
 	}
 }

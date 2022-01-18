@@ -45,25 +45,6 @@ namespace Ballers
 			}
 
 			return data;
-
-			/*
-			int count = inputs.Count();
-			if ( index == count - 1 )
-				return 0;
-
-			ushort data = inputs[index];
-			ushort repeats = (ushort)(data >> 9);
-
-			if ( readRepeats >= repeats )
-			{
-				readRepeats = 0;
-				index++;
-				data = inputs[index];
-			}
-
-			readRepeats++;
-			return data;
-			*/
 		}
 
 		public void AddData( BallInput input )
