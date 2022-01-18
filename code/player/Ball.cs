@@ -67,7 +67,7 @@ namespace Ballers
 		}
 		*/
 
-		[Net] public bool Popped { get; private set; }
+		[Net, Predicted] public bool Popped { get; private set; }
 
 		public override void Respawn()
 		{
