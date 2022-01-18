@@ -67,15 +67,45 @@ namespace Ballers
 				justBonked = false;
 			}
 
+			float[] animationKeys = new float[6] { 1f, 1.4f, 0.6f, 1.2f, 0.9f, 1f };
 			float scale;
 
-			if ( timeSinceBonk < 0.2f )
-				scale = Bezier( 1f, 1.2f, 0.95f, 1f, timeSinceBonk * 5f );
+			if ( timeSinceBonk < 0.25f )
+				scale = Bezinterp( animationKeys, timeSinceBonk * 4f );
 			else
 				scale = 1f;
 
 			if ( scale != SceneObject.Transform.Scale )
 				SceneObject.Transform = new Transform( Position, Rotation, scale );
+		}
+
+		public static float Bezinterp( float[] values, float t )
+		{
+			int valueCount = values.Length;
+
+			switch ( valueCount )
+			{
+				case 0:
+					return t;
+				case 1:
+					return values[0] * t;
+				case 2:
+					return values[0] * (1f - t) + values[1] * t;
+				default:
+					int iteration = 1;
+					while ( iteration != valueCount )
+					{
+						for ( int i = 0; i < valueCount - iteration; i++ )
+						{
+							float val = values[i];
+							float nextVal = values[i + 1];
+
+							values[i] = val * (1f - t) + nextVal * t;
+						}
+						iteration++;
+					}
+					return values[0];
+			}
 		}
 
 		private void ImpactSound( Vector3 pos )
