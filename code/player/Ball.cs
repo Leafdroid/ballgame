@@ -136,15 +136,16 @@ namespace Ballers
 				return;
 
 			if ( IsServer )
+			{
 				PopRpc( predicted );
-
-			if ( IsClient )
+				RespawnAsync( 2f );
+				Client.AddInt( "deaths" );
+			}
+			else
 			{
 				Ragdoll();
 				BallDome.Create( this );
 			}
-			else
-				RespawnAsync( 2f );
 
 			Popped = true;
 			EnableDrawing = false;
