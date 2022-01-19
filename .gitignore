@@ -1,0 +1,15 @@
+# ignore code thingies
+.vs/
+code/Properties/
+code/obj/
+
+# ignore uncompiled source files
+*.wav
+*.vmat
+*.vmdl
+*.fbx
+*.csproj
+
+# idk what this is 
+tools_asset_info.bin
+tools_thumbnail_cache.bin

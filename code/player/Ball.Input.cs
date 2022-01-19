@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Ballers
 {
-	public partial class Ball : ModelEntity
+	public partial class Ball : Player
 	{
 		public enum ControlType
 		{
@@ -20,16 +20,22 @@ namespace Ballers
 		[Net] public ControlType Controller { get; set; }
 		public Vector3 MoveDirection { get; set; }
 		public ReplayData ReplayData { get; set; } = new ReplayData();
-		public int ActiveTick { get; private set; } = 0;
-		[Net, Predicted] public int PredictTick { get; private set; } = 0;
+		[Net, Predicted] public float PredictedStart { get; private set; }
+		[Net] public int ActiveTick { get; private set; }
+		public float SimulationTime => Time.Now - PredictedStart;
+		public int PredictionTick => (int)(Global.TickRate * SimulationTime);
+
 		public BallInput ActiveInput { get; private set; } = new BallInput();
 
 		public override void Simulate( Client cl )
 		{
-			ActiveTick = PredictTick;
-
-			if ( IsClient && (Owner != Local.Pawn) )
+			if ( Popped )
 				return;
+
+			if ( ActiveTick == 0 )
+				PredictedStart = Time.Now;
+
+			EyeRot = Input.Rotation;
 
 			if ( Controller == ControlType.Player )
 			{
@@ -48,7 +54,6 @@ namespace Ballers
 			SimulatePhysics();
 
 			ActiveTick++;
-			PredictTick++;
 		}
 
 		public static readonly SoundEvent PopSound = new( "sounds/ball/pop.vsnd" );

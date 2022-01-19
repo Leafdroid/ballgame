@@ -22,7 +22,11 @@ namespace Sandbox.UI
 
 			var client = player.Client;
 
-			NameLabel = Add.Label( $"{client.Name}" );
+			if ( player is Ball ball && ball.Controller == Ball.ControlType.Replay )
+				NameLabel = Add.Label( $"{client.Name}'s ghost" );
+			else
+				NameLabel = Add.Label( $"{client.Name}" );
+
 			Avatar = Add.Image( $"avatar:{client.PlayerId}" );
 		}
 
@@ -65,7 +69,7 @@ namespace Sandbox.UI
 					break;
 			}
 
-			foreach( var player in deleteList )
+			foreach ( var player in deleteList )
 			{
 				ActiveTags[player].Delete();
 				ActiveTags.Remove( player );
@@ -94,15 +98,14 @@ namespace Sandbox.UI
 			if ( player.LifeState != LifeState.Alive )
 				return false;
 
-			if ( player is not BallPlayer ballPlayer )
+			if ( player is not Ball ballPlayer )
 				return false;
 
-			Ball ball = ballPlayer.Ball;
-			if ( !ball.IsValid() )
+			if ( ballPlayer.Popped )
 				return false;
 
 
-			var labelPos = ball.Position + Vector3.Up * 45;
+			var labelPos = ballPlayer.Position + Vector3.Up * 45;
 
 
 			//
