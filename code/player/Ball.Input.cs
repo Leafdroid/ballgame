@@ -39,7 +39,7 @@ namespace Ballers
 
 			if ( Controller == ControlType.Player )
 			{
-				ActiveInput.Update( Input.Forward, Input.Left, Input.Rotation.Yaw() );
+				ActiveInput.Update();
 				ReplayData.AddData( ActiveInput );
 			}
 			else if ( Controller == ControlType.Replay )
@@ -48,7 +48,7 @@ namespace Ballers
 				ActiveInput.Update( input );
 			}
 
-			ActiveInput.Parse( out Vector3 moveDirection );
+			ActiveInput.Parse( out Vector3 moveDirection, out bool reset );
 			MoveDirection = moveDirection;
 
 			SimulatePhysics();
@@ -66,8 +66,21 @@ namespace Ballers
 
 		public ushort data { get; private set; } = 0;
 
-		public void Update( float forward, float left, float yaw )
+		/* ushort data structure
+		bits: [dddddd][c][b][aaaaaaaa]
+		a: movement angle in 1.4~ degree increments [0-255]
+		b: is moving? [0-1]
+		c: kill/reset button [0-1]
+		d: repetitions for the same input [0-63]
+		*/
+
+		public void Update()
 		{
+			float forward = Input.Forward;
+			float left = Input.Left;
+			float yaw = Input.Rotation.Yaw();
+			bool reset = Input.Pressed( InputButton.Reload );
+
 			bool moving = forward != 0 || left != 0;
 
 			data = (ushort)(moving ? 256 : 0);
@@ -83,9 +96,10 @@ namespace Ballers
 
 		public void Update( ushort data ) => this.data = data;
 
-		public void Parse( out Vector3 direction )
+		public void Parse( out Vector3 direction, out bool reset )
 		{
 			bool moving = (data & 256) == 256;
+			reset = (data & 512) == 512;
 
 			if ( moving )
 			{

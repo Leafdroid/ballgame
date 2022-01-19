@@ -1,13 +1,8 @@
 # ignore code thingies
 .vs/
+.intermediate/
 code/Properties/
 code/obj/
-
-# ignore uncompiled source files
-*.wav
-*.vmat
-*.vmdl
-*.fbx
 *.csproj
 
 # idk what this is 

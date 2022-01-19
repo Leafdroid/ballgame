@@ -167,7 +167,7 @@ namespace Ballers
 			float saturation = Controller == ControlType.Player ? 0.8f : 0.35f;
 
 			Color ballColor = new ColorHsv( hue, saturation, 1f );
-			Color ballColor2 = new ColorHsv( (hue + 30f) % 360, saturation, 1f );
+			Color ballColor2 = new ColorHsv( (hue + 15f) % 360, saturation, 1f );
 
 			SceneObject.SetValue( "tint", ballColor );
 			SceneObject.SetValue( "tint2", ballColor2 );
