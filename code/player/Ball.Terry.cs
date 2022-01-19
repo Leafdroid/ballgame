@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Ballers
 {
-	public partial class Ball : ModelEntity
+	public partial class Ball : Player
 	{
 		private static Dictionary<int, Clothing> clothingResources = new();
 		private static Clothing FindClothing( int id ) => clothingResources.TryGetValue( id, out Clothing clothing ) ? clothing : null;
@@ -16,7 +16,7 @@ namespace Ballers
 		public AnimSceneObject Terry { get; private set; }
 		private bool dressed = false;
 
-		[Net] public string ClothingData { get; private set; }
+		[Net] public string ClothingData { get; set; }
 		private Clothing.Container container = new();
 		private List<AnimSceneObject> clothingObjects = new();
 
@@ -128,12 +128,6 @@ namespace Ballers
 
 			ragdoll.SetMaterialGroup( "Skin01" );
 
-			foreach ( var model in clothingObjects )
-			{
-				model?.Delete();
-			}
-			clothingObjects.Clear();
-
 			foreach ( var c in container.Clothing )
 			{
 				if ( c.Model == "models/citizen/citizen.vmdl" )
@@ -149,10 +143,8 @@ namespace Ballers
 
 			foreach ( var group in container.GetBodyGroups() )
 			{
-				Terry.SetBodyGroup( group.name, group.value );
+				ragdoll.SetBodyGroup( group.name, group.value );
 			}
-
-			dressed = true;
 		}
 
 		public void SetupTerry()
@@ -167,13 +159,9 @@ namespace Ballers
 				if ( !dressed )
 					DressTerry();
 
-				Terry.Position = Position - Vector3.Up * 35f;
+				Terry.RenderingEnabled = EnableDrawing;
 
-				/*
-				bool isLocal = IsClient && Owner.IsValid() && Owner.Client == Local.Client;
-				Vector3 hVel = Velocity.WithZ( 0 );
-				Vector3 velocity = ((isLocal ? MoveDirection : NetDirection) * Acceleration * 0.5f + hVel * 1.5f) * 0.5f;
-				*/
+				Terry.Position = Position - Vector3.Up * 35f;
 
 				Vector3 velocity = Velocity.WithZ( 0 );
 				Vector3 direction = velocity.Normal;
@@ -201,7 +189,7 @@ namespace Ballers
 				// look direction
 				var lookDirection = direction;
 				if ( Controller == ControlType.Player )
-					lookDirection = (direction * 0.3f + Owner.EyeRot.Forward * 0.7f);
+					lookDirection = (direction * 0.3f + EyeRot.Forward * 0.7f);
 
 				var aimPos = Position + lookDirection * 200f;
 				var localPos = Terry.Transform.PointToLocal( aimPos );
@@ -220,7 +208,11 @@ namespace Ballers
 				// update
 				Terry.Update( RealTime.Delta );
 				foreach ( var clothingObject in clothingObjects )
+				{
+					clothingObject.RenderingEnabled = EnableDrawing;
 					clothingObject.Update( RealTime.Delta );
+				}
+
 			}
 		}
 
@@ -238,12 +230,7 @@ namespace Ballers
 
 			DressRagdoll( ent );
 
-			/*
-			ent.CopyBonesFrom( Terry );
-			ent.CopyBodyGroups( Terry );
-			ent.CopyMaterialGroup( Terry );
-			ent.TakeDecalsFrom( Terry );
-			*/
+			// TODO: Copy bones (not possible yet)
 
 			ent.SurroundingBoundsMode = SurroundingBoundsType.Physics;
 			ent.PhysicsGroup.Velocity = Velocity;
@@ -255,24 +242,10 @@ namespace Ballers
 			ent.DeleteAsync( 6.5f );
 		}
 
-		private float mode = 0f;
 		public void UpdateModel()
 		{
 			Vector3 spinVelocity = Velocity;
 
-			/*
-			bool isLocal = IsClient && Owner.IsValid() && Owner.Client == Local.Client;
-			Vector3 hVel = Velocity.WithZ( 0 );
-			Vector3 moveDir = (isLocal ? MoveDirection : NetDirection);
-			Vector3 spinVel = hVel;
-			if ( moveDir != Vector3.Zero )
-				spinVel = (moveDir * Acceleration + hVel) * 0.5f;
-
-			mode += (moveDir != Vector3.Zero ? Time.Delta : -Time.Delta) * 2f;
-			mode = mode < 0f ? 0f : (mode > 1f ? 1f : mode);
-
-			Vector3 spinVelocity = ((moveDir * Acceleration * 0.5f + hVel * 1.5f) * 0.5f) * mode + hVel * (1f - mode);
-			*/
 			if ( spinVelocity.LengthSquared > 0.0f )
 			{
 				var dir = spinVelocity.Normal;

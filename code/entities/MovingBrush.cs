@@ -97,9 +97,12 @@ namespace Ballers
 
 		public void AtTick( int tick )
 		{
-			float interval = Global.TickInterval;
-			//Log.Info( $"{(Host.IsServer ? "server" : "client")} - {tick} tick" );
-			float rad = tick * interval * MoveTime * MathF.PI * 0.5f;
+			AtTime( tick * Global.TickInterval );
+		}
+
+		public void AtTime( float time )
+		{
+			float rad = time * MoveTime * MathF.PI * 0.5f;
 
 			float sine = MathF.Sin( rad );
 			float cosine = MathF.Cos( rad );
@@ -122,32 +125,40 @@ namespace Ballers
 
 		int lastTick = 0;
 		int lastRealTick = 0;
+		float colorHue = 0f;
 		[Event.Tick]
 		public void Frame()
 		{
 			if ( IsServer )
 				return;
 
-			if ( Local.Pawn is BallPlayer player && player.Ball.IsValid() )
+			if ( Local.Pawn is Ball player && !player.Popped )
 			{
-				lastTick = player.Ball.ActiveTick;
+				if ( lastRealTick != Time.Tick - 1 )
+					ClientEntity.ResetInterpolation();
+
+				lastTick = player.ActiveTick;
 				lastRealTick = Time.Tick;
 			}
 			else
 				AtTick( lastTick + Time.Tick - lastRealTick );
 
-			/*
-			DebugOverlay.Text( position, Velocity.ToString(), Color.White );
-			
+			int tick = lastTick + Time.Tick - lastRealTick;
+			float rad = tick * Global.TickInterval * MoveTime * MathF.PI * 0.5f;
+			float cosine = MathF.Cos( rad );
+			bool closing = cosine <= 0f;
+
+			//DebugOverlay.Text( ClientEntity.Position, Velocity.ToString(), Color.White );
+
 			colorHue = colorHue.LerpTo( closing ? 0f : 120f, Time.Delta * 10f );
 			Color color = new ColorHsv( colorHue, 0.8f, 1f );
 
 			DebugOverlay.Circle( StartPosition, CurrentView.Rotation, 2f, color );
-			DebugOverlay.Circle( EndPosition, CurrentView.Rotation, 2f, color );
-			DebugOverlay.Circle( position, CurrentView.Rotation, 1f, color );
-			DebugOverlay.Line( position, ClientModel.WorldSpaceBounds.Center, color );
-			DebugOverlay.Line( StartPosition, EndPosition, color );
-			*/
+			DebugOverlay.Circle( TargetPosition, CurrentView.Rotation, 2f, color );
+			DebugOverlay.Circle( ClientEntity.Position, CurrentView.Rotation, 1f, color );
+			DebugOverlay.Line( ClientEntity.Position, ClientEntity.WorldSpaceBounds.Center, color );
+			DebugOverlay.Line( StartPosition, TargetPosition, color );
+
 		}
 	}
 }

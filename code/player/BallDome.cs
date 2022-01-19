@@ -19,12 +19,6 @@ namespace Ballers
 			DistanceMax = 1536f,
 		};
 
-		public static readonly SoundEvent Click = new( "sounds/ball/click.vsnd" )
-		{
-			DistanceMax = 256f,
-			Volume = 0.8f
-		};
-
 		public static void Create( Ball ball )
 		{
 			if ( Host.IsServer )

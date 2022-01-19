@@ -34,7 +34,7 @@ namespace Ballers
 
 			if ( client.IsListenServerHost && Host.IsServer )
 			{
-				foreach ( Ball ball in Ball.All.Where( ball => ball.Controller == Ball.ControlType.Replay ) )
+				foreach ( Ball ball in Ball.ReplayGhosts )
 					ball.Simulate( client );
 			}
 
@@ -48,7 +48,7 @@ namespace Ballers
 			if ( IsServer )
 				Ball.DeliverClothing( client );
 
-			var player = new BallPlayer();
+			var player = new Ball();
 			client.Pawn = player;
 
 			player.Respawn();
@@ -56,12 +56,6 @@ namespace Ballers
 
 		public override void ClientDisconnect( Client cl, NetworkDisconnectionReason reason )
 		{
-			if ( cl.Pawn is BallPlayer player )
-			{
-				Ball ball = player.Ball;
-				if ( ball.IsValid() )
-					ball.Delete();
-			}
 
 			base.ClientDisconnect( cl, reason );
 		}

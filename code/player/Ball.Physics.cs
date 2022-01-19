@@ -9,9 +9,9 @@ using System.Linq;
 
 namespace Ballers
 {
-	public partial class Ball : ModelEntity
+	public partial class Ball : Player
 	{
-		public const float Acceleration = 600f; // yeah
+		public const float Acceleration = 700f; // yeah
 		public const float AirControl = 0.85f; // acceleration multiplier in air
 		public const float MaxSpeed = 1100f; // this is the max speed the ball can accelerate to by itself
 
@@ -62,6 +62,17 @@ namespace Ballers
 						case FallDamageBrush:
 							fallDamage = true;
 							break;
+						case HurtBrush:
+							Pop();
+							break;
+						case CheckpointBrush checkPoint:
+							if ( checkPoint.Index == CheckpointIndex + 1 )
+							{
+								if ( IsClient )
+									Sound.FromScreen( CheckpointBrush.Badge.Name );
+								CheckpointIndex++;
+							}
+							break;
 						default:
 							continue;
 					}
@@ -98,7 +109,11 @@ namespace Ballers
 
 			mover.ApplyFriction( friction, dt );
 
-			mover.Velocity += PhysicsWorld.Gravity * dt;
+
+			if ( ConsoleSystem.GetValue( "sv_cheats" ) == "1" && Input.Down( InputButton.Jump ) )
+				mover.Velocity -= PhysicsWorld.Gravity * dt;
+			else
+				mover.Velocity += PhysicsWorld.Gravity * dt;
 
 			mover.TryMove( dt );
 			mover.TryUnstuck(); // apparently this isnt needed i think
@@ -113,9 +128,9 @@ namespace Ballers
 				PlayImpactSound( hitForce );
 			}
 
-			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) && Owner.IsValid() )
+			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) )
 			{
-				(Owner as BallPlayer).Kill();
+				Pop();
 				return;
 			}
 
@@ -150,7 +165,7 @@ namespace Ballers
 		[ClientRpc]
 		public static void ClientImpactSound( Ball ball, float force )
 		{
-			if ( ball.IsValid() && (ball.Owner == null || ball.Owner.Client != Local.Client) )
+			if ( ball.Client != Local.Client || ball.Controller == ControlType.Replay )
 				ball.ImpactSound( force );
 		}
 

@@ -45,25 +45,6 @@ namespace Ballers
 			}
 
 			return data;
-
-			/*
-			int count = inputs.Count();
-			if ( index == count - 1 )
-				return 0;
-
-			ushort data = inputs[index];
-			ushort repeats = (ushort)(data >> 9);
-
-			if ( readRepeats >= repeats )
-			{
-				readRepeats = 0;
-				index++;
-				data = inputs[index];
-			}
-
-			readRepeats++;
-			return data;
-			*/
 		}
 
 		public void AddData( BallInput input )
@@ -120,9 +101,9 @@ namespace Ballers
 			}
 		}
 
-		public static ReplayData FromFile( Client client )
+		public static ReplayData FromFile( long steamId )
 		{
-			string fileName = $"replays/{Global.MapName}/{client.PlayerId}.replay";
+			string fileName = $"replays/{Global.MapName}/{steamId}.replay";
 			if ( !FileSystem.Data.FileExists( fileName ) )
 				return null;
 
@@ -146,38 +127,42 @@ namespace Ballers
 		[ServerCmd( "playreplay" )]
 		public static void PlayReplay()
 		{
-			if ( ConsoleSystem.Caller.Pawn is not BallPlayer player )
+			if ( ConsoleSystem.Caller.Pawn is not Ball player )
 				return;
 
 			Stopwatch watch = new Stopwatch();
 
-			ReplayData container = ReplayData.FromFile( ConsoleSystem.Caller );
+			long id = ConsoleSystem.Caller.PlayerId;
+
+			ReplayData container = FromFile( id );
 			if ( container == null )
 				return;
 
 			Log.Info( $"Took {watch.Stop()}ms to fetch replay from file!" );
 
-			Ball.Create( ConsoleSystem.Caller, Ball.ControlType.Replay );
+			Ball replayGhost = new Ball();
+			replayGhost.Controller = Ball.ControlType.Replay;
+			replayGhost.ReplayData = container;
+			replayGhost.Owner = player;
+			replayGhost.Respawn();
 		}
+
 
 		[ServerCmd( "savereplay" )]
 		public static void SaveReplay()
 		{
-			if ( ConsoleSystem.Caller.Pawn is not BallPlayer player )
+			if ( ConsoleSystem.Caller.Pawn is not Ball player )
 				return;
 
-			if ( !player.Ball.IsValid() )
-				return;
-
-			player.Ball.ReplayData.Write( ConsoleSystem.Caller );
+			player.ReplayData.Write( ConsoleSystem.Caller );
 		}
 
-		//if (IsServer ) //|| Local.Client == Owner.Client )
 		[ServerCmd( "stopreplays" )]
 		public static void RemoveReplays()
 		{
-			foreach ( Ball ball in Entity.All.Where( b => b is Ball ball && ball.Controller == Ball.ControlType.Replay ) )
-				ball.Delete();
+			int ghostCount = Ball.ReplayGhosts.Count;
+			for ( int i = 0; i < ghostCount; i++ )
+				Ball.ReplayGhosts[0].Delete();
 		}
 	}
 }

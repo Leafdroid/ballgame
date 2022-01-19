@@ -15,17 +15,13 @@ namespace Sandbox
 
 		public override void Update()
 		{
-			if ( Local.Client.Pawn is not BallPlayer player )
-				return;
-
-			Ball ball = player.Ball;
-			if ( !ball.IsValid() )
+			if ( Local.Client.Pawn is not Ball player )
 				return;
 
 			zoom -= Input.MouseWheel;
 			zoom = zoom.Clamp( minZoom, maxZoom );
 
-			Vector3 velocity = ball.Velocity;
+			Vector3 velocity = player.Velocity;
 
 			float vVel = CurrentView.Rotation.Forward.Dot( velocity );
 			float hVel = CurrentView.Rotation.Right.Dot( velocity );
@@ -38,9 +34,9 @@ namespace Sandbox
 
 			Rotation = Input.Rotation * Rotation.FromRoll( roll );
 
-			Vector3 camPos = ball.Position + (Rotation.Backward * 10 * zoom + Rotation.Up * 0.5f * zoom);
+			Vector3 camPos = player.Position + (Rotation.Backward * 10 * zoom + Rotation.Up * 0.5f * zoom);
 
-			TraceResult cameraTrace = Trace.Ray( ball.Position, camPos )
+			TraceResult cameraTrace = Trace.Ray( player.Position, camPos )
 				.Radius( 10f ).WithoutTags( "cameraPhase" ).HitLayer( CollisionLayer.Debris, false ).Run();
 
 			Position = cameraTrace.EndPos;
