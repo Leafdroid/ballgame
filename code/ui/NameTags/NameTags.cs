@@ -101,6 +101,9 @@ namespace Sandbox.UI
 			if ( player is not Ball ballPlayer )
 				return false;
 
+			if ( ballPlayer.Popped )
+				return false;
+
 
 			var labelPos = ballPlayer.Position + Vector3.Up * 45;
 

@@ -62,6 +62,17 @@ namespace Ballers
 						case FallDamageBrush:
 							fallDamage = true;
 							break;
+						case HurtBrush:
+							Pop();
+							break;
+						case CheckpointBrush checkPoint:
+							if ( checkPoint.Index == CheckpointIndex + 1 )
+							{
+								if ( IsClient )
+									Sound.FromScreen( CheckpointBrush.Badge.Name );
+								CheckpointIndex++;
+							}
+							break;
 						default:
 							continue;
 					}

@@ -11,62 +11,9 @@ namespace Ballers
 {
 	public partial class Ball : Player
 	{
-		public static new List<Ball> ReplayGhosts = new();
+		public static List<Ball> ReplayGhosts = new();
 
-		/*
-		public static Ball Create( Client client, ControlType controller = ControlType.Player )
-		{
-			if ( Host.IsClient )
-				return null;
-
-			ReplayData replayData = null;
-			BallPlayer player = null;
-
-			if ( controller == ControlType.Player )
-			{
-				if ( !client.Pawn.IsValid() )
-					return null;
-
-				player = client.Pawn as BallPlayer;
-
-				if ( !player.IsValid() )
-					return null;
-			}
-			else
-			{
-				replayData = ReplayData.FromFile( client );
-				if ( replayData == null )
-					return null;
-			}
-
-
-			// .OrderBy( x => Guid.NewGuid() )
-			var spawnpoint = Entity.All.OfType<SpawnPoint>().FirstOrDefault();
-
-			Vector3 position = Vector3.Up * 80f;
-			if ( spawnpoint != null )
-				position += spawnpoint.Position;
-
-			//position = new Vector3( 0, -2700, 540 );
-
-			Ball ball = null;
-
-			if ( controller == ControlType.Player )
-			{
-				string clothingData = player.Client.GetClientData( "avatar" );
-				ball = new Ball() { Owner = player, Position = position, ClothingData = clothingData, Controller = controller };
-				player.Ball = ball;
-			}
-			else if ( controller == ControlType.Replay )
-			{
-				ball = new Ball() { Position = position, Controller = controller };
-				ball.ReplayData = replayData;
-			}
-
-			return ball;
-		}
-		*/
-
+		[Net, Predicted] public int CheckpointIndex { get; private set; } = 0;
 		[Net, Predicted] public bool Popped { get; private set; }
 
 		public override void Respawn()
@@ -108,12 +55,26 @@ namespace Ballers
 			EnableShadowCasting = true;
 			Transmit = TransmitType.Always;
 
-			Position = Vector3.Up * 80f;
+			SetSpawnpoint();
+
+			ResetInterpolation();
+		}
+
+		private void SetSpawnpoint()
+		{
+			Position = Vector3.Up * 40f;
+
+			var spawnpoints = All.OfType<BallSpawn>();
+			var desiredSpawn = spawnpoints.Where( s => s.Index == CheckpointIndex ).FirstOrDefault();
+			if ( desiredSpawn != null )
+			{
+				Position += desiredSpawn.Position;
+				return;
+			}
+
 			var spawnpoint = All.OfType<SpawnPoint>().FirstOrDefault();
 			if ( spawnpoint != null )
 				Position += spawnpoint.Position;
-
-			ResetInterpolation();
 		}
 
 		public override void ClientSpawn()
@@ -139,6 +100,23 @@ namespace Ballers
 			await GameTask.DelaySeconds( time );
 			Respawn();
 		}
+
+
+		private void PredictedSound( string soundName )
+		{
+			PlaySound( soundName );
+
+			if ( IsServer )
+				PredictedSoundRpc( soundName );
+		}
+
+		[ClientRpc]
+		public void PredictedSoundRpc( string soundName )
+		{
+			if ( Client != Local.Client || Controller == ControlType.Replay )
+				PredictedSound( soundName );
+		}
+
 
 		public void Pop( bool predicted = true )
 		{
@@ -205,7 +183,6 @@ namespace Ballers
 			if ( !isColored )
 				SetupColors();
 		}
-
 
 		[ServerCmd( "kill" )]
 		public static void Kill()
