@@ -69,7 +69,7 @@ namespace Ballers
 							if ( checkPoint.Index == CheckpointIndex + 1 )
 							{
 								if ( IsClient )
-									Sound.FromScreen( CheckpointBrush.Badge.Name );
+									Sound.FromScreen( CheckpointBrush.Swoosh.Name );
 								CheckpointIndex++;
 							}
 							break;

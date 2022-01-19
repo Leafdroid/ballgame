@@ -38,7 +38,15 @@ namespace Ballers
 		public static readonly SoundEvent Badge = new( "sounds/ball/badge.vsnd" )
 		{
 			Pitch = 1f,
-			Volume = 1f,
+			Volume = 0.4f,
+			DistanceMax = 1024,
+			UI = true
+		};
+
+		public static readonly SoundEvent Swoosh = new( "sounds/ball/swoosh.vsnd" )
+		{
+			Pitch = 1f,
+			Volume = 0.4f,
 			DistanceMax = 1024,
 			UI = true
 		};

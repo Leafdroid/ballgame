@@ -18,6 +18,9 @@ namespace Ballers
 
 		public override void Respawn()
 		{
+			if ( !(this as ModelEntity).IsValid() )
+				return;
+
 			Host.AssertServer();
 
 			Velocity = Vector3.Zero;
@@ -189,6 +192,16 @@ namespace Ballers
 		{
 			if ( ConsoleSystem.Caller != null && ConsoleSystem.Caller.Pawn is Ball player )
 				player.Pop( false );
+		}
+
+		[ServerCmd( "reset" )]
+		public static void Reset()
+		{
+			if ( ConsoleSystem.Caller != null && ConsoleSystem.Caller.Pawn is Ball player )
+			{
+				player.CheckpointIndex = 0;
+				player.Pop( false );
+			}
 		}
 	}
 }
