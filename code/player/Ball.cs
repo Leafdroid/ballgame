@@ -61,6 +61,14 @@ namespace Ballers
 			SetSpawnpoint();
 
 			ResetInterpolation();
+
+			RespawnRpc();
+		}
+
+		[ClientRpc]
+		private void RespawnRpc()
+		{
+			SetupColors();
 		}
 
 		private void SetSpawnpoint()
@@ -153,6 +161,7 @@ namespace Ballers
 		private float GetHue()
 		{
 			int id = Rand.Int( 65535 );
+
 			if ( Client.IsValid() )
 				id = (int)(Client.PlayerId & 65535);
 
@@ -167,7 +176,7 @@ namespace Ballers
 			float saturation = Controller == ControlType.Player ? 0.8f : 0.35f;
 
 			Color ballColor = new ColorHsv( hue, saturation, 1f );
-			Color ballColor2 = new ColorHsv( (hue + 15f) % 360, saturation, 1f );
+			Color ballColor2 = new ColorHsv( (hue + 25f) % 360, saturation, 1f );
 
 			SceneObject.SetValue( "tint", ballColor );
 			SceneObject.SetValue( "tint2", ballColor2 );
