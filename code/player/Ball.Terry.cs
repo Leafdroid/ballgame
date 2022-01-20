@@ -237,7 +237,8 @@ namespace Ballers
 
 			ent.SetInteractsAs( CollisionLayer.Debris );
 			ent.SetInteractsWith( CollisionLayer.WORLD_GEOMETRY );
-			ent.SetInteractsExclude( CollisionLayer.Player | CollisionLayer.Debris );
+			ent.AddCollisionLayer( CollisionLayer.Debris );
+			ent.SetInteractsWith( CollisionLayer.Debris );
 
 			ent.DeleteAsync( 6.5f );
 		}

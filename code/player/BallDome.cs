@@ -65,6 +65,7 @@ namespace Ballers
 
 			ClearCollisionLayers();
 			AddCollisionLayer( CollisionLayer.Debris );
+			SetInteractsWith( CollisionLayer.Debris );
 		}
 
 		private float Bezier( float a, float b, float c, float d, float t )
