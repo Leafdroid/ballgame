@@ -61,14 +61,6 @@ namespace Ballers
 			SetSpawnpoint();
 
 			ResetInterpolation();
-
-			RespawnRpc();
-		}
-
-		[ClientRpc]
-		private void RespawnRpc()
-		{
-			SetupColors();
 		}
 
 		private void SetSpawnpoint()
@@ -108,26 +100,9 @@ namespace Ballers
 
 		public async void RespawnAsync( float time )
 		{
-			await GameTask.DelaySeconds( time );
+			await GameTask.Delay( (int)(time * 1000f) );
 			Respawn();
 		}
-
-
-		private void PredictedSound( string soundName )
-		{
-			PlaySound( soundName );
-
-			if ( IsServer )
-				PredictedSoundRpc( soundName );
-		}
-
-		[ClientRpc]
-		public void PredictedSoundRpc( string soundName )
-		{
-			if ( Client != Local.Client || Controller == ControlType.Replay )
-				PredictedSound( soundName );
-		}
-
 
 		public void Pop( bool predicted = true )
 		{
@@ -138,7 +113,9 @@ namespace Ballers
 			{
 				PopRpc( predicted );
 				RespawnAsync( 2f );
-				Client.AddInt( "deaths" );
+
+				if ( Controller == ControlType.Player )
+					Client.AddInt( "deaths" );
 			}
 			else
 			{

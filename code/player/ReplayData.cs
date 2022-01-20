@@ -30,9 +30,8 @@ namespace Ballers
 				return 0;
 			}
 
-
 			ushort data = inputs[index];
-			ushort repeats = (ushort)(data >> 9);
+			ushort repeats = (ushort)(data >> 10);
 
 			if ( readRepeats == repeats - 1 )
 			{
@@ -57,7 +56,7 @@ namespace Ballers
 			ushort data = input.data;
 			int repeats = Time.Tick - latestTick;
 
-			if ( data != latestData || repeats == 127 )
+			if ( data != latestData || repeats == 63 )
 			{
 				AddLatest();
 				latestData = data;
@@ -73,7 +72,7 @@ namespace Ballers
 
 			latestTick = Time.Tick;
 
-			ushort repeatData = (ushort)(latestData + (repeats << 9));
+			ushort repeatData = (ushort)(latestData + (repeats << 10));
 			inputs.Add( repeatData );
 		}
 

@@ -49,6 +49,12 @@ namespace Ballers
 			}
 
 			ActiveInput.Parse( out Vector3 moveDirection, out bool reset );
+			if ( reset )
+			{
+				Pop();
+				return;
+			}
+
 			MoveDirection = moveDirection;
 
 			SimulatePhysics();
@@ -84,6 +90,11 @@ namespace Ballers
 			bool moving = forward != 0 || left != 0;
 
 			data = (ushort)(moving ? 256 : 0);
+			if ( reset )
+			{
+				data += 512;
+				Log.Info( "do be resetting" );
+			}
 
 			if ( !moving )
 				return;
