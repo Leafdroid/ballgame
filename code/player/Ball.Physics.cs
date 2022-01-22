@@ -45,8 +45,6 @@ namespace Ballers
 
 		private void SimulatePhysics()
 		{
-			Rotation gravityRotation = Rotation.LookAt( GetGravity().Normal ) * Rotation.FromPitch( -90f );
-
 			Vector3 flatVelocity = Velocity - GetGravity().Normal * Velocity.Dot( GetGravity().Normal );
 			Vector3 clampedVelocity = flatVelocity.ClampLength( MaxSpeed );
 			float directionSpeed = clampedVelocity.Dot( MoveDirection );
@@ -59,20 +57,6 @@ namespace Ballers
 			acceleration *= t;
 
 			Velocity += MoveDirection * acceleration * Time.Delta;
-			/*
-			Vector3 clampedVelocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed );
-			float directionSpeed = clampedVelocity.Dot( MoveDirection );
-
-			float acceleration = Acceleration;
-			if ( !Grounded )
-				acceleration *= AirControl;
-
-			float t = 1f - directionSpeed / MaxSpeed;
-			acceleration *= t;
-
-			Velocity += MoveDirection * acceleration * Time.Delta;
-			*/
-
 
 			Move();
 		}
@@ -129,12 +113,7 @@ namespace Ballers
 			TraceResult groundTrace = mover.TraceDirection( GetGravity().Normal * 16f );
 			if ( groundTrace.Hit )
 			{
-				DebugOverlay.Sphere( groundTrace.EndPos - groundTrace.Normal * 40f, 2f, Color.White, true, 0.1f );
-
 				string surface = groundTrace.Surface.Name;
-
-				if ( IsClient )
-					Log.Error( surface );
 
 				switch ( surface )
 				{

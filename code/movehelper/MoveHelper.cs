@@ -28,7 +28,6 @@ namespace Ballers
 				.HitLayer( CollisionLayer.WORLD_GEOMETRY, true )
 				.HitLayer( CollisionLayer.LADDER, false )
 				.HitLayer( CollisionLayer.Trigger, false );
-			//.WorldOnly();
 		}
 
 		public TraceResult TraceFromTo( Vector3 start, Vector3 end )
