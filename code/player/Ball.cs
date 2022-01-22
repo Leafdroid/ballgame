@@ -68,7 +68,7 @@ namespace Ballers
 
 		private void SetSpawnpoint()
 		{
-			Position = Vector3.Up * 160f;
+			Position = Vector3.Up * 40f;
 
 			var spawnpoints = All.OfType<BallSpawn>();
 			var desiredSpawn = spawnpoints.Where( s => s.Index == CheckpointIndex ).FirstOrDefault();
