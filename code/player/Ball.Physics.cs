@@ -108,9 +108,16 @@ namespace Ballers
 
 			var mover = new MoveHelper( Position, Velocity, this );
 
-			Grounded = mover.TraceDirection( GetGravity().Normal ).Hit;
+			Vector3 gravityNormal = GetGravity().Normal;
+			Grounded = mover.TraceDirection( gravityNormal ).Hit;
 
-			TraceResult groundTrace = mover.TraceDirection( GetGravity().Normal * 16f );
+
+			Vector3 flatVelocity = Velocity - gravityNormal * Velocity.Dot( gravityNormal );
+			float speedFraction = flatVelocity.Length / MaxSpeed;
+			if ( speedFraction > 1f )
+				speedFraction = 1f;
+
+			TraceResult groundTrace = mover.TraceDirection( gravityNormal * 16f + speedFraction * 16f );
 			if ( groundTrace.Hit )
 			{
 				string surface = groundTrace.Surface.Name;
@@ -146,7 +153,7 @@ namespace Ballers
 			{
 				float waterLevel = (waterTrace.EndPos.z - Position.z) * 0.0125f;
 				float underwaterVolume = 0.5f - 0.5f * MathF.Cos( MathF.PI * waterLevel );
-				mover.Velocity -= PhysicsWorld.Gravity * underwaterVolume * Buoyancy * dt;
+				mover.Velocity -= GetGravity() * underwaterVolume * Buoyancy * dt;
 
 				friction = Viscosity * underwaterVolume + friction * (1f - underwaterVolume);
 			}
