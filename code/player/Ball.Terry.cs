@@ -245,13 +245,11 @@ namespace Ballers
 
 		public void UpdateModel()
 		{
-			Vector3 spinVelocity = Velocity;
-
-			if ( spinVelocity.LengthSquared > 0.0f )
+			if ( Velocity.LengthSquared > 0.0f )
 			{
-				var dir = spinVelocity.Normal;
-				var axis = new Vector3( -dir.y, dir.x, 0.0f );
-				var angle = (spinVelocity.Length * Time.Delta) / (40.0f * (float)Math.PI);
+				Vector3 flatVelocity = Velocity - GetGravity().Normal * Velocity.Dot( GetGravity().Normal );
+				var axis = Vector3.Cross( flatVelocity.Normal, GetGravity().Normal ).Normal;
+				var angle = (flatVelocity.Length * Time.Delta) / (40.0f * (float)Math.PI);
 				Rotation = Rotation.FromAxis( axis, 180.0f * angle ) * Rotation;
 			}
 		}

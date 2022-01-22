@@ -9,6 +9,14 @@ using System.Linq;
 
 namespace Ballers
 {
+
+	public enum GravityType
+	{
+		Default,
+		Magnet,
+		Manipulated
+	}
+
 	public partial class Ball : Player
 	{
 		public const float Acceleration = 700f; // yeah
@@ -23,10 +31,35 @@ namespace Ballers
 
 		public const float Mass = 50f; // how heavy!!
 
-		public bool Grounded { get; private set; }
+		public Vector3 GetGravity()
+		{
+			if ( GravityType == GravityType.Default )
+				return PhysicsWorld.Gravity;
+			else
+				return GravityDirection * PhysicsWorld.Gravity.Length;
+		}
+
+		[Net, Predicted] public GravityType GravityType { get; private set; }
+		[Net, Predicted] public Vector3 GravityDirection { get; private set; }
+		[Net, Predicted] public bool Grounded { get; private set; }
 
 		private void SimulatePhysics()
 		{
+			Rotation gravityRotation = Rotation.LookAt( GetGravity().Normal ) * Rotation.FromPitch( -90f );
+
+			Vector3 flatVelocity = Velocity - GetGravity().Normal * Velocity.Dot( GetGravity().Normal );
+			Vector3 clampedVelocity = flatVelocity.ClampLength( MaxSpeed );
+			float directionSpeed = clampedVelocity.Dot( MoveDirection );
+
+			float acceleration = Acceleration;
+			if ( !Grounded )
+				acceleration *= AirControl;
+
+			float t = 1f - directionSpeed / MaxSpeed;
+			acceleration *= t;
+
+			Velocity += MoveDirection * acceleration * Time.Delta;
+			/*
 			Vector3 clampedVelocity = Velocity.WithZ( 0 ).ClampLength( MaxSpeed );
 			float directionSpeed = clampedVelocity.Dot( MoveDirection );
 
@@ -38,6 +71,9 @@ namespace Ballers
 			acceleration *= t;
 
 			Velocity += MoveDirection * acceleration * Time.Delta;
+			*/
+
+
 			Move();
 		}
 
@@ -88,7 +124,36 @@ namespace Ballers
 
 			var mover = new MoveHelper( Position, Velocity, this );
 
-			Grounded = mover.TraceDirection( Vector3.Down ).Hit;
+			Grounded = mover.TraceDirection( GetGravity().Normal ).Hit;
+
+			TraceResult groundTrace = mover.TraceDirection( GetGravity().Normal * 16f );
+			if ( groundTrace.Hit )
+			{
+				DebugOverlay.Sphere( groundTrace.EndPos - groundTrace.Normal * 40f, 2f, Color.White, true, 0.1f );
+
+				string surface = groundTrace.Surface.Name;
+
+				if ( IsClient )
+					Log.Error( surface );
+
+				switch ( surface )
+				{
+					case "magnet":
+						GravityType = GravityType.Magnet;
+						GravityDirection = -groundTrace.Normal;
+						break;
+					case "gravity":
+						GravityType = GravityType.Manipulated;
+						GravityDirection = -groundTrace.Normal;
+						break;
+					default:
+						if ( GravityType != GravityType.Manipulated )
+							GravityType = GravityType.Default;
+						break;
+				}
+			}
+			else if ( GravityType == GravityType.Magnet )
+				GravityType = GravityType.Default;
 
 			TraceResult waterTrace = Trace.Ray( Position + Vector3.Up * 80f, Position )
 				.Radius( 40f )
@@ -110,9 +175,9 @@ namespace Ballers
 			mover.ApplyFriction( friction, dt );
 
 			if ( ConsoleSystem.GetValue( "sv_cheats" ) == "1" && Input.Down( InputButton.Jump ) )
-				mover.Velocity -= PhysicsWorld.Gravity * dt;
+				mover.Velocity -= GetGravity() * dt;
 			else
-				mover.Velocity += PhysicsWorld.Gravity * dt;
+				mover.Velocity += GetGravity() * dt;
 
 			mover.TryMove( dt );
 			mover.TryUnstuck(); // apparently this isnt needed i think
