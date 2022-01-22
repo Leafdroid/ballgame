@@ -109,7 +109,6 @@ namespace Ballers
 
 			mover.ApplyFriction( friction, dt );
 
-
 			if ( ConsoleSystem.GetValue( "sv_cheats" ) == "1" && Input.Down( InputButton.Jump ) )
 				mover.Velocity -= PhysicsWorld.Gravity * dt;
 			else

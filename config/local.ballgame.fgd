@@ -123,7 +123,7 @@ metadata
 //
 // Ballers.HurtBrush
 //
-@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) = trigger_hurt : ""
+@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) = trigger_death : ""
 [
 	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
 	enabled(boolean) : "Enabled" : 1 : "Whether this func_brush is visible/active at all"

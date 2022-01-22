@@ -53,6 +53,7 @@ namespace Ballers
 			EnableAllCollisions = false;
 			EnableTraceAndQueries = true;
 			ClearCollisionLayers();
+			AddCollisionLayer( CollisionLayer.Player );
 			SetInteractsWith( CollisionLayer.Water );
 
 			EnableShadowCasting = true;

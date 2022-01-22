@@ -1,0 +1,36 @@
+<!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
+{
+	data = 
+	{
+		Friction = 0.7
+		Elasticity = 0.1
+		Density = 2700.0
+		Thickness = -1.0
+		Dampening = 0.0
+		ImpactEffects = 
+		{
+			Regular = [  ]
+			Bullet = 
+			[
+				resource:"particles/impact.metal.vpcf",
+			]
+			BulletDecal = 
+			[
+				"decals/bullet-metal.decal",
+			]
+		}
+		Sounds = 
+		{
+			FootLeft = "footstep-metal"
+			FootRight = "footstep-metal"
+			bullet = "physics.metal.sheet.impact"
+			impacthard = "physics.metal.sheet.impact"
+			impactsoft = "physics.metal.sheet.impact"
+			footlaunch = "footstep-metal"
+			footland = "footstep-metal"
+		}
+		basesurface = "surfaces/magnet.surface"
+		description = "temporarily alters gravity direction when touched"
+		bouncethreshold = 0.0
+	}
+}

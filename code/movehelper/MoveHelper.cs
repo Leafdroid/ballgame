@@ -80,25 +80,17 @@ namespace Ballers
 						if ( planeVel < 0 )
 							planeVel = 0;
 
-						//float normalVel = -tr.Normal.Dot( relativeVelocity );
-						//DebugOverlay.Text( tr.EndPos, normalVel.ToString() );
-
 						if ( planeVel > 0 )
-							Position += tr.Normal * planeVel;
+							Position += tr.Normal * 0.01f;// * planeVel;
 
 						if ( relativeVelocity.Normal.Dot( tr.Normal ) < 0f )
 							Velocity -= relativeVelocity * planeVel;
 
 						Ball.PlayImpactSound( relativeVelocity.Dot( -tr.Normal ) );
 
-						//moveplanes.TryAdd( tr.Normal, brush.Velocity, ref Velocity, Ball.Bounciness );
-
-						if ( !moveplanes.TryAdd( tr.Normal, targetEnt.Velocity, ref Velocity ) )
-							break;
-
+						moveplanes.TryAdd( tr.Normal, targetEnt.Velocity, ref Velocity );
 					}
 				}
-
 
 
 				var pm = Trace.FromTo( Position, Position + Velocity * timestep )

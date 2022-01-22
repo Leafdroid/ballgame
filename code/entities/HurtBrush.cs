@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Ballers
 {
-	[Library( "trigger_hurt" )]
+	[Library( "trigger_death" )]
 	public partial class HurtBrush : BrushEntity
 	{
 		public override void Spawn()

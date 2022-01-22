@@ -36,22 +36,6 @@ namespace Ballers
 			All.Add( this );
 		}
 
-		/*
-		public void DupeToCient( Client )
-		{
-			base.Spawn();
-			Rotation = StartAngles.ToRotation();
-			SharedSpawn();
-
-			Transmit = TransmitType.Always;
-
-			EnableTraceAndQueries = true;
-			EnableAllCollisions = true;
-			EnableDrawing = true;
-			ServerEntity = true;
-		}
-		*/
-
 		public override void Spawn()
 		{
 			base.Spawn();
@@ -90,7 +74,6 @@ namespace Ballers
 			clientEnt.Transform = Transform;
 
 			clientEnt.ClearCollisionLayers();
-			//clientEnt.RemoveCollisionLayer( CollisionLayer.All );
 			clientEnt.AddCollisionLayer( CollisionLayer.LADDER );
 			ClientEntity = clientEnt;
 		}
