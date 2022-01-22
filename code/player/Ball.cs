@@ -21,6 +21,8 @@ namespace Ballers
 			if ( !(this as ModelEntity).IsValid() )
 				return;
 
+			GravityType = GravityType.Default;
+
 			Host.AssertServer();
 
 			Velocity = Vector3.Zero;

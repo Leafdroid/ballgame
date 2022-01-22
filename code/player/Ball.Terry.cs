@@ -161,14 +161,12 @@ namespace Ballers
 
 				Terry.RenderingEnabled = EnableDrawing;
 
-				Terry.Position = Position - Vector3.Up * 35f;
+				Vector3 flatVelocity = Velocity - GetGravity().Normal * Velocity.Dot( GetGravity().Normal );
+				Vector3 direction = flatVelocity.Normal;
 
-				Vector3 velocity = Velocity.WithZ( 0 );
-				Vector3 direction = velocity.Normal;
-
-				float speed = velocity.Length;
-				var forward = Terry.Rotation.Forward.Dot( velocity );
-				var sideward = Terry.Rotation.Right.Dot( velocity );
+				float speed = flatVelocity.Length;
+				var forward = Terry.Rotation.Forward.Dot( flatVelocity );
+				var sideward = Terry.Rotation.Right.Dot( flatVelocity );
 				var angle = MathF.Atan2( sideward, forward ).RadianToDegree().NormalizeDegrees();
 
 				// base stance
@@ -180,11 +178,13 @@ namespace Ballers
 				if ( speed > 32f )
 				{
 					// rotation
-					Rotation idealRotation = Rotation.LookAt( velocity, Vector3.Up );
+					Rotation idealRotation = Rotation.LookAt( flatVelocity, -GetGravity().Normal );
 					float turnSpeed = 0.01f;
 					Terry.Rotation = Rotation.Slerp( Terry.Rotation, idealRotation, speed * Time.Delta * turnSpeed );
 					Terry.Rotation = Terry.Rotation.Clamp( idealRotation, 90f, out var change );
 				}
+
+				Terry.Position = Position - Terry.Rotation.Up * 35f;
 
 				// look direction
 				var lookDirection = direction;
