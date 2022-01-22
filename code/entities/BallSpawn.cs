@@ -10,7 +10,10 @@ namespace Ballers
 	[Hammer.EntityTool( "Ball Spawnpoint", "Balls" )]
 	public partial class BallSpawn : BrushEntity
 	{
-		[Property( "index" )]
+		/// <summary>
+		/// Used for linking checkpoint, set to 0 for initial spawn.
+		/// </summary>
+		[Property( "index", Title = "Index" )]
 		[Net] public int Index { get; private set; } = 0;
 
 		public override void Spawn()

@@ -7,6 +7,8 @@ namespace Ballers
 {
 
 	[Library( "func_falldamage" )]
+	[Hammer.Solid]
+	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
 	public class FallDamageBrush : BrushEntity
 	{
 		public override void Spawn()

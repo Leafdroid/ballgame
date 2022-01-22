@@ -7,9 +7,14 @@ namespace Ballers
 {
 
 	[Library( "func_checkpoint" )]
+	[Hammer.Solid]
+	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
 	public partial class CheckpointBrush : BrushEntity
 	{
-		[Property( "index" )]
+		/// <summary>
+		/// Used for checkpoint order and for linking spawnpoints.
+		/// </summary>
+		[Property( "index", Title = "Index" )]
 		[Net] public int Index { get; private set; } = 0;
 
 		public override void Spawn()

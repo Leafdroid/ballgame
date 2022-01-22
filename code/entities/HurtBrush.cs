@@ -5,7 +5,9 @@ using System.Linq;
 
 namespace Ballers
 {
-	[Library( "trigger_death" )]
+	[Library( "trigger_death", Description = "Immediately kills all ballers inside" )]
+	[Hammer.Solid]
+	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
 	public partial class HurtBrush : BrushEntity
 	{
 		public override void Spawn()

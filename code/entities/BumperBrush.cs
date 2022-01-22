@@ -7,16 +7,16 @@ namespace Ballers
 {
 
 	[Library( "func_bumper" )]
+	[Hammer.Solid]
+	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
 	public partial class BumperBrush : BrushEntity
 	{
-		[Property( "force" )]
-		[Net] public float Force { get; private set; }
+		[Property( "force", Title = "Force" )]
+		[Net] public float Force { get; private set; } = 500f;
 
-		[Property( "pitch" )]
+		[Property( "pitch", Title = "Pitch" )]
 		[Net] public float Pitch { get; private set; } = 1f;
 
-		[Property( "sound" )]
-		[Net] public string SoundPath { get; private set; }
 
 		private TimeSince timeSinceBonk = 0f;
 		private bool justBonked = false;
@@ -112,10 +112,7 @@ namespace Ballers
 		{
 			justBonked = true;
 
-			if ( SoundPath != null )
-				Sound.FromWorld( SoundPath, pos ).SetPitch( Pitch );
-			else
-				Sound.FromWorld( BoingSound.Name, pos ).SetPitch( Pitch );
+			Sound.FromWorld( BoingSound.Name, pos ).SetPitch( Pitch );
 		}
 
 		[ClientRpc]
