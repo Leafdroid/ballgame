@@ -25,7 +25,7 @@ metadata
 = info_ball_start : ""
 [
 	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
-	index(integer) : "Index" : 0 : ""
+	index(integer) : "Index" : 0 : "Used for linking checkpoint, set to 0 for initial spawn."
 	enabled(boolean) : "Enabled" : 1 : "Whether this func_brush is visible/active at all"
 	solid(boolean) : "Solid" : 1 : "Whether this func_brush has collisions"
 	health(float) : "Health" : 0 : "If set to above 0, the entity will have this much health on spawn and will be breakable."
@@ -47,12 +47,16 @@ metadata
 //
 // Ballers.BumperBrush
 //
-@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) = func_bumper : ""
+@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) 
+metadata
+{
+	auto_apply_material = "materials/tools/toolstrigger.vmat"
+}
+= func_bumper : ""
 [
 	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
-	force(float) : "Force" : 0 : ""
+	force(float) : "Force" : "500" : ""
 	pitch(float) : "Pitch" : "1" : ""
-	sound(string) : "Sound Path" :  : ""
 	enabled(boolean) : "Enabled" : 1 : "Whether this func_brush is visible/active at all"
 	solid(boolean) : "Solid" : 1 : "Whether this func_brush has collisions"
 	health(float) : "Health" : 0 : "If set to above 0, the entity will have this much health on spawn and will be breakable."
@@ -74,10 +78,15 @@ metadata
 //
 // Ballers.CheckpointBrush
 //
-@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) = func_checkpoint : ""
+@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) 
+metadata
+{
+	auto_apply_material = "materials/tools/toolstrigger.vmat"
+}
+= func_checkpoint : ""
 [
 	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
-	index(integer) : "Index" : 0 : ""
+	index(integer) : "Index" : 0 : "Used for checkpoint order and for linking spawnpoints."
 	enabled(boolean) : "Enabled" : 1 : "Whether this func_brush is visible/active at all"
 	solid(boolean) : "Solid" : 1 : "Whether this func_brush has collisions"
 	health(float) : "Health" : 0 : "If set to above 0, the entity will have this much health on spawn and will be breakable."
@@ -99,7 +108,12 @@ metadata
 //
 // Ballers.FallDamageBrush
 //
-@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) = func_falldamage : ""
+@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) 
+metadata
+{
+	auto_apply_material = "materials/tools/toolstrigger.vmat"
+}
+= func_falldamage : ""
 [
 	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
 	enabled(boolean) : "Enabled" : 1 : "Whether this func_brush is visible/active at all"
@@ -123,7 +137,12 @@ metadata
 //
 // Ballers.HurtBrush
 //
-@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) = trigger_death : ""
+@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) 
+metadata
+{
+	auto_apply_material = "materials/tools/toolstrigger.vmat"
+}
+= trigger_death : "Immediately kills all ballers inside"
 [
 	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
 	enabled(boolean) : "Enabled" : 1 : "Whether this func_brush is visible/active at all"
