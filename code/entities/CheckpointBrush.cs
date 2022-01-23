@@ -17,6 +17,8 @@ namespace Ballers
 		[Property( "index", Title = "Index" )]
 		[Net] public int Index { get; private set; } = 0;
 
+		public static int LastIndex { get; private set; }
+
 		public override void Spawn()
 		{
 			base.Spawn();
@@ -32,6 +34,9 @@ namespace Ballers
 
 			ClearCollisionLayers();
 			AddCollisionLayer( CollisionLayer.Trigger );
+
+			if ( Index > LastIndex )
+				LastIndex = Index;
 		}
 
 		public override void ClientSpawn()

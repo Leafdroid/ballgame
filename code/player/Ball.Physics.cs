@@ -86,12 +86,7 @@ namespace Ballers
 							Pop();
 							break;
 						case CheckpointBrush checkPoint:
-							if ( checkPoint.Index == CheckpointIndex + 1 )
-							{
-								if ( IsClient )
-									Sound.FromScreen( CheckpointBrush.Swoosh.Name );
-								CheckpointIndex++;
-							}
+							HitCheckpoint( checkPoint );
 							break;
 						default:
 							continue;
@@ -174,7 +169,13 @@ namespace Ballers
 
 			if ( moveTrace.Hit )
 			{
-				float hitForce = mover.Velocity.Dot( -moveTrace.Normal );
+				float hitForce;
+
+				if ( moveTrace.Entity.IsValid() )
+					hitForce = (Velocity - moveTrace.Entity.Velocity).Dot( -moveTrace.Normal );
+				else
+					hitForce = mover.Velocity.Dot( -moveTrace.Normal );
+
 				PlayImpactSound( hitForce );
 			}
 

@@ -1,5 +1,6 @@
 ﻿
 using Sandbox;
+using Sandbox.UI;
 using Sandbox.UI.Construct;
 using System;
 using System.IO;
@@ -7,19 +8,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 
-//
-// You don't need to put things in a namespace, but it doesn't hurt.
-//
 namespace Ballers
 {
-
-	/// <summary>
-	/// This is your game class. This is an entity that is created serverside when
-	/// the game starts, and is replicated to the client. 
-	/// 
-	/// You can use this to create things like HUDs and declare which player class
-	/// to use for spawned players.
-	/// </summary>
 	public partial class BallersGame : Sandbox.Game
 	{
 		public BallersGame()
@@ -40,6 +30,59 @@ namespace Ballers
 
 		}
 
+		public void Finished( Client cl )
+		{
+			if ( Host.IsClient )
+				return;
+
+			float time = Time.Now - (cl.Pawn as Ball).PredictedStart;
+			string text = $"{cl.Name} finished in {Stringify( time )}!";
+
+			Log.Info( text );
+			ChatBox.AddInformation( To.Everyone, text, $"avatar:{cl.PlayerId}" );
+		}
+
+		public void Checkpointed( Client cl )
+		{
+			if ( Host.IsClient )
+				return;
+
+			Ball ball = (cl.Pawn as Ball);
+
+			float time = Time.Now - ball.PredictedStart;
+			string text = $"{cl.Name} reached checkpoint {ball.CheckpointIndex} in {Stringify( time )}!";
+
+			Log.Info( text );
+			ChatBox.AddInformation( To.Everyone, text, $"avatar:{cl.PlayerId}" );
+		}
+
+
+		public string Stringify( float time )
+		{
+			float minutes = time / 60f;
+			int fullMinutes = (int)minutes;
+			float seconds = (minutes - fullMinutes) * 60f;
+			int fullSeconds = (int)seconds;
+			int milliseconds = (int)((seconds - fullSeconds) * 1000f);
+
+			return $"{FillNumber( fullMinutes, 2 )}:{FillNumber( fullSeconds, 2 )}:{FillNumber( milliseconds, 3 )}";
+		}
+
+		private static string FillNumber( int num, int desired )
+		{
+			string number = num.ToString();
+
+			int delta = desired - number.Length;
+
+			if ( delta > 0 )
+			{
+				number = "";
+				for ( int i = 0; i < delta; i++ )
+					number += "0";
+				number += num.ToString();
+			}
+			return number;
+		}
 
 		public override void ClientJoined( Client client )
 		{

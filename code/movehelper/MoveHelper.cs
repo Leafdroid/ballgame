@@ -74,7 +74,6 @@ namespace Ballers
 
 					if ( tr.Hit )
 					{
-						//DebugOverlay.Sphere( tr.EndPos, 40f, Color.White );
 						float planeVel = targetEnt.Velocity.Normal.Dot( tr.Normal );
 						if ( planeVel < 0 )
 							planeVel = 0;

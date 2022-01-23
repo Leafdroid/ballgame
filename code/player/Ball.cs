@@ -28,7 +28,6 @@ namespace Ballers
 			Velocity = Vector3.Zero;
 
 			Popped = false;
-			ActiveTick = 0;
 			EnableDrawing = true;
 
 			SetModel( "models/ball.vmdl" );
@@ -64,6 +63,21 @@ namespace Ballers
 			SetSpawnpoint();
 
 			ResetInterpolation();
+		}
+
+		private void HitCheckpoint( CheckpointBrush checkpoint )
+		{
+			if ( checkpoint.Index == CheckpointIndex + 1 )
+			{
+				if ( IsClient )
+					Sound.FromScreen( CheckpointBrush.Swoosh.Name );
+				CheckpointIndex++;
+
+				if ( checkpoint.Index == CheckpointBrush.LastIndex )
+					(Game.Current as BallersGame).Finished( Client );
+				else
+					(Game.Current as BallersGame).Checkpointed( Client );
+			}
 		}
 
 		private void SetSpawnpoint()
@@ -164,6 +178,13 @@ namespace Ballers
 			isColored = true;
 		}
 
+		public void Reset()
+		{
+			ActiveTick = 0;
+			CheckpointIndex = 0;
+			Pop( false );
+		}
+
 		[Event.Frame]
 		public void Frame()
 		{
@@ -184,12 +205,11 @@ namespace Ballers
 		}
 
 		[ServerCmd( "reset" )]
-		public static void Reset()
+		public static void ResetCommand()
 		{
 			if ( ConsoleSystem.Caller != null && ConsoleSystem.Caller.Pawn is Ball player )
 			{
-				player.CheckpointIndex = 0;
-				player.Pop( false );
+				player.Reset();
 			}
 		}
 	}
