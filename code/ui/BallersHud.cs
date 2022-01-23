@@ -19,6 +19,7 @@ namespace Ballers
 
 				RootPanel.AddChild<NameTags>();
 				RootPanel.AddChild<Scoreboard<ScoreboardEntry>>();
+				RootPanel.AddChild<Timer>();
 			}
 		}
 	}

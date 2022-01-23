@@ -56,7 +56,6 @@ namespace Ballers
 			ChatBox.AddInformation( To.Everyone, text, $"avatar:{cl.PlayerId}" );
 		}
 
-
 		public string Stringify( float time )
 		{
 			float minutes = time / 60f;
