@@ -36,7 +36,23 @@ namespace Ballers
 				return;
 
 			float time = Time.Now - (cl.Pawn as Ball).PredictedStart;
-			string text = $"{cl.Name} finished in {Stringify( time )}!";
+			string timeString = Stringify( time );
+
+			float personalBest = cl.GetValue( "time", -1f );
+			bool newBest = personalBest == -1f || personalBest > time;
+			if ( newBest )
+			{
+				cl.SetValue( "time", time );
+				cl.SetValue( "timeString", timeString );
+
+				string fileName = $"records/{Global.MapName}/{cl.PlayerId}.record";
+				FileSystem.Data.CreateDirectory( $"records/{Global.MapName}" );
+
+				using ( var writer = new BinaryWriter( FileSystem.Data.OpenWrite( fileName ) ) )
+					writer.Write( time );
+			}
+
+			string text = $"{cl.Name} finished in {timeString}! {(newBest ? "New personal best!" : "")}";
 
 			Log.Info( text );
 			ChatBox.AddInformation( To.Everyone, text, $"avatar:{cl.PlayerId}" );
@@ -90,10 +106,22 @@ namespace Ballers
 			if ( IsServer )
 				Ball.DeliverClothing( client );
 
+			string fileName = $"records/{Global.MapName}/{client.PlayerId}.record";
+			if ( FileSystem.Data.FileExists( fileName ) )
+			{
+				using ( var reader = new BinaryReader( FileSystem.Data.OpenRead( fileName ) ) )
+				{
+					float time = reader.ReadSingle();
+					string timeString = Stringify( time );
+					client.SetValue( "time", time );
+					client.SetValue( "timeString", timeString );
+				}
+			}
+
 			var player = new Ball();
 			client.Pawn = player;
 
-			player.Respawn();
+			player.Create();
 		}
 
 		public override void ClientDisconnect( Client cl, NetworkDisconnectionReason reason )

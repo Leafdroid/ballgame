@@ -21,7 +21,7 @@ namespace Ballers
 		public Vector3 MoveDirection { get; set; }
 		public ReplayData ReplayData { get; set; } = new ReplayData();
 		[Net, Predicted] public float PredictedStart { get; private set; }
-		[Net] public int ActiveTick { get; private set; }
+		[Net] public int ActiveTick { get; private set; } = 0;
 		public float SimulationTime => Time.Now - PredictedStart;
 		public int PredictionTick => (int)(Global.TickRate * SimulationTime);
 
@@ -93,7 +93,7 @@ namespace Ballers
 			if ( reset )
 			{
 				data += 512;
-				Log.Info( "do be resetting" );
+				//Log.Info( "do be resetting" );
 			}
 
 			if ( !moving )

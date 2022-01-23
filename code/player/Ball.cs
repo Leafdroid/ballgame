@@ -18,21 +18,24 @@ namespace Ballers
 
 		public override void Respawn()
 		{
-			if ( !(this as ModelEntity).IsValid() )
-				return;
-
 			GravityType = GravityType.Default;
-
-			Host.AssertServer();
-
 			Velocity = Vector3.Zero;
-
 			Popped = false;
 			EnableDrawing = true;
 
+			SetSpawnpoint();
+			ResetInterpolation();
+		}
+
+		public void Create()
+		{
+			if ( !(this as ModelEntity).IsValid() )
+				return;
+
+			Host.AssertServer();
+
 			SetModel( "models/ball.vmdl" );
 
-			//Controller = Client.IsValid() ? ControlType.Player : ControlType.Replay;
 			if ( Controller == ControlType.Player )
 			{
 				ReplayData = new ReplayData();
@@ -60,9 +63,7 @@ namespace Ballers
 			EnableShadowCasting = true;
 			Transmit = TransmitType.Always;
 
-			SetSpawnpoint();
-
-			ResetInterpolation();
+			Respawn();
 		}
 
 		private void HitCheckpoint( CheckpointBrush checkpoint )
@@ -123,6 +124,9 @@ namespace Ballers
 
 		public void Pop( bool predicted = true )
 		{
+			if ( CheckpointIndex == 0 )
+				Reset( false );
+
 			if ( (IsServer || !predicted) && Popped )
 				return;
 
@@ -178,11 +182,14 @@ namespace Ballers
 			isColored = true;
 		}
 
-		public void Reset()
+		public void Reset( bool withPop = true )
 		{
+			ReplayData = new ReplayData();
 			ActiveTick = 0;
 			CheckpointIndex = 0;
-			Pop( false );
+
+			if ( withPop )
+				Pop( false );
 		}
 
 		[Event.Frame]

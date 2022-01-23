@@ -12,7 +12,7 @@ namespace Sandbox.UI
 	public partial class Scoreboard<T> : Panel where T : ScoreboardEntry, new()
 	{
 		public Panel Canvas { get; protected set; }
-		Dictionary<Client, T> Rows = new ();
+		Dictionary<Client, T> Rows = new();
 
 		public Panel Header { get; protected set; }
 
@@ -46,7 +46,7 @@ namespace Sandbox.UI
 
 			foreach ( var client in Rows.Keys.Except( Client.All ) )
 			{
-				if ( Rows.TryGetValue( client, out var row ))
+				if ( Rows.TryGetValue( client, out var row ) )
 				{
 					row?.Delete();
 					Rows.Remove( client );
@@ -55,11 +55,11 @@ namespace Sandbox.UI
 		}
 
 
-		protected virtual void AddHeader() 
+		protected virtual void AddHeader()
 		{
 			Header = Add.Panel( "header" );
 			Header.Add.Label( "Name", "name" );
-			Header.Add.Label( "Kills", "kills" );
+			Header.Add.Label( "Time", "time" );
 			Header.Add.Label( "Deaths", "deaths" );
 			Header.Add.Label( "Ping", "ping" );
 		}

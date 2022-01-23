@@ -13,7 +13,7 @@ namespace Sandbox.UI
 		public Client Client;
 
 		public Label PlayerName;
-		public Label Kills;
+		public Label Time;
 		public Label Deaths;
 		public Label Ping;
 
@@ -22,7 +22,7 @@ namespace Sandbox.UI
 			AddClass( "entry" );
 
 			PlayerName = Add.Label( "PlayerName", "name" );
-			Kills = Add.Label( "", "kills" );
+			Time = Add.Label( "--:--:---", "time" );
 			Deaths = Add.Label( "", "deaths" );
 			Ping = Add.Label( "", "ping" );
 		}
@@ -49,7 +49,7 @@ namespace Sandbox.UI
 		public virtual void UpdateData()
 		{
 			PlayerName.Text = Client.Name;
-			Kills.Text = Client.GetInt( "kills" ).ToString();
+			Time.Text = Client.GetValue( "timeString", "--:--:---" );
 			Deaths.Text = Client.GetInt( "deaths" ).ToString();
 			Ping.Text = Client.Ping.ToString();
 			SetClass( "me", Client == Local.Client );

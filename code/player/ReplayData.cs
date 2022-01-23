@@ -143,6 +143,7 @@ namespace Ballers
 			replayGhost.Controller = Ball.ControlType.Replay;
 			replayGhost.ReplayData = container;
 			replayGhost.Owner = player;
+			replayGhost.Create();
 			replayGhost.Respawn();
 		}
 
