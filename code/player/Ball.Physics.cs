@@ -117,7 +117,7 @@ namespace Ballers
 			if ( speedFraction > 1f )
 				speedFraction = 1f;
 
-			TraceResult groundTrace = mover.TraceDirection( gravityNormal * 16f + speedFraction * 16f );
+			TraceResult groundTrace = mover.TraceDirection( gravityNormal * 16f + speedFraction * 24f );
 			if ( groundTrace.Hit )
 			{
 				string surface = groundTrace.Surface.Name;

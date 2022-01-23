@@ -179,7 +179,7 @@ namespace Ballers
 				{
 					// rotation
 					Rotation idealRotation = Rotation.LookAt( flatVelocity, -GetGravity().Normal );
-					float turnSpeed = 0.025f;
+					float turnSpeed = 0.02f;
 					Terry.Rotation = Rotation.Slerp( Terry.Rotation, idealRotation, speed * Time.Delta * turnSpeed );
 				}
 
