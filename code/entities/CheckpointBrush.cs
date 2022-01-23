@@ -12,7 +12,7 @@ namespace Ballers
 	public partial class CheckpointBrush : BrushEntity
 	{
 		/// <summary>
-		/// Used for checkpoint order and for linking spawnpoints.
+		/// Used for checkpoint order and for linking spawnpoints. Do not use 0 for this, start with 1.
 		/// </summary>
 		[Property( "index", Title = "Index" )]
 		[Net] public int Index { get; private set; } = 0;

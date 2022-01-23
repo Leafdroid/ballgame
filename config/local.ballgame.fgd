@@ -86,7 +86,7 @@ metadata
 = func_checkpoint : ""
 [
 	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
-	index(integer) : "Index" : 0 : "Used for checkpoint order and for linking spawnpoints."
+	index(integer) : "Index" : 0 : "Used for checkpoint order and for linking spawnpoints. Do not use 0 for this, start with 1."
 	enabled(boolean) : "Enabled" : 1 : "Whether this func_brush is visible/active at all"
 	solid(boolean) : "Solid" : 1 : "Whether this func_brush has collisions"
 	health(float) : "Health" : 0 : "If set to above 0, the entity will have this much health on spawn and will be breakable."

@@ -32,7 +32,7 @@ namespace Sandbox
 			fov = fov.LerpTo( vT * 10f, Time.Delta * 10f );
 			roll = roll.LerpTo( -hT * 15f, Time.Delta * 10f );
 
-			Rotation = Input.Rotation * Rotation.FromRoll( roll );
+			Rotation = Rotation.From( Input.Rotation.Pitch(), Input.Rotation.Yaw(), roll );
 
 			Vector3 camPos = player.Position + (Rotation.Backward * 10 * zoom + Rotation.Up * 0.5f * zoom);
 

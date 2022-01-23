@@ -21,7 +21,7 @@ namespace Ballers
 		{
 			EnableDrawing = false;
 			EnableAllCollisions = false;
-			EnableTraceAndQueries = false;
+			EnableTraceAndQueries = true;
 
 			ClearCollisionLayers();
 			AddCollisionLayer( CollisionLayer.Trigger );
