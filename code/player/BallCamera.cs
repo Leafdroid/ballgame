@@ -13,6 +13,10 @@ namespace Sandbox
 		private const int minZoom = 10;
 		private const int maxZoom = 30;
 
+		private static Trace cameraTrace = Trace.Ray( 0, 0 )
+			.Radius( 10f )
+			.HitLayer( CollisionLayer.Debris, false );
+
 		public override void Update()
 		{
 			if ( Local.Client.Pawn is not Ball player )
@@ -36,10 +40,7 @@ namespace Sandbox
 
 			Vector3 camPos = player.Position + (Rotation.Backward * 10 * zoom + Rotation.Up * 0.5f * zoom);
 
-			TraceResult cameraTrace = Trace.Ray( player.Position, camPos )
-				.Radius( 10f ).WithoutTags( "cameraPhase" ).HitLayer( CollisionLayer.Debris, false ).Run();
-
-			Position = cameraTrace.EndPos;
+			Position = cameraTrace.FromTo( player.Position, camPos ).Run().EndPos;
 
 			FieldOfView = 75 + fov;
 

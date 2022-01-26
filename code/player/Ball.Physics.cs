@@ -36,11 +36,11 @@ namespace Ballers
 			if ( GravityType == GravityType.Default )
 				return PhysicsWorld.Gravity;
 			else
-				return GravityDirection * PhysicsWorld.Gravity.Length;
+				return GravityRotation.Forward * PhysicsWorld.Gravity.Length;
 		}
 
 		[Net, Predicted] public GravityType GravityType { get; private set; }
-		[Net, Predicted] public Vector3 GravityDirection { get; private set; }
+		[Net, Predicted] public Rotation GravityRotation { get; private set; }
 		[Net, Predicted] public bool Grounded { get; private set; }
 
 		private void SimulatePhysics()
@@ -117,19 +117,25 @@ namespace Ballers
 			{
 				string surface = groundTrace.Surface.Name;
 
+				Rotation want = Rotation.LookAt( -groundTrace.Normal, GravityRotation.Up );
+
 				switch ( surface )
 				{
 					case "magnet":
 						GravityType = GravityType.Magnet;
-						GravityDirection = -groundTrace.Normal;
+						GravityRotation = Rotation.Slerp( GravityRotation, want, Time.Delta * 6f );
 						break;
 					case "gravity":
 						GravityType = GravityType.Manipulated;
-						GravityDirection = -groundTrace.Normal;
+						GravityRotation = Rotation.Slerp( GravityRotation, want, Time.Delta * 6f );
 						break;
 					default:
 						if ( GravityType != GravityType.Manipulated )
+						{
+							GravityRotation = Rotation.Slerp( GravityRotation, Rotation.LookAt( Vector3.Down ), Time.Delta * 10f );
+
 							GravityType = GravityType.Default;
+						}
 						break;
 				}
 			}

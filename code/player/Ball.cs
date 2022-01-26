@@ -12,15 +12,25 @@ namespace Ballers
 	public partial class Ball : Player
 	{
 		public static List<Ball> ReplayGhosts = new();
+		public ReplayData ReplayData { get; set; } = new ReplayData();
 
 		[Net, Predicted] public int CheckpointIndex { get; private set; } = 0;
-		[Net, Predicted] public bool Popped { get; private set; }
+		[Net, Predicted] public float PredictedStart { get; private set; }
+		[Net] public int ActiveTick { get; private set; } = 0;
+		public float SimulationTime => Time.Now - PredictedStart;
+		public int PredictionTick => (int)(Global.TickRate * SimulationTime);
+
 
 		public override void Respawn()
 		{
+			if ( !(this as ModelEntity).IsValid() )
+				return;
+
+			//ReplayData.PlayReplay( Client );
+
 			GravityType = GravityType.Default;
 			Velocity = Vector3.Zero;
-			Popped = false;
+			LifeState = LifeState.Alive;
 			EnableDrawing = true;
 
 			SetSpawnpoint();
@@ -75,15 +85,15 @@ namespace Ballers
 				CheckpointIndex++;
 
 				if ( checkpoint.Index == CheckpointBrush.LastIndex )
-					(Game.Current as BallersGame).Finished( Client );
+					(Game.Current as BallersGame).Finished( this );
 				else
-					(Game.Current as BallersGame).Checkpointed( Client );
+					(Game.Current as BallersGame).Checkpointed( this );
 			}
 		}
 
 		private void SetSpawnpoint()
 		{
-			Position = Vector3.Up * 40f;
+			Position = Vector3.Up * 160f;
 
 			var spawnpoints = All.OfType<BallSpawn>();
 			var desiredSpawn = spawnpoints.Where( s => s.Index == CheckpointIndex ).FirstOrDefault();
@@ -96,6 +106,21 @@ namespace Ballers
 			var spawnpoint = All.OfType<SpawnPoint>().FirstOrDefault();
 			if ( spawnpoint != null )
 				Position += spawnpoint.Position;
+		}
+
+
+		public override void Simulate( Client cl )
+		{
+			if ( LifeState == LifeState.Dead )
+				return;
+
+			if ( ActiveTick == 0 )
+				PredictedStart = Time.Now;
+
+			SimulateInputs();
+			SimulatePhysics();
+
+			ActiveTick++;
 		}
 
 		public override void ClientSpawn()
@@ -127,8 +152,10 @@ namespace Ballers
 			if ( CheckpointIndex == 0 )
 				Reset( false );
 
-			if ( (IsServer || !predicted) && Popped )
+			if ( (IsServer || !predicted) && LifeState == LifeState.Dead )
 				return;
+
+			Velocity = Vector3.Zero;
 
 			if ( IsServer )
 			{
@@ -144,7 +171,7 @@ namespace Ballers
 				BallDome.Create( this );
 			}
 
-			Popped = true;
+			LifeState = LifeState.Dead;
 			EnableDrawing = false;
 		}
 

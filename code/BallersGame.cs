@@ -30,46 +30,79 @@ namespace Ballers
 
 		}
 
-		public void Finished( Client cl )
+		public void Finished( Ball ball )
 		{
 			if ( Host.IsClient )
 				return;
 
-			float time = Time.Now - (cl.Pawn as Ball).PredictedStart;
+			if ( ball.Controller == Ball.ControlType.Replay )
+			{
+				ball.Pop();
+				ball.DeleteAsync( 1f );
+				return;
+			}
+
+			Client client = ball.Client;
+
+			float time = Time.Now - ball.PredictedStart;
 			string timeString = Stringify( time );
 
-			float personalBest = cl.GetValue( "time", -1f );
+			float personalBest = client.GetValue( "time", -1f );
 			bool newBest = personalBest == -1f || personalBest > time;
+			bool worldBest = false;
 			if ( newBest )
 			{
-				cl.SetValue( "time", time );
-				cl.SetValue( "timeString", timeString );
+				client.SetValue( "time", time );
+				client.SetValue( "timeString", timeString );
 
-				string fileName = $"records/{Global.MapName}/{cl.PlayerId}.record";
+				ball.ReplayData.Write( client );
+
+				string fileName = $"records/{Global.MapName}/{client.PlayerId}.record";
 				FileSystem.Data.CreateDirectory( $"records/{Global.MapName}" );
 
 				using ( var writer = new BinaryWriter( FileSystem.Data.OpenWrite( fileName ) ) )
 					writer.Write( time );
+
+				string worldBestFile = $"records/{Global.MapName}/world.record";
+				if ( FileSystem.Data.FileExists( worldBestFile ) )
+				{
+					using ( var reader = new BinaryReader( FileSystem.Data.OpenRead( worldBestFile ) ) )
+					{
+						float worldTime = reader.ReadSingle();
+
+						if ( time < worldTime )
+							worldBest = true;
+					}
+				}
+				else worldBest = true;
+
+				if ( worldBest )
+				{
+					using ( var writer = new BinaryWriter( FileSystem.Data.OpenWrite( worldBestFile ) ) )
+						writer.Write( time );
+				}
 			}
 
-			string text = $"{cl.Name} finished in {timeString}! {(newBest ? "New personal best!" : "")}";
+			string text = $"{client.Name} finished in {timeString}!{(worldBest ? " New world record!" : newBest ? " New personal best!" : "")}";
 
 			Log.Info( text );
-			ChatBox.AddInformation( To.Everyone, text, $"avatar:{cl.PlayerId}" );
+			ChatBox.AddInformation( To.Everyone, text, $"avatar:{client.PlayerId}" );
 		}
 
-		public void Checkpointed( Client cl )
+		public void Checkpointed( Ball ball )
 		{
 			if ( Host.IsClient )
 				return;
 
-			Ball ball = (cl.Pawn as Ball);
+			if ( ball.Controller == Ball.ControlType.Replay )
+				return;
 
+			Client client = ball.Client;
 			float time = Time.Now - ball.PredictedStart;
-			string text = $"{cl.Name} reached checkpoint {ball.CheckpointIndex} in {Stringify( time )}!";
+			string text = $"{client.Name} reached checkpoint {ball.CheckpointIndex} in {Stringify( time )}!";
 
 			Log.Info( text );
-			ChatBox.AddInformation( To.Everyone, text, $"avatar:{cl.PlayerId}" );
+			ChatBox.AddInformation( To.Everyone, text, $"avatar:{client.PlayerId}" );
 		}
 
 		public string Stringify( float time )

@@ -20,6 +20,9 @@ namespace Ballers
 			if ( player == null ) return;
 
 			float time = Time.Now - player.PredictedStart;
+			if ( time < 0f )
+				time = 0;
+
 			Label.Text = $"{Stringify( time )}";
 		}
 

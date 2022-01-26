@@ -147,6 +147,25 @@ namespace Ballers
 			replayGhost.Respawn();
 		}
 
+		public static void PlayReplay( Client client )
+		{
+			if ( client == null )
+				return;
+
+			long id = client.PlayerId;
+
+			ReplayData container = FromFile( id );
+			if ( container == null )
+				return;
+
+			Ball replayGhost = new Ball();
+			replayGhost.Controller = Ball.ControlType.Replay;
+			replayGhost.ReplayData = container;
+			replayGhost.Create();
+			replayGhost.Respawn();
+		}
+
+
 
 		[ServerCmd( "savereplay" )]
 		public static void SaveReplay()

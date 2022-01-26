@@ -19,22 +19,10 @@ namespace Ballers
 
 		[Net] public ControlType Controller { get; set; }
 		public Vector3 MoveDirection { get; set; }
-		public ReplayData ReplayData { get; set; } = new ReplayData();
-		[Net, Predicted] public float PredictedStart { get; private set; }
-		[Net] public int ActiveTick { get; private set; } = 0;
-		public float SimulationTime => Time.Now - PredictedStart;
-		public int PredictionTick => (int)(Global.TickRate * SimulationTime);
-
 		public BallInput ActiveInput { get; private set; } = new BallInput();
 
-		public override void Simulate( Client cl )
+		public void SimulateInputs()
 		{
-			if ( Popped )
-				return;
-
-			if ( ActiveTick == 0 )
-				PredictedStart = Time.Now;
-
 			EyeRot = Input.Rotation;
 
 			if ( Controller == ControlType.Player )
@@ -56,10 +44,6 @@ namespace Ballers
 			}
 
 			MoveDirection = moveDirection;
-
-			SimulatePhysics();
-
-			ActiveTick++;
 		}
 
 		public static readonly SoundEvent PopSound = new( "sounds/ball/pop.vsnd" );
@@ -91,10 +75,7 @@ namespace Ballers
 
 			data = (ushort)(moving ? 256 : 0);
 			if ( reset )
-			{
 				data += 512;
-				//Log.Info( "do be resetting" );
-			}
 
 			if ( !moving )
 				return;
