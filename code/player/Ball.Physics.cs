@@ -167,23 +167,11 @@ namespace Ballers
 				mover.Velocity += GetGravity() * dt;
 
 			mover.TryMove( dt );
-			mover.TryUnstuck(); // apparently this isnt needed i think
+			mover.TryUnstuck();
 
 			TraceResult moveTrace = mover.Trace
 				.FromTo( mover.Position, mover.Position + mover.Velocity * dt )
 				.Run();
-
-			if ( moveTrace.Hit )
-			{
-				float hitForce;
-
-				if ( moveTrace.Entity.IsValid() )
-					hitForce = (Velocity - moveTrace.Entity.Velocity).Dot( -moveTrace.Normal );
-				else
-					hitForce = mover.Velocity.Dot( -moveTrace.Normal );
-
-				PlayImpactSound( hitForce );
-			}
 
 			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) )
 			{
@@ -234,7 +222,6 @@ namespace Ballers
 			"sounds/ball/bounce3.vsnd",
 			},
 			Pitch = 1f,
-			PitchRandom = 0.1f,
 			Volume = 1f,
 			DistanceMax = 2048f,
 		};

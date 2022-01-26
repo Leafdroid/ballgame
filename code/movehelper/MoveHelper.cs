@@ -46,12 +46,10 @@ namespace Ballers
 
 			using var moveplanes = new VelocityClipPlanes( Velocity );
 
-
 			for ( int bump = 0; bump < moveplanes.Max; bump++ )
 			{
 				if ( Velocity.Length.AlmostEqual( 0.0f ) )
 					break;
-
 
 				foreach ( MovingBrush brush in MovingBrush.All )
 				{
@@ -84,9 +82,10 @@ namespace Ballers
 						if ( relativeVelocity.Normal.Dot( tr.Normal ) < 0f )
 							Velocity -= relativeVelocity * planeVel;
 
-						Ball.PlayImpactSound( relativeVelocity.Dot( -tr.Normal ) );
+						//Ball.PlayImpactSound( relativeVelocity.Dot( -tr.Normal ) );
 
-						moveplanes.TryAdd( tr.Normal, targetEnt.Velocity, ref Velocity );
+						if ( !moveplanes.TryAdd( tr.Normal, targetEnt.Velocity, ref Velocity ) )
+							break;
 					}
 				}
 
@@ -133,6 +132,11 @@ namespace Ballers
 				if ( !moveplanes.TryAdd( pm.Normal, planeVelocity, ref Velocity ) )
 					break;
 			}
+
+
+			Vector3 bumpVelocity = moveplanes.OrginalVelocity - moveplanes.BumpVelocity;
+			float bumpForce = bumpVelocity.Length;
+			Ball.PlayImpactSound( bumpForce );
 
 			if ( travelFraction == 0 )
 				Velocity = 0;

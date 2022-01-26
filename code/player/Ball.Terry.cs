@@ -14,6 +14,7 @@ namespace Ballers
 		private static Clothing FindClothing( int id ) => clothingResources.TryGetValue( id, out Clothing clothing ) ? clothing : null;
 
 		public AnimSceneObject Terry { get; private set; }
+		public ModelEntity TerryRagdoll { get; private set; }
 		private bool dressed = false;
 
 		[Net] public string ClothingData { get; set; }
@@ -240,6 +241,8 @@ namespace Ballers
 			ent.SetInteractsWith( CollisionLayer.Debris );
 
 			ent.DeleteAsync( 6.5f );
+
+			TerryRagdoll = ent;
 		}
 
 		public void UpdateModel()

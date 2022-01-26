@@ -155,8 +155,6 @@ namespace Ballers
 			if ( (IsServer || !predicted) && LifeState == LifeState.Dead )
 				return;
 
-			Velocity = Vector3.Zero;
-
 			if ( IsServer )
 			{
 				PopRpc( predicted );

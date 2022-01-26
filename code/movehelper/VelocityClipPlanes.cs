@@ -10,8 +10,8 @@ namespace Ballers
 	/// </summary>
 	public struct VelocityClipPlanes : IDisposable
 	{
-		Vector3 OrginalVelocity;
-		Vector3 BumpVelocity;
+		public Vector3 OrginalVelocity { get; private set; }
+		public Vector3 BumpVelocity { get; private set; }
 		Vector3[] Planes;
 
 		/// <summary>
