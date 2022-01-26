@@ -167,7 +167,7 @@ namespace Ballers
 				mover.Velocity += GetGravity() * dt;
 
 			mover.TryMove( dt );
-			mover.TryUnstuck();
+			//mover.TryUnstuck();
 
 			TraceResult moveTrace = mover.Trace
 				.FromTo( mover.Position, mover.Position + mover.Velocity * dt )

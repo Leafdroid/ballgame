@@ -1,6 +1,7 @@
 ﻿using Sandbox;
 using System.Linq;
 using System;
+using System.Collections.Generic;
 
 namespace Ballers
 {
@@ -44,6 +45,12 @@ namespace Ballers
 		{
 			float travelFraction = 0;
 
+			TraceResult pm;
+
+			Surface hitSurface = null;
+			Vector3 hitPos = Vector3.Zero;
+			float prevDot = 0f;
+
 			using var moveplanes = new VelocityClipPlanes( Velocity );
 
 			for ( int bump = 0; bump < moveplanes.Max; bump++ )
@@ -64,35 +71,51 @@ namespace Ballers
 
 					Vector3 movePos = Position + relativeVelocity * timestep;
 
-					TraceResult tr = Trace.Ray( Position, movePos )
+					pm = Trace.Ray( Position, movePos )
 					.Radius( 40f )
 					.HitLayer( CollisionLayer.LADDER, true )
 					.Only( targetEnt )
 					.Run();
 
-					if ( tr.Hit )
+					if ( pm.Hit && pm.Normal.Dot( -Velocity ) > prevDot )
 					{
-						float planeVel = targetEnt.Velocity.Normal.Dot( tr.Normal );
+						prevDot = pm.Normal.Dot( -Velocity );
+						hitSurface = pm.Surface;
+						hitPos = pm.EndPos - pm.Normal * 40f;
+					}
+
+					if ( pm.Hit )
+					{
+
+						float planeVel = targetEnt.Velocity.Normal.Dot( pm.Normal );
 						if ( planeVel < 0 )
 							planeVel = 0;
 
 						if ( planeVel > 0 )
-							Position += tr.Normal * 0.01f;// * planeVel;
+							Position += pm.Normal * 0.01f;// * planeVel;
 
-						if ( relativeVelocity.Normal.Dot( tr.Normal ) < 0f )
+						if ( relativeVelocity.Normal.Dot( pm.Normal ) < 0f )
 							Velocity -= relativeVelocity * planeVel;
 
 						//Ball.PlayImpactSound( relativeVelocity.Dot( -tr.Normal ) );
 
-						if ( !moveplanes.TryAdd( tr.Normal, targetEnt.Velocity, ref Velocity ) )
+						if ( !moveplanes.TryAdd( pm.Normal, targetEnt.Velocity, ref Velocity ) )
 							break;
 					}
 				}
 
 
-				var pm = Trace.FromTo( Position, Position + Velocity * timestep )
+				pm = Trace.FromTo( Position, Position + Velocity * timestep )
 					.HitLayer( CollisionLayer.LADDER, false )
 					.Run();
+
+				if ( pm.Hit && pm.Normal.Dot( -Velocity ) > prevDot )
+				{
+					prevDot = pm.Normal.Dot( -Velocity );
+					hitSurface = pm.Surface;
+					hitPos = pm.EndPos - pm.Normal * 40f;
+				}
+
 
 				if ( pm.StartedSolid )
 				{
@@ -138,11 +161,22 @@ namespace Ballers
 			float bumpForce = bumpVelocity.Length;
 			Ball.PlayImpactSound( bumpForce );
 
+			if ( bumpForce > 350f && hitSurface != null && !silentSurfaces.Contains( hitSurface.Name ) )
+			{
+				string sound = bumpForce > 700f ? hitSurface.Sounds.ImpactHard : hitSurface.Sounds.ImpactSoft;
+				PredictionSound.World( Ball.Client, sound, hitPos );
+			}
+
 			if ( travelFraction == 0 )
 				Velocity = 0;
 
 			return travelFraction;
 		}
+
+		private static HashSet<string> silentSurfaces = new HashSet<string>()
+		{
+			"concrete"
+		};
 
 		public void ApplyFriction( float frictionAmount, float delta )
 		{
