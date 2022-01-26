@@ -136,10 +136,7 @@ namespace Ballers
 
 			Vector3 bumpVelocity = moveplanes.OrginalVelocity - moveplanes.BumpVelocity;
 			float bumpForce = bumpVelocity.Length;
-			float dot = bumpVelocity.Normal.Dot( moveplanes.OrginalVelocity.Normal );
-			if ( dot < 0.5f )
-				dot = 0.5f;
-			Ball.PlayImpactSound( bumpForce * dot );
+			Ball.PlayImpactSound( bumpForce );
 
 			if ( travelFraction == 0 )
 				Velocity = 0;

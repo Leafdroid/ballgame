@@ -197,6 +197,8 @@ namespace Ballers
 		{
 			if ( force > 175f )
 			{
+				Log.Error( force );
+
 				float scale = (force - 175f) / 2250f;
 				float volume = (scale * 1.2f).Clamp( 0f, 1f );
 				float pitch = (scale * 3f).Clamp( 0.75f, 0.85f );
