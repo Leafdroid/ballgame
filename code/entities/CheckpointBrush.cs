@@ -130,7 +130,6 @@ namespace Ballers
 							writer.Write( time );
 					}
 				}
-				ball.ReplayData.Write( client );
 				string text = $"{client.Name} finished in {timeString}!{(worldBest ? " New world record!" : newBest ? " New personal best!" : "")}";
 
 				Log.Info( text );
