@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
 
 namespace Ballers
 {
 	[Library( "info_ball_start" )]
-	[Hammer.EditorModel( "models/editor/ball.vmdl", 0, 0, 0 )]
-	[Hammer.EntityTool( "Ball Spawnpoint", "Balls" )]
+	[Hammer.EditorModel( "models/editor/ball.vmdl", FixedBounds = true )]
+	[Hammer.EntityTool( "Ball Spawnpoint", "Balls", "Spawnpoint for balls" )]
+	[Display( Name = "Ball Spawnpoint" ), Icon( "place" )]
 	public partial class BallSpawn : Entity
 	{
 		/// <summary>
@@ -20,11 +22,11 @@ namespace Ballers
 		{
 			base.Spawn();
 			SharedSpawn();
-			Transmit = TransmitType.Always;
 		}
 
 		private void SharedSpawn()
 		{
+			Transmit = TransmitType.Always;
 			EnableDrawing = false;
 		}
 

@@ -16,11 +16,12 @@
 //
 // Ballers.BallSpawn
 //
-@PointClass base(BaseProperties_local_ballgame) editormodel( "models/editor/ball.vmdl", lightModeTint, "0 0 0", "255 255 255" ) 
+@PointClass base(BaseProperties_local_ballgame) editormodel( "models/editor/ball.vmdl", fixedbounds ) 
 metadata
 {
 	entity_tool_name = "Ball Spawnpoint"
 	entity_tool_group = "Balls"
+	entity_tool_tip = "Spawnpoint for balls"
 }
 = info_ball_start : ""
 [
