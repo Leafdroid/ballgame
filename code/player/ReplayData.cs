@@ -44,9 +44,6 @@ namespace Ballers
 			ushort data = inputs[readIndex];
 			ushort repeats = (ushort)(data >> 10);
 
-			//Log.Info( $"reading input index {readIndex} and getting {data}" );
-			//Log.Info( $"reading repeat {readRepeats} of {repeats}" );
-
 			if ( readRepeats == repeats )
 			{
 				readRepeats = 0;
@@ -80,7 +77,7 @@ namespace Ballers
 		public void AddLatest()
 		{
 			ushort repeatData = (ushort)(latestData + (writeRepeats << 10));
-			Log.Info( $"Added {writeRepeats + 1} samples of {UShortString( repeatData )}" );
+			//Log.Info( $"Added {writeRepeats + 1} samples of {UShortString( repeatData )}" );
 			inputs.Add( repeatData );
 			writeRepeats = 0;
 		}
