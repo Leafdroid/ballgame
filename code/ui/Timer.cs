@@ -1,6 +1,7 @@
 ﻿using Sandbox;
 using Sandbox.UI;
 using Sandbox.UI.Construct;
+using System;
 
 namespace Ballers
 {
@@ -11,7 +12,7 @@ namespace Ballers
 
 		public Timer()
 		{
-			Label = Add.Label( "00:00:000", "value" );
+			Label = Add.Label( "00:00.000", "value" );
 		}
 
 		public override void Tick()
@@ -34,22 +35,7 @@ namespace Ballers
 			int fullSeconds = (int)seconds;
 			int milliseconds = (int)((seconds - fullSeconds) * 1000f);
 
-			return $"{FillNumber( fullMinutes, 2 )}:{FillNumber( fullSeconds, 2 )}:{FillNumber( milliseconds, 3 )}";
-		}
-		private static string FillNumber( int num, int desired )
-		{
-			string number = num.ToString();
-
-			int delta = desired - number.Length;
-
-			if ( delta > 0 )
-			{
-				number = "";
-				for ( int i = 0; i < delta; i++ )
-					number += "0";
-				number += num.ToString();
-			}
-			return number;
+			return $"{fullMinutes.ToString( "00" )}:{fullSeconds.ToString( "00" )}.{milliseconds.ToString( "000" )}";
 		}
 	}
 
