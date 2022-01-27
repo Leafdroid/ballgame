@@ -93,7 +93,7 @@ namespace Ballers
 
 		private void SetSpawnpoint()
 		{
-			Position = Vector3.Up * 160f;
+			Position = Vector3.Up * 40f;
 
 			var spawnpoints = All.OfType<BallSpawn>();
 			var desiredSpawn = spawnpoints.Where( s => s.Index == CheckpointIndex ).FirstOrDefault();
@@ -119,6 +119,9 @@ namespace Ballers
 
 			SimulateInputs();
 			SimulatePhysics();
+
+			if ( LifeState == LifeState.Dead )
+				return;
 
 			ActiveTick++;
 		}
@@ -214,7 +217,7 @@ namespace Ballers
 			CheckpointIndex = 0;
 
 			if ( withPop )
-				Pop( false );
+				Pop( true );
 		}
 
 		[Event.Frame]

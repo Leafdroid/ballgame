@@ -40,6 +40,7 @@ namespace Ballers
 			if ( reset )
 			{
 				Pop();
+				Reset( false );
 				return;
 			}
 

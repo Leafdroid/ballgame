@@ -8,7 +8,7 @@ namespace Ballers
 	[Library( "info_ball_start" )]
 	[Hammer.EditorModel( "models/editor/ball.vmdl", 0, 0, 0 )]
 	[Hammer.EntityTool( "Ball Spawnpoint", "Balls" )]
-	public partial class BallSpawn : BrushEntity
+	public partial class BallSpawn : Entity
 	{
 		/// <summary>
 		/// Used for linking checkpoint, set to 0 for initial spawn.
@@ -26,10 +26,6 @@ namespace Ballers
 		private void SharedSpawn()
 		{
 			EnableDrawing = false;
-			EnableAllCollisions = false;
-			EnableTraceAndQueries = false;
-
-			ClearCollisionLayers();
 		}
 
 		public override void ClientSpawn()

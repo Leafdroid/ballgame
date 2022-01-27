@@ -87,6 +87,9 @@ namespace Ballers
 
 			Log.Info( text );
 			ChatBox.AddInformation( To.Everyone, text, $"avatar:{client.PlayerId}" );
+
+			ball.Pop();
+			ball.Reset( false );
 		}
 
 		public void Checkpointed( Ball ball )

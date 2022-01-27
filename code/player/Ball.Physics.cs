@@ -83,7 +83,8 @@ namespace Ballers
 							fallDamage = true;
 							break;
 						case HurtBrush:
-							Pop();
+							//Pop();
+							Reset();
 							break;
 						case CheckpointBrush checkPoint:
 							HitCheckpoint( checkPoint );
@@ -175,7 +176,8 @@ namespace Ballers
 
 			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) )
 			{
-				Pop();
+				//Pop();
+				Reset();
 				return;
 			}
 
@@ -183,6 +185,14 @@ namespace Ballers
 			Position = mover.Position;
 
 			UpdateModel();
+		}
+
+		public void ImpactEffects( float force )
+		{
+			if ( IsClient && Local.Client == Client )
+				(Camera as BallCamera).Shake( force );
+
+			PlayImpactSound( force );
 		}
 
 		public void PlayImpactSound( float force )
