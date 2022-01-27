@@ -38,11 +38,7 @@ namespace Ballers
 
 			ActiveInput.Parse( out Vector3 moveDirection, out bool reset );
 			if ( reset )
-			{
 				Pop();
-				Reset( false );
-				return;
-			}
 
 			MoveDirection = moveDirection;
 		}
@@ -64,7 +60,6 @@ namespace Ballers
 		c: kill/reset button [0-1]
 		d: repetitions for the same input [0-63]
 		*/
-
 		public void Update()
 		{
 			float forward = Input.Forward;

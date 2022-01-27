@@ -29,86 +29,7 @@ namespace Ballers
 			}
 
 		}
-
-		public void Finished( Ball ball )
-		{
-			if ( Host.IsClient )
-				return;
-
-			if ( ball.Controller == Ball.ControlType.Replay )
-			{
-				ball.Pop();
-				ball.DeleteAsync( 1f );
-				return;
-			}
-
-			Client client = ball.Client;
-
-			float time = Time.Now - ball.PredictedStart;
-			string timeString = Stringify( time );
-
-			float personalBest = client.GetValue( "time", -1f );
-			bool newBest = personalBest == -1f || personalBest > time;
-			bool worldBest = false;
-			if ( newBest )
-			{
-				client.SetValue( "time", time );
-				client.SetValue( "timeString", timeString );
-
-				ball.ReplayData.Write( client );
-
-				string fileName = $"records/{Global.MapName}/{client.PlayerId}.record";
-				FileSystem.Data.CreateDirectory( $"records/{Global.MapName}" );
-
-				using ( var writer = new BinaryWriter( FileSystem.Data.OpenWrite( fileName ) ) )
-					writer.Write( time );
-
-				string worldBestFile = $"records/{Global.MapName}/world.record";
-				if ( FileSystem.Data.FileExists( worldBestFile ) )
-				{
-					using ( var reader = new BinaryReader( FileSystem.Data.OpenRead( worldBestFile ) ) )
-					{
-						float worldTime = reader.ReadSingle();
-
-						if ( time < worldTime )
-							worldBest = true;
-					}
-				}
-				else worldBest = true;
-
-				if ( worldBest )
-				{
-					using ( var writer = new BinaryWriter( FileSystem.Data.OpenWrite( worldBestFile ) ) )
-						writer.Write( time );
-				}
-			}
-
-			string text = $"{client.Name} finished in {timeString}!{(worldBest ? " New world record!" : newBest ? " New personal best!" : "")}";
-
-			Log.Info( text );
-			ChatBox.AddInformation( To.Everyone, text, $"avatar:{client.PlayerId}" );
-
-			ball.Pop();
-			ball.Reset( false );
-		}
-
-		public void Checkpointed( Ball ball )
-		{
-			if ( Host.IsClient )
-				return;
-
-			if ( ball.Controller == Ball.ControlType.Replay )
-				return;
-
-			Client client = ball.Client;
-			float time = Time.Now - ball.PredictedStart;
-			string text = $"{client.Name} reached checkpoint {ball.CheckpointIndex} in {Stringify( time )}!";
-
-			Log.Info( text );
-			ChatBox.AddInformation( To.Everyone, text, $"avatar:{client.PlayerId}" );
-		}
-
-		public string Stringify( float time )
+		private static string Stringify( float time )
 		{
 			float minutes = time / 60f;
 			int fullMinutes = (int)minutes;
@@ -158,6 +79,7 @@ namespace Ballers
 			client.Pawn = player;
 
 			player.Create();
+			player.Respawn();
 		}
 
 		public override void ClientDisconnect( Client cl, NetworkDisconnectionReason reason )

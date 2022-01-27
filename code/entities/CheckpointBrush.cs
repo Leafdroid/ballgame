@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using Sandbox.UI;
 
 namespace Ballers
 {
@@ -18,6 +20,7 @@ namespace Ballers
 		[Net] public int Index { get; private set; } = 0;
 
 		public static int LastIndex { get; private set; }
+		public bool IsFinish => Index == LastIndex;
 
 		public override void Spawn()
 		{
@@ -45,6 +48,136 @@ namespace Ballers
 			SharedSpawn();
 		}
 
+		public void Trigger( Ball player, float fraction )
+		{
+			// not correct order, ignore
+			if ( Index != player.CheckpointIndex + 1 )
+				return;
+
+			if ( IsClient )
+				Sound.FromScreen( Swoosh.Name );
+
+			player.CheckpointIndex++;
+
+			float tickTime = player.ActiveTick * Global.TickInterval;
+			float fractionTime = (1f - fraction) * Global.TickInterval;
+			float time = tickTime - fractionTime;
+
+			/*
+			string timeString = Stringify( time );
+			Log.Info( $"Reached checkpoint in {player.ActiveTick} ticks ({tickTime} seconds)" );
+			Log.Info( $"Fraction was {fraction}, subtracting {fractionTime} seconds." );
+			Log.Info( $"Full time was {time} seconds. ({timeString})" );
+			*/
+
+			if ( IsFinish )
+				Finished( player, time );
+			else
+				Checkpointed( player, time );
+		}
+
+		public void Finished( Ball ball, float time )
+		{
+			if ( Host.IsClient )
+				return;
+
+			if ( ball.Controller == Ball.ControlType.Replay )
+			{
+				ball.Pop();
+				ball.DeleteAsync( 1f );
+				return;
+			}
+
+			Client client = ball.Client;
+
+			string timeString = Stringify( time );
+
+			float personalBest = client.GetValue( "time", -1f );
+			bool newBest = personalBest == -1f || personalBest > time;
+			bool worldBest = false;
+			if ( newBest )
+			{
+				client.SetValue( "time", time );
+				client.SetValue( "timeString", timeString );
+
+				ball.ReplayData.Write( client );
+
+				string fileName = $"records/{Global.MapName}/{client.PlayerId}.record";
+				FileSystem.Data.CreateDirectory( $"records/{Global.MapName}" );
+
+				using ( var writer = new BinaryWriter( FileSystem.Data.OpenWrite( fileName ) ) )
+					writer.Write( time );
+
+				string worldBestFile = $"records/{Global.MapName}/world.record";
+				if ( FileSystem.Data.FileExists( worldBestFile ) )
+				{
+					using ( var reader = new BinaryReader( FileSystem.Data.OpenRead( worldBestFile ) ) )
+					{
+						float worldTime = reader.ReadSingle();
+
+						if ( time < worldTime )
+							worldBest = true;
+					}
+				}
+				else worldBest = true;
+
+				if ( worldBest )
+				{
+					using ( var writer = new BinaryWriter( FileSystem.Data.OpenWrite( worldBestFile ) ) )
+						writer.Write( time );
+				}
+			}
+
+			string text = $"{client.Name} finished in {timeString}!{(worldBest ? " New world record!" : newBest ? " New personal best!" : "")}";
+
+			Log.Info( text );
+			ChatBox.AddInformation( To.Everyone, text, $"avatar:{client.PlayerId}" );
+
+			ball.Reset();
+		}
+
+		public void Checkpointed( Ball ball, float time )
+		{
+			if ( Host.IsClient )
+				return;
+
+			if ( ball.Controller == Ball.ControlType.Replay )
+				return;
+
+			Client client = ball.Client;
+			string text = $"{client.Name} reached checkpoint {ball.CheckpointIndex} in {Stringify( time )}!";
+
+			Log.Info( text );
+			ChatBox.AddInformation( To.Everyone, text, $"avatar:{client.PlayerId}" );
+		}
+
+		private static string Stringify( float time )
+		{
+			float minutes = time / 60f;
+			int fullMinutes = (int)minutes;
+			float seconds = (minutes - fullMinutes) * 60f;
+			int fullSeconds = (int)seconds;
+			int milliseconds = (int)((seconds - fullSeconds) * 1000f);
+
+			return $"{FillNumber( fullMinutes, 2 )}:{FillNumber( fullSeconds, 2 )}:{FillNumber( milliseconds, 3 )}";
+		}
+
+		private static string FillNumber( int num, int desired )
+		{
+			string number = num.ToString();
+
+			int delta = desired - number.Length;
+
+			if ( delta > 0 )
+			{
+				number = "";
+				for ( int i = 0; i < delta; i++ )
+					number += "0";
+				number += num.ToString();
+			}
+			return number;
+		}
+
 		public static readonly SoundEvent Badge = new( "sounds/ball/badge.vsnd" )
 		{
 			Pitch = 1f,
@@ -60,15 +193,5 @@ namespace Ballers
 			DistanceMax = 1024,
 			UI = true
 		};
-
-		[ClientCmd]
-		public static void PrintCheckpoints()
-		{
-			foreach ( var brush in All.OfType<CheckpointBrush>() )
-				Log.Info( $"brush: {brush.Index}" );
-
-			foreach ( var spawn in All.OfType<BallSpawn>() )
-				Log.Info( $"spawn: {spawn.Index}" );
-		}
 	}
 }

@@ -12,7 +12,8 @@ namespace Ballers
 	public partial class BallDome : ModelEntity
 	{
 		public const float PopForce = 300f; // pop!
-		private TimeSince lifeTime { get; set; } = 0;
+		private TimeSince lifeTime;
+		private bool hasSpawned = false;
 
 		public static readonly SoundEvent Pop = new( "sounds/ball/pop.vsnd" )
 		{
@@ -84,6 +85,12 @@ namespace Ballers
 		public void FrameSimulate()
 		{
 			//DebugOverlay.Sphere( PhysicsBody.MassCenter, 8f, Color.White );
+
+			if ( !hasSpawned )
+			{
+				lifeTime = 0f;
+				hasSpawned = true;
+			}
 
 			if ( lifeTime <= 0.25f )
 			{

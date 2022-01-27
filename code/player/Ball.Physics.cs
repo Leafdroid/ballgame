@@ -61,12 +61,13 @@ namespace Ballers
 			Move();
 		}
 
-		private void TraceTriggers( out bool fallDamage )
+		private void TraceTriggers( Trace moveTrace, out bool fallDamage )
 		{
 			fallDamage = false;
 
-			TraceResult[] triggerTraces = Trace.Ray( Position, Position )
-				.Radius( 40f )
+			TraceResult[] triggerTraces = moveTrace
+				.FromTo( Position, Position + Velocity * Time.Delta )
+				.HitLayer( CollisionLayer.All, false )
 				.HitLayer( CollisionLayer.Trigger, true )
 				.RunAll();
 
@@ -83,11 +84,10 @@ namespace Ballers
 							fallDamage = true;
 							break;
 						case HurtBrush:
-							//Pop();
-							Reset();
+							Pop();
 							break;
 						case CheckpointBrush checkPoint:
-							HitCheckpoint( checkPoint );
+							checkPoint.Trigger( this, trace.Fraction );
 							break;
 						default:
 							continue;
@@ -98,15 +98,13 @@ namespace Ballers
 
 		private void Move()
 		{
-			TraceTriggers( out bool fallDamage );
-
 			float dt = Time.Delta;
 
 			var mover = new MoveHelper( Position, Velocity, this );
+			TraceTriggers( mover.Trace, out bool fallDamage );
 
 			Vector3 gravityNormal = GetGravity().Normal;
 			Grounded = mover.TraceDirection( gravityNormal ).Hit;
-
 
 			Vector3 flatVelocity = Velocity - gravityNormal * Velocity.Dot( gravityNormal );
 			float speedFraction = flatVelocity.Length / MaxSpeed;
@@ -176,8 +174,7 @@ namespace Ballers
 
 			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) )
 			{
-				//Pop();
-				Reset();
+				Pop();
 				return;
 			}
 

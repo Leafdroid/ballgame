@@ -19,7 +19,7 @@ namespace Ballers
 			var player = Local.Pawn as Ball;
 			if ( player == null ) return;
 
-			float time = Time.Now - player.PredictedStart;
+			float time = player.SimulationTime;
 			if ( time < 0f )
 				time = 0;
 

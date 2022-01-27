@@ -14,10 +14,10 @@ namespace Ballers
 		public static List<Ball> ReplayGhosts = new();
 		public ReplayData ReplayData { get; set; } = new ReplayData();
 
-		[Net, Predicted] public int CheckpointIndex { get; private set; } = 0;
+		[Net, Predicted] public int CheckpointIndex { get; set; } = 0;
 		[Net, Predicted] public float PredictedStart { get; private set; }
-		[Net] public int ActiveTick { get; private set; } = 0;
-		public float SimulationTime => Time.Now - PredictedStart;
+		[Net, Predicted] public int ActiveTick { get; private set; } = 0;
+		public float SimulationTime => PredictedStart == -1f ? 0f : Time.Now - PredictedStart;
 		public int PredictionTick => (int)(Global.TickRate * SimulationTime);
 
 
@@ -72,23 +72,6 @@ namespace Ballers
 
 			EnableShadowCasting = true;
 			Transmit = TransmitType.Always;
-
-			Respawn();
-		}
-
-		private void HitCheckpoint( CheckpointBrush checkpoint )
-		{
-			if ( checkpoint.Index == CheckpointIndex + 1 )
-			{
-				if ( IsClient )
-					Sound.FromScreen( CheckpointBrush.Swoosh.Name );
-				CheckpointIndex++;
-
-				if ( checkpoint.Index == CheckpointBrush.LastIndex )
-					(Game.Current as BallersGame).Finished( this );
-				else
-					(Game.Current as BallersGame).Checkpointed( this );
-			}
 		}
 
 		private void SetSpawnpoint()
@@ -111,17 +94,17 @@ namespace Ballers
 
 		public override void Simulate( Client cl )
 		{
-			if ( LifeState == LifeState.Dead )
-				return;
+			if ( LifeState == LifeState.Alive )
+			{
+				if ( PredictedStart == -1 )
+				{
+					PredictedStart = Time.Now;
+					ActiveTick = 0;
+				}
 
-			if ( ActiveTick == 0 )
-				PredictedStart = Time.Now;
-
-			SimulateInputs();
-			SimulatePhysics();
-
-			if ( LifeState == LifeState.Dead )
-				return;
+				SimulateInputs();
+				SimulatePhysics();
+			}
 
 			ActiveTick++;
 		}
@@ -212,12 +195,12 @@ namespace Ballers
 
 		public void Reset( bool withPop = true )
 		{
-			ReplayData = new ReplayData();
+			if ( withPop )
+				Pop();
+
 			ActiveTick = 0;
 			CheckpointIndex = 0;
-
-			if ( withPop )
-				Pop( true );
+			PredictedStart = -1;
 		}
 
 		[Event.Frame]
@@ -244,7 +227,8 @@ namespace Ballers
 		{
 			if ( ConsoleSystem.Caller != null && ConsoleSystem.Caller.Pawn is Ball player )
 			{
-				player.Reset();
+				player.Pop( false );
+				player.Reset( false );
 			}
 		}
 	}
