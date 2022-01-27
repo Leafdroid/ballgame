@@ -180,7 +180,7 @@ namespace Ballers
 			Ball replayGhost = new Ball();
 			replayGhost.Controller = Ball.ControlType.Replay;
 			replayGhost.ReplayData = container;
-			replayGhost.Owner = player;
+			//replayGhost.Owner = player;
 			replayGhost.Create();
 			replayGhost.Respawn();
 		}

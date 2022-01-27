@@ -200,8 +200,7 @@ namespace Ballers
 			if ( withPop )
 				Pop();
 
-			if ( Controller == ControlType.Player )
-				ReplayData = new ReplayData();
+			ReplayData = new ReplayData();
 			ActiveTick = 0;
 			CheckpointIndex = 0;
 			PredictedStart = -1;
