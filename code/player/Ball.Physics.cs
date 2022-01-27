@@ -184,14 +184,6 @@ namespace Ballers
 			UpdateModel();
 		}
 
-		public void ImpactEffects( float force )
-		{
-			if ( IsClient && Local.Client == Client )
-				(Camera as BallCamera).Shake( force );
-
-			PlayImpactSound( force );
-		}
-
 		public void PlayImpactSound( float force )
 		{
 			if ( IsServer )

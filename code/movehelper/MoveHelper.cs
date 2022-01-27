@@ -159,7 +159,7 @@ namespace Ballers
 
 			Vector3 bumpVelocity = moveplanes.OrginalVelocity - moveplanes.BumpVelocity;
 			float bumpForce = bumpVelocity.Length;
-			Ball.ImpactEffects( bumpForce );
+			Ball.PlayImpactSound( bumpForce );
 
 			if ( bumpForce > 350f && hitSurface != null && !silentSurfaces.Contains( hitSurface.Name ) )
 			{

@@ -114,7 +114,6 @@ namespace Ballers
 		public override void ClientSpawn()
 		{
 			base.ClientSpawn();
-
 			SetupTerry();
 		}
 
@@ -146,7 +145,6 @@ namespace Ballers
 			if ( IsServer )
 			{
 				PopRpc( predicted );
-				RespawnAsync( 2f );
 
 				if ( Controller == ControlType.Player )
 					Client.AddInt( "deaths" );
@@ -159,6 +157,9 @@ namespace Ballers
 
 			LifeState = LifeState.Dead;
 			EnableDrawing = false;
+
+			if ( IsServer || Client == Local.Client )
+				RespawnAsync( 2f );
 		}
 
 		[ClientRpc]

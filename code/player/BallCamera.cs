@@ -17,13 +17,6 @@ namespace Sandbox
 			.Radius( 10f )
 			.HitLayer( CollisionLayer.Debris, false );
 
-		private float shake = 0f;
-
-		public void Shake( float force )
-		{
-			shake = force;
-		}
-
 		public override void Update()
 		{
 			if ( Local.Client.Pawn is not Ball player )
@@ -59,11 +52,6 @@ namespace Sandbox
 			FieldOfView = 75 + fov;
 
 			Viewer = null;
-		}
-
-		public override void BuildInput( InputBuilder input )
-		{
-			base.BuildInput( input );
 		}
 	}
 }
