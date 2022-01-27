@@ -101,7 +101,6 @@ namespace Ballers
 			float dt = Time.Delta;
 
 			var mover = new MoveHelper( Position, Velocity, this );
-			TraceTriggers( mover.Trace, out bool fallDamage );
 
 			Vector3 gravityNormal = GetGravity().Normal;
 			Grounded = mover.TraceDirection( gravityNormal ).Hit;
@@ -172,14 +171,15 @@ namespace Ballers
 				.FromTo( mover.Position, mover.Position + mover.Velocity * dt )
 				.Run();
 
+			Velocity = mover.Velocity;
+			Position = mover.Position;
+
+			TraceTriggers( mover.Trace, out bool fallDamage );
 			if ( fallDamage && (waterTrace.Hit || moveTrace.Hit) )
 			{
 				Pop();
 				return;
 			}
-
-			Velocity = mover.Velocity;
-			Position = mover.Position;
 
 			UpdateModel();
 		}
