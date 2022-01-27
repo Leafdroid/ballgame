@@ -13,6 +13,7 @@ namespace Ballers
 	{
 		public static List<Ball> ReplayGhosts = new();
 		public ReplayData ReplayData { get; set; } = new ReplayData();
+		public ReplayData PersonalBest { get; set; }
 
 		[Net, Predicted] public int CheckpointIndex { get; set; } = 0;
 		[Net, Predicted] public float PredictedStart { get; private set; }
@@ -26,7 +27,8 @@ namespace Ballers
 			if ( !(this as ModelEntity).IsValid() )
 				return;
 
-			//ReplayData.PlayReplay( Client );
+			if ( Controller == ControlType.Player )
+				PersonalBest = ReplayData.FromClient( Client );
 
 			GravityType = GravityType.Default;
 			Velocity = Vector3.Zero;
@@ -198,6 +200,8 @@ namespace Ballers
 			if ( withPop )
 				Pop();
 
+			if ( Controller == ControlType.Player )
+				ReplayData = new ReplayData();
 			ActiveTick = 0;
 			CheckpointIndex = 0;
 			PredictedStart = -1;

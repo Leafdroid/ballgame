@@ -28,11 +28,11 @@ namespace Ballers
 			if ( Controller == ControlType.Player )
 			{
 				ActiveInput.Update();
-				ReplayData.AddData( ActiveInput );
+				ReplayData.AddInput( ActiveInput );
 			}
 			else if ( Controller == ControlType.Replay )
 			{
-				ushort input = ReplayData.GetNext( out bool finished );
+				ushort input = ReplayData.NextInput( out bool finished );
 				ActiveInput.Update( input );
 			}
 

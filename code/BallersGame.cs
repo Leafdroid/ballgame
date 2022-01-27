@@ -29,7 +29,7 @@ namespace Ballers
 			}
 
 		}
-		private static string Stringify( float time )
+		public static string Stringify( float time )
 		{
 			float minutes = time / 60f;
 			int fullMinutes = (int)minutes;
@@ -37,23 +37,7 @@ namespace Ballers
 			int fullSeconds = (int)seconds;
 			int milliseconds = (int)((seconds - fullSeconds) * 1000f);
 
-			return $"{FillNumber( fullMinutes, 2 )}:{FillNumber( fullSeconds, 2 )}:{FillNumber( milliseconds, 3 )}";
-		}
-
-		private static string FillNumber( int num, int desired )
-		{
-			string number = num.ToString();
-
-			int delta = desired - number.Length;
-
-			if ( delta > 0 )
-			{
-				number = "";
-				for ( int i = 0; i < delta; i++ )
-					number += "0";
-				number += num.ToString();
-			}
-			return number;
+			return $"{fullMinutes.ToString( "00" )}:{fullSeconds.ToString( "00" )}.{milliseconds.ToString( "000" )}";
 		}
 
 		public override void ClientJoined( Client client )
@@ -63,16 +47,13 @@ namespace Ballers
 			if ( IsServer )
 				Ball.DeliverClothing( client );
 
-			string fileName = $"records/{Global.MapName}/{client.PlayerId}.record";
-			if ( FileSystem.Data.FileExists( fileName ) )
+			ReplayData replay = ReplayData.FromClient( client );
+			if ( replay != null )
 			{
-				using ( var reader = new BinaryReader( FileSystem.Data.OpenRead( fileName ) ) )
-				{
-					float time = reader.ReadSingle();
-					string timeString = Stringify( time );
-					client.SetValue( "time", time );
-					client.SetValue( "timeString", timeString );
-				}
+				float time = replay.FinishTime;
+				string timeString = Stringify( time );
+				client.SetValue( "time", time );
+				client.SetValue( "timeString", timeString );
 			}
 
 			var player = new Ball();

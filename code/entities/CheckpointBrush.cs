@@ -57,11 +57,15 @@ namespace Ballers
 			if ( IsClient )
 				Sound.FromScreen( Swoosh.Name );
 
-			player.CheckpointIndex++;
 
 			float tickTime = player.ActiveTick * Global.TickInterval;
 			float fractionTime = (1f - fraction) * Global.TickInterval;
 			float time = tickTime - fractionTime;
+
+			player.CheckpointIndex++;
+
+			if ( player.Controller == Ball.ControlType.Player )
+				player.ReplayData.AddTime( time );
 
 			/*
 			string timeString = Stringify( time );
@@ -126,7 +130,7 @@ namespace Ballers
 							writer.Write( time );
 					}
 				}
-
+				ball.ReplayData.Write( client );
 				string text = $"{client.Name} finished in {timeString}!{(worldBest ? " New world record!" : newBest ? " New personal best!" : "")}";
 
 				Log.Info( text );

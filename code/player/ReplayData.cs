@@ -11,94 +11,112 @@ namespace Ballers
 {
 	public class ReplayData
 	{
-		private ushort latestData = 0;
+		private ushort? latestData = null;
 		private List<ushort> inputs = new List<ushort>();
+		private List<float> times = new List<float>();
 
-		private int firstTick = -1;
-		private int latestTick = -1;
+		public float FinishTime => GetTime( times.Count - 1 );
+		public float GetTime( int index )
+		{
+			if ( index >= times.Count )
+			{
+				Log.Error( "Tried to retrieve non-existing time from replay!" );
+				return 0f;
+			}
+			else return times[index];
+		}
 
-		private int index = 0;
+		private int readIndex = 0;
 		private int readRepeats = 0;
+		private int writeRepeats = 0;
 
-		public ushort GetNext( out bool finished )
+		public ushort NextInput( out bool finished )
 		{
 			finished = false;
-			int count = inputs.Count();
-			if ( index == count )
+			int count = inputs.Count;
+
+			if ( readIndex == count )
 			{
 				finished = true;
 				return 0;
 			}
 
-			ushort data = inputs[index];
+			ushort data = inputs[readIndex];
 			ushort repeats = (ushort)(data >> 10);
 
-			if ( readRepeats == repeats - 1 )
+			//Log.Info( $"reading input index {readIndex} and getting {data}" );
+			//Log.Info( $"reading repeat {readRepeats} of {repeats}" );
+
+			if ( readRepeats == repeats )
 			{
 				readRepeats = 0;
-				index++;
+				readIndex++;
 			}
 			else
-			{
 				readRepeats++;
-			}
 
 			return data;
 		}
 
-		public void AddData( BallInput input )
+		public void AddInput( BallInput input )
 		{
-			if ( firstTick == -1 )
-				firstTick = Time.Tick;
-			if ( latestTick == -1 )
-				latestTick = Time.Tick;
-
 			ushort data = input.data;
-			int repeats = Time.Tick - latestTick;
 
-			if ( data != latestData || repeats == 63 )
+			if ( latestData != null )
 			{
-				AddLatest();
-				latestData = data;
+				bool unique = data != latestData;
+
+				if ( unique || writeRepeats == 63 )
+					AddLatest();
+				else if ( !unique )
+					writeRepeats++;
 			}
 
+			latestData = data;
 		}
+
+		public void AddTime( float time ) => times.Add( time );
 
 		public void AddLatest()
 		{
-			int repeats = Time.Tick - latestTick;
-			if ( repeats == 0 )
-				return;
-
-			latestTick = Time.Tick;
-
-			ushort repeatData = (ushort)(latestData + (repeats << 10));
+			ushort repeatData = (ushort)(latestData + (writeRepeats << 10));
+			Log.Info( $"Added {writeRepeats + 1} samples of {UShortString( repeatData )}" );
 			inputs.Add( repeatData );
+			writeRepeats = 0;
+		}
+		private static string UShortString( ushort data )
+		{
+			string text = "";
+
+			for ( int i = 15; i > -1; i-- )
+			{
+				int val = 1 << i;
+				text += (data & val) == val ? "1" : "0";
+			}
+
+			return text;
 		}
 
 		public void Write( Client client )
 		{
 			AddLatest();
 
-			Log.Info( $"Input container has {inputs.Count} ushorts stored, ranging over {latestTick - firstTick} ticks!" );
-
 			string fileName = $"replays/{Global.MapName}/{client.PlayerId}.replay";
 			FileSystem.Data.CreateDirectory( $"replays/{Global.MapName}" );
 
 			using ( var writer = new BinaryWriter( FileSystem.Data.OpenWrite( fileName ) ) )
 			{
-				for ( int i = 0; i < inputs.Count; i++ )
-				{
-					ushort data = inputs[i];
-					writer.Write( data );
+				writer.Write( times.Count );
+				for ( int i = 0; i < times.Count; i++ )
+					writer.Write( times[i] );
 
-					//ushort repeats = (ushort)(data >> 9);
-					//ushort inputData = (ushort)(data & 511);
-					//Ball.BallInput.Parse( inputData, out Vector3 moveDir );
-					//Log.Info( $"{moveDir} repeats for {repeats} ticks" );
-				}
+				writer.Write( inputs.Count );
+				for ( int i = 0; i < inputs.Count; i++ )
+					writer.Write( inputs[i] );
 			}
 		}
+
+		public static ReplayData FromClient( Client client ) => FromFile( client.PlayerId );
 
 		public static ReplayData FromFile( long steamId )
 		{
@@ -106,21 +124,25 @@ namespace Ballers
 			if ( !FileSystem.Data.FileExists( fileName ) )
 				return null;
 
-			List<ushort> list = new List<ushort>();
+			List<float> times = new List<float>();
+			List<ushort> inputs = new List<ushort>();
 
 			using ( var reader = new BinaryReader( FileSystem.Data.OpenRead( fileName ) ) )
 			{
-				while ( reader.BaseStream.Position < reader.BaseStream.Length )
-				{
-					ushort data = reader.ReadUInt16();
-					list.Add( data );
-				}
+				int timeCount = reader.ReadInt32();
+				for ( int i = 0; i < timeCount; i++ )
+					times.Add( reader.ReadSingle() );
+
+				int inputCount = reader.ReadInt32();
+				for ( int i = 0; i < inputCount; i++ )
+					inputs.Add( reader.ReadUInt16() );
 			}
 
-			ReplayData container = new ReplayData();
-			container.inputs = list;
+			ReplayData replay = new ReplayData();
+			replay.times = times;
+			replay.inputs = inputs;
 
-			return container;
+			return replay;
 		}
 
 		public static void PlayReplay( Client client )
@@ -141,7 +163,7 @@ namespace Ballers
 			replayGhost.Respawn();
 		}
 
-		/*
+
 		[ServerCmd( "playreplay" )]
 		public static void PlayReplay()
 		{
@@ -166,9 +188,9 @@ namespace Ballers
 			replayGhost.Respawn();
 		}
 
-		
 
 
+		/*
 
 		[ServerCmd( "savereplay" )]
 		public static void SaveReplay()
