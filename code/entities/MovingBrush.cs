@@ -27,6 +27,12 @@ namespace Ballers
 		[Property( "movedir" )]
 		[Net] public Angles MoveAngles { get; private set; }
 
+		/// <summary>
+		/// Where in the animation the mover will start. 0 = retracted, 1 = extended.
+		/// </summary>
+		[Property( "starttime", Title = "Start Time" )]
+		[Net] public float StartTime { get; private set; } = 0f;
+
 		public float MoveTime => Speed / MoveDistance;
 		public Vector3 MoveDirection => Rotation.From( MoveAngles ).Forward;
 		public Vector3 TargetPosition => StartPosition + MoveDirection * MoveDistance;
@@ -86,14 +92,16 @@ namespace Ballers
 
 		public void AtTime( float time )
 		{
-			float rad = time * MoveTime * MathF.PI * 0.5f;
+			float rad = time * MoveTime * MathF.PI * 0.5f + (MathF.PI * (1f - StartTime));
 
-			float sine = MathF.Sin( rad );
-			float cosine = MathF.Cos( rad );
+			float sine = MathF.Cos( rad );
+			float cosine = MathF.Sin( rad );
 			float t = sine * 0.5f + 0.5f;
 
 			Vector3 pos = StartPosition.LerpTo( TargetPosition, t );
-			Vector3 vel = MoveDirection * (Speed * cosine);
+			Vector3 vel = MoveDirection * -(Speed * cosine);
+
+			DebugOverlay.Text( pos, vel.ToString() );
 
 			if ( IsServer )
 			{
@@ -137,22 +145,6 @@ namespace Ballers
 			}
 			else
 				AtTick( lastTick + Time.Tick - lastRealTick );
-
-			int tick = lastTick + Time.Tick - lastRealTick;
-			float rad = tick * Global.TickInterval * MoveTime * MathF.PI * 0.5f;
-			float cosine = MathF.Cos( rad );
-			bool closing = cosine <= 0f;
-
-			/*
-			colorHue = colorHue.LerpTo( closing ? 0f : 120f, Time.Delta * 10f );
-			Color color = new ColorHsv( colorHue, 0.8f, 1f );
-
-			DebugOverlay.Circle( StartPosition, CurrentView.Rotation, 2f, color );
-			DebugOverlay.Circle( TargetPosition, CurrentView.Rotation, 2f, color );
-			DebugOverlay.Circle( ClientEntity.Position, CurrentView.Rotation, 1f, color );
-			DebugOverlay.Line( ClientEntity.Position, ClientEntity.WorldSpaceBounds.Center, color );
-			DebugOverlay.Line( StartPosition, TargetPosition, color );
-			*/
 		}
 	}
 }

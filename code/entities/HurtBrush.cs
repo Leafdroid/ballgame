@@ -13,7 +13,7 @@ namespace Ballers
 		/// <summary>
 		/// Set to true if baller has to collide with a solid to die in this zone, use for fall damage deaths etc.
 		/// </summary>
-		[Property( "requireCollision", Title = "Require Collision" )]
+		[Property( "requirecollision", Title = "Require Collision" )]
 		[Net] public bool RequireCollision { get; private set; } = false;
 
 		public override void Spawn()

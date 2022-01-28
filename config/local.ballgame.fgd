@@ -82,6 +82,7 @@ metadata
 	speed(float) : "Speed" : 0 : ""
 	movedistance(float) : "Move Distance" : 0 : ""
 	movedir(angle) : "Move Angles" :  : ""
+	starttime(float) : "Start Time" : "0" : "Where in the animation the mover will start. 0 = retracted, 1 = extended."
 	enable_shadows(boolean) { group = "Rendering" } : "Shadow Casting" : 1 : "Whether this entity should cast shadows or not"
 
 	input SetColor(string) : "Sets the color of this entity. Format is '255 255 255 255'."
