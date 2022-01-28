@@ -58,7 +58,7 @@ namespace Ballers
 				if ( Velocity.Length.AlmostEqual( 0.0f ) )
 					break;
 
-				foreach ( MovingBrush brush in MovingBrush.All )
+				foreach ( Mover brush in Mover.All )
 				{
 					if ( Host.IsServer )
 						brush.AtTick( Ball.ActiveTick );

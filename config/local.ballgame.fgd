@@ -73,15 +73,18 @@ metadata
 ]
 
 //
-// Ballers.MovingBrush
+// Ballers.Mover
 //
-@PointClass base(BaseProperties_local_ballgame) = func_movelinear : ""
+@PointClass base(BaseProperties_local_ballgame) tags( SupportsSolids, Dynamic ) doorhelper( "movedir", "islocal", "movetype", "movedistance" ) = ball_mover : ""
 [
+	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
+	islocal(boolean) : "Is Local" : 1 : "DONT TOUCH!! Used for display purposes."
+	movetype(integer) : "Move Type" : 3 : "DONT TOUCH!! Used for display purposes."
 	origin(vector) : "Start Position" :  : ""
 	angles(angle) : "Start Angles" :  : ""
 	speed(float) : "Speed" : 0 : ""
 	movedistance(float) : "Move Distance" : 0 : ""
-	movedir(angle) : "Move Angles" :  : ""
+	movedir(angle) : "Move Direction" :  : ""
 	starttime(float) : "Start Time" : "0" : "Where in the animation the mover will start. 0 = retracted, 1 = extended."
 	enable_shadows(boolean) { group = "Rendering" } : "Shadow Casting" : 1 : "Whether this entity should cast shadows or not"
 

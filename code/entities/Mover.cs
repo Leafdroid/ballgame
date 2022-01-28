@@ -5,12 +5,27 @@ using System.Linq;
 
 namespace Ballers
 {
-
-	[Library( "func_movelinear" )]
-	public partial class MovingBrush : ModelEntity
+	[Library( "ball_mover" )]
+	[Hammer.SupportsSolid]
+	[Hammer.RenderFields]
+	[Hammer.DoorHelper( "movedir", "islocal", "movetype", "movedistance" )]
+	[Hammer.VisGroup( Hammer.VisGroup.Dynamic )]
+	public partial class Mover : ModelEntity
 	{
-		public static new List<MovingBrush> All = new();
+		public static new List<Mover> All = new();
 		public ModelEntity ClientEntity;
+
+		/// <summary>
+		/// DONT TOUCH!! Used for display purposes.
+		/// </summary>
+		[Property( "islocal" )]
+		private bool isLocal { get; set; } = true;
+
+		/// <summary>
+		/// DONT TOUCH!! Used for display purposes.
+		/// </summary>
+		[Property( "movetype" )]
+		private int moveType { get; set; } = 3;
 
 		[Property( "origin" )]
 		[Net] public Vector3 StartPosition { get; private set; }
@@ -18,13 +33,13 @@ namespace Ballers
 		[Property( "angles" )]
 		[Net] public Angles StartAngles { get; private set; }
 
-		[Property( "speed" )]
+		[Property( "speed", Title = "Speed" )]
 		[Net] public float Speed { get; private set; }
 
-		[Property( "movedistance" )]
+		[Property( "movedistance", Title = "Move Distance" )]
 		[Net] public float MoveDistance { get; private set; }
 
-		[Property( "movedir" )]
+		[Property( "movedir", Title = "Move Direction" )]
 		[Net] public Angles MoveAngles { get; private set; }
 
 		/// <summary>
@@ -37,7 +52,7 @@ namespace Ballers
 		public Vector3 MoveDirection => Rotation.From( MoveAngles ).Forward;
 		public Vector3 TargetPosition => StartPosition + MoveDirection * MoveDistance;
 
-		public MovingBrush()
+		public Mover()
 		{
 			All.Add( this );
 		}
@@ -66,9 +81,6 @@ namespace Ballers
 		{
 			base.ClientSpawn();
 			SharedSpawn();
-
-			if ( IsClient )
-				Log.Info( "ClientSpawn" );
 
 			EnableTraceAndQueries = false;
 			EnableAllCollisions = false;
@@ -100,8 +112,6 @@ namespace Ballers
 
 			Vector3 pos = StartPosition.LerpTo( TargetPosition, t );
 			Vector3 vel = MoveDirection * -(Speed * cosine);
-
-			DebugOverlay.Text( pos, vel.ToString() );
 
 			if ( IsServer )
 			{
