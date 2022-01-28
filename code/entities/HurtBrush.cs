@@ -8,7 +8,7 @@ namespace Ballers
 	[Library( "trigger_death", Description = "Used for killing ballers" )]
 	[Hammer.SupportsSolid]
 	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
-	public partial class HurtBrush : BrushEntity
+	public partial class HurtBrush : ModelEntity
 	{
 		/// <summary>
 		/// Set to true if baller has to collide with a solid to die in this zone, use for fall damage deaths etc.
@@ -25,6 +25,8 @@ namespace Ballers
 
 		private void SharedSpawn()
 		{
+			SetupPhysicsFromModel( PhysicsMotionType.Keyframed );
+
 			EnableDrawing = false;
 			EnableAllCollisions = false;
 			EnableTraceAndQueries = true;

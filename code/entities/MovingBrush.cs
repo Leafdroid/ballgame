@@ -7,7 +7,7 @@ namespace Ballers
 {
 
 	[Library( "func_movelinear" )]
-	public partial class MovingBrush : BrushEntity
+	public partial class MovingBrush : ModelEntity
 	{
 		public static new List<MovingBrush> All = new();
 		public ModelEntity ClientEntity;
@@ -51,6 +51,7 @@ namespace Ballers
 
 		private void SharedSpawn()
 		{
+			SetupPhysicsFromModel( PhysicsMotionType.Keyframed );
 			ClearCollisionLayers();
 			AddCollisionLayer( CollisionLayer.LADDER );
 		}
@@ -106,14 +107,25 @@ namespace Ballers
 			}
 		}
 
+		private HashSet<Entity> transferredChildren = new HashSet<Entity>();
 		int lastTick = 0;
 		int lastRealTick = 0;
 		//float colorHue = 0f;
-		[Event.Tick]
+
+		[Event.Frame]
 		public void Frame()
 		{
-			if ( IsServer )
-				return;
+			if ( Children.Count > 0 )
+			{
+				foreach ( Entity child in Children )
+				{
+					if ( !transferredChildren.Contains( child ) )
+					{
+						child.SetParent( ClientEntity );
+						transferredChildren.Add( child );
+					}
+				}
+			}
 
 			if ( Local.Pawn is Ball player && player.LifeState == LifeState.Alive )
 			{

@@ -8,8 +8,7 @@ namespace Ballers
 
 	[Library( "func_bumper" )]
 	[Hammer.SupportsSolid]
-	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
-	public partial class BumperBrush : BrushEntity
+	public partial class BumperBrush : ModelEntity
 	{
 		[Property( "force", Title = "Force" )]
 		[Net] public float Force { get; private set; } = 500f;
@@ -24,6 +23,7 @@ namespace Ballers
 		public override void Spawn()
 		{
 			base.Spawn();
+
 			SharedSpawn();
 			Transmit = TransmitType.Always;
 		}
@@ -126,6 +126,7 @@ namespace Ballers
 
 		private void SharedSpawn()
 		{
+			SetupPhysicsFromModel( PhysicsMotionType.Keyframed );
 			EnableDrawing = true;
 			ClearCollisionLayers();
 			AddCollisionLayer( CollisionLayer.STATIC_LEVEL );

@@ -11,7 +11,7 @@ namespace Ballers
 	[Library( "func_checkpoint" )]
 	[Hammer.SupportsSolid]
 	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
-	public partial class CheckpointBrush : BrushEntity
+	public partial class CheckpointBrush : ModelEntity
 	{
 		/// <summary>
 		/// Used for checkpoint order and for linking spawnpoints. Do not use 0 for this, start with 1.
