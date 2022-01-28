@@ -31,7 +31,7 @@ metadata
 //
 // Ballers.BumperBrush
 //
-@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) 
+@SolidClass base(BaseProperties_local_ballgame) tags( SupportsSolids, Dynamic ) 
 metadata
 {
 	auto_apply_material = "materials/tools/toolstrigger.vmat"
@@ -62,7 +62,7 @@ metadata
 //
 // Ballers.CheckpointBrush
 //
-@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) 
+@SolidClass base(BaseProperties_local_ballgame) tags( SupportsSolids, Dynamic ) 
 metadata
 {
 	auto_apply_material = "materials/tools/toolstrigger.vmat"
@@ -90,45 +90,17 @@ metadata
 ]
 
 //
-// Ballers.FallDamageBrush
-//
-@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) 
-metadata
-{
-	auto_apply_material = "materials/tools/toolstrigger.vmat"
-}
-= func_falldamage : ""
-[
-	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
-	enabled(boolean) : "Enabled" : 1 : "Whether this func_brush is visible/active at all"
-	solid(boolean) : "Solid" : 1 : "Whether this func_brush has collisions"
-	health(float) : "Health" : 0 : "If set to above 0, the entity will have this much health on spawn and will be breakable."
-	enable_shadows(boolean) { group = "Rendering" } : "Shadow Casting" : 1 : "Whether this entity should cast shadows or not"
-
-	input Break(void) : "Causes this prop to break, regardless if it is actually breakable or not. (i.e. ignores health and whether the model has gibs)"
-	input DisableSolid(void) : "Make this func_brush non solid"
-	input EnableSolid(void) : "Make this func_brush solid"
-	input ToggleSolid(void) : "Toggle solidity of this func_brush"
-	input Enable(void) : "Enable this func_brush, making it visible"
-	input Disable(void) : "Disable this func_brush, making it invisible and non solid"
-	input Toggle(void) : "Toggle this func_brush"
-	input SetColor(string) : "Sets the color of this entity. Format is '255 255 255 255'."
-
-	output OnDamaged(void) : "Fired when the entity gets damaged, even if it is unbreakable."
-	output OnBreak(void) : "Fired when the entity gets destroyed."
-]
-
-//
 // Ballers.HurtBrush
 //
-@SolidClass base(BaseProperties_local_ballgame) tags( Dynamic ) 
+@SolidClass base(BaseProperties_local_ballgame) tags( SupportsSolids, Dynamic ) 
 metadata
 {
 	auto_apply_material = "materials/tools/toolstrigger.vmat"
 }
-= trigger_death : "Immediately kills all ballers inside"
+= trigger_death : "Used for killing ballers"
 [
 	rendercolor(color255) { alpha = true } : "Color (R G B A)" : "255 255 255 255" : "The color tint of this entity."
+	requirecollision(boolean) : "Require Collision" : 0 : "Set to true if baller has to collide with a solid to die in this zone, use for fall damage deaths etc."
 	enabled(boolean) : "Enabled" : 1 : "Whether this func_brush is visible/active at all"
 	solid(boolean) : "Solid" : 1 : "Whether this func_brush has collisions"
 	health(float) : "Health" : 0 : "If set to above 0, the entity will have this much health on spawn and will be breakable."

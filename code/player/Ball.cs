@@ -21,6 +21,7 @@ namespace Ballers
 		public float SimulationTime => PredictedStart == -1f ? 0f : Time.Now - PredictedStart;
 		public int PredictionTick => (int)(Global.TickRate * SimulationTime);
 
+		public RollSound RollSound { get; private set; }
 
 		public override void Respawn()
 		{
@@ -37,6 +38,8 @@ namespace Ballers
 
 			SetSpawnpoint();
 			ResetInterpolation();
+
+			RollSound.RespawnPredicted( this );
 		}
 
 		public void Create()
@@ -115,6 +118,7 @@ namespace Ballers
 		{
 			base.ClientSpawn();
 			SetupTerry();
+			RollSound = new RollSound( this );
 		}
 
 		protected override void OnDestroy()

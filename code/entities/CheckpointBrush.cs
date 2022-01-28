@@ -9,7 +9,7 @@ namespace Ballers
 {
 
 	[Library( "func_checkpoint" )]
-	[Hammer.Solid]
+	[Hammer.SupportsSolid]
 	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
 	public partial class CheckpointBrush : BrushEntity
 	{

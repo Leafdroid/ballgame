@@ -59,6 +59,10 @@ namespace Ballers
 			Velocity += MoveDirection * acceleration * Time.Delta;
 
 			Move();
+
+			RollSound.UpdatePredicted( this, Grounded, Velocity.Length );
+
+			UpdateModel();
 		}
 
 		private void TraceTriggers( Trace moveTrace, out bool fallDamage )
@@ -80,11 +84,11 @@ namespace Ballers
 				{
 					switch ( trace.Entity )
 					{
-						case FallDamageBrush:
-							fallDamage = true;
-							break;
-						case HurtBrush:
-							Pop();
+						case HurtBrush hurtBrush:
+							if ( hurtBrush.RequireCollision )
+								fallDamage = true;
+							else
+								Pop();
 							break;
 						case CheckpointBrush checkPoint:
 							checkPoint.Trigger( this, trace.Fraction );
@@ -180,8 +184,6 @@ namespace Ballers
 				Pop();
 				return;
 			}
-
-			UpdateModel();
 		}
 
 		public void PlayImpactSound( float force )

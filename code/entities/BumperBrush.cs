@@ -7,7 +7,7 @@ namespace Ballers
 {
 
 	[Library( "func_bumper" )]
-	[Hammer.Solid]
+	[Hammer.SupportsSolid]
 	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
 	public partial class BumperBrush : BrushEntity
 	{

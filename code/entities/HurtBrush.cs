@@ -5,11 +5,17 @@ using System.Linq;
 
 namespace Ballers
 {
-	[Library( "trigger_death", Description = "Immediately kills all ballers inside" )]
-	[Hammer.Solid]
+	[Library( "trigger_death", Description = "Used for killing ballers" )]
+	[Hammer.SupportsSolid]
 	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
 	public partial class HurtBrush : BrushEntity
 	{
+		/// <summary>
+		/// Set to true if baller has to collide with a solid to die in this zone, use for fall damage deaths etc.
+		/// </summary>
+		[Property( "requireCollision", Title = "Require Collision" )]
+		[Net] public bool RequireCollision { get; private set; } = false;
+
 		public override void Spawn()
 		{
 			base.Spawn();
