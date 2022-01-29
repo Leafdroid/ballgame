@@ -85,10 +85,12 @@ namespace Ballers
 					switch ( trace.Entity )
 					{
 						case HurtBrush hurtBrush:
+							/*
 							if ( hurtBrush.RequireCollision )
 								fallDamage = true;
 							else
 								Pop();
+							*/
 							break;
 						case CheckpointBrush checkPoint:
 							checkPoint.Trigger( this, trace.Fraction );

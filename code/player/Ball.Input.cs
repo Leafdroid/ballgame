@@ -17,7 +17,7 @@ namespace Ballers
 			Replay
 		}
 
-		[Net] public ControlType Controller { get; set; }
+		[Net] public new ControlType Controller { get; set; }
 		public Vector3 MoveDirection { get; set; }
 		public BallInput ActiveInput { get; private set; } = new BallInput();
 

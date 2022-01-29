@@ -125,7 +125,7 @@ namespace Ballers
 			}
 		}
 
-		private HashSet<Entity> transferredChildren = new HashSet<Entity>();
+		//private HashSet<Entity> transferredChildren = new HashSet<Entity>();
 		int lastTick = 0;
 		int lastRealTick = 0;
 		//float colorHue = 0f;
@@ -133,6 +133,7 @@ namespace Ballers
 		[Event.Frame]
 		public void Frame()
 		{
+			/*
 			if ( Children.Count > 0 )
 			{
 				foreach ( Entity child in Children )
@@ -144,6 +145,7 @@ namespace Ballers
 					}
 				}
 			}
+			*/
 
 			if ( Local.Pawn is Ball player && player.LifeState == LifeState.Alive )
 			{
