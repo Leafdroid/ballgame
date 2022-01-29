@@ -230,7 +230,9 @@ namespace Ballers
 
 			DressRagdoll( ent );
 
-			// TODO: Copy bones (not possible yet)
+			int boneCount = Terry.Model.BoneCount;
+			for ( int i = 0; i < boneCount; i++ )
+				ent.SetBoneTransform( i, Terry.GetBoneWorldTransform( i ), true );
 
 			ent.SurroundingBoundsMode = SurroundingBoundsType.Physics;
 			ent.PhysicsGroup.Velocity = Velocity;
