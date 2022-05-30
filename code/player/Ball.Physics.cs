@@ -1,11 +1,6 @@
 ﻿
 using Sandbox;
-using Sandbox.UI.Construct;
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace Ballers
 {
@@ -23,9 +18,9 @@ namespace Ballers
 		public const float AirControl = 0.85f; // acceleration multiplier in air
 		public const float MaxSpeed = 1100f; // this is the max speed the ball can accelerate to by itself
 
-		public const float Friction = 0.1f;//0.15f; // resistance multiplier on ground
+		public const float Friction = 0.15f;//0.15f; // resistance multiplier on ground
 		public const float Viscosity = 3f; // resistance multiplier in water
-		public const float Drag = 0.05f; // resistance multiplier in air
+		public const float Drag = 0.1f; // resistance multiplier in air
 		public const float Bounciness = .35f; // elasticity of collisions, aka how much boing 
 		public const float Buoyancy = 2.5f; // floatiness
 
@@ -34,9 +29,9 @@ namespace Ballers
 		public Vector3 GetGravity()
 		{
 			if ( GravityType == GravityType.Default )
-				return PhysicsWorld.Gravity;
+				return Map.Physics.Gravity * 800f / 360f;
 			else
-				return GravityRotation.Forward * PhysicsWorld.Gravity.Length;
+				return GravityRotation.Forward * Map.Physics.Gravity.Length * 800f / 360f;
 		}
 
 		[Net, Predicted] public GravityType GravityType { get; private set; }
@@ -156,7 +151,7 @@ namespace Ballers
 
 			if ( waterTrace.Hit )
 			{
-				float waterLevel = (waterTrace.EndPos.z - Position.z) * 0.0125f;
+				float waterLevel = (waterTrace.EndPosition.z - Position.z) * 0.0125f;
 				float underwaterVolume = 0.5f - 0.5f * MathF.Cos( MathF.PI * waterLevel );
 				mover.Velocity -= GetGravity() * underwaterVolume * Buoyancy * dt;
 
@@ -204,7 +199,7 @@ namespace Ballers
 				float volume = (scale * 1.2f).Clamp( 0f, 1f );
 				float pitch = (scale * 3f).Clamp( 0.75f, 0.85f );
 
-				Sound impactSound = PlaySound( BounceSound.Name );
+				Sound impactSound = PlaySound( "sounds/ball/bounce.sound" );
 				impactSound.SetVolume( volume );
 				impactSound.SetPitch( pitch );
 			}
@@ -217,6 +212,7 @@ namespace Ballers
 				ball.ImpactSound( force );
 		}
 
+		/*
 		public static readonly SoundEvent BounceSound = new()
 		{
 			Sounds = new List<string> {
@@ -228,6 +224,7 @@ namespace Ballers
 			Volume = 1f,
 			DistanceMax = 2048f,
 		};
+		*/
 	}
 
 	public static class TraceExtensions

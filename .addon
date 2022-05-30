@@ -1,5 +1,4 @@
 {
-  "SharedAssets": "*.*",
   "Title": "Ball Game",
   "Type": "game",
   "Org": "local",
@@ -7,7 +6,20 @@
   "Schema": 1,
   "HasAssets": true,
   "AssetsPath": "",
+  "ResourcePaths": null,
   "HasCode": true,
   "CodePath": "code",
-  "RootNamespace": "Sandbox"
+  "RootNamespace": "Ballers",
+  "Metadata": {
+    "MapList": [
+      "gumby.dimrifts"
+    ],
+    "PerMapRanking": false,
+    "LeaderboardType": 0,
+    "RankType": 0,
+    "MapSelect": 0,
+    "GameNetworkType": 0,
+    "MaxPlayers": 0,
+    "MinPlayers": 0
+  }
 }

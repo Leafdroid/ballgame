@@ -1,11 +1,7 @@
 ﻿
 using Sandbox;
-using Sandbox.UI.Construct;
-using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
+using System.IO;
 
 namespace Ballers
 {
@@ -161,7 +157,7 @@ namespace Ballers
 		}
 
 
-		[ServerCmd( "playreplay" )]
+		[ConCmd.Server( "playreplay" )]
 		public static void PlayReplay()
 		{
 			if ( ConsoleSystem.Caller.Pawn is not Ball player )
@@ -199,7 +195,7 @@ namespace Ballers
 		}
 		*/
 
-		[ServerCmd( "stopreplays" )]
+		[ConCmd.Server( "stopreplays" )]
 		public static void RemoveReplays()
 		{
 			int ghostCount = Ball.ReplayGhosts.Count;

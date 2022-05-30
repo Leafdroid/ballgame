@@ -1,9 +1,5 @@
 ﻿using Sandbox;
-using System.Linq;
-using Sandbox.UI;
 using System;
-using System.Collections.Generic;
-using Sandbox.Internal.Globals;
 
 public class Stopwatch
 {
@@ -47,7 +43,7 @@ public class Stopwatch
 		}
 	}
 
-	[ClientCmd]
+	[ConCmd.Client]
 	public static void Bezier()
 	{
 		float[] floats = new float[4] { 0f, -2, 4f, 1f };

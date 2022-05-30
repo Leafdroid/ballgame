@@ -1,13 +1,10 @@
 ﻿using Sandbox;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ballers
 {
 	[Library( "trigger_death", Description = "Used for killing ballers" )]
-	[Hammer.SupportsSolid]
-	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
+	[SandboxEditor.SupportsSolid]
+	[SandboxEditor.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
 	public partial class HurtBrush : ModelEntity
 	{
 		/// <summary>

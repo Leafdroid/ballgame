@@ -1,5 +1,4 @@
 ﻿using Sandbox;
-using System.Linq;
 using System;
 using System.Collections.Generic;
 
@@ -81,7 +80,7 @@ namespace Ballers
 						{
 							prevDot = hitDot;
 							hitSurface = moverTrace.Surface;
-							hitPos = moverTrace.EndPos - moverTrace.Normal * 40f;
+							hitPos = moverTrace.EndPosition - moverTrace.Normal * 40f;
 						}
 
 						if ( !moveplanes.TryAdd( moverTrace.Normal, mover.Velocity, ref Velocity ) )
@@ -104,7 +103,7 @@ namespace Ballers
 					{
 						prevDot = pm.Normal.Dot( -Velocity );
 						hitSurface = pm.Surface;
-						hitPos = pm.EndPos - pm.Normal * 40f;
+						hitPos = pm.EndPosition - pm.Normal * 40f;
 					}
 				}
 
@@ -118,7 +117,7 @@ namespace Ballers
 
 				if ( pm.Fraction > 0.0f )
 				{
-					Position = pm.EndPos + pm.Normal * 0.01f;
+					Position = pm.EndPosition + pm.Normal * 0.01f;
 
 					moveplanes.StartBump( Velocity );
 				}
@@ -133,7 +132,7 @@ namespace Ballers
 					switch ( pm.Entity )
 					{
 						case BumperBrush bumper:
-							bumper.Bonk( Ball, pm.EndPos - pm.Normal * 40f );
+							bumper.Bonk( Ball, pm.EndPosition - pm.Normal * 40f );
 							planeVelocity = pm.Normal * bumper.Force;
 							break;
 						case var ent:

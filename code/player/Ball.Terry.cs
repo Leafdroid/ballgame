@@ -1,25 +1,23 @@
 ﻿
 using Sandbox;
-using Sandbox.UI.Construct;
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Ballers
 {
+
 	public partial class Ball : Player
 	{
 		private static Dictionary<int, Clothing> clothingResources = new();
 		private static Clothing FindClothing( int id ) => clothingResources.TryGetValue( id, out Clothing clothing ) ? clothing : null;
 
-		public AnimSceneObject Terry { get; private set; }
+		public SceneModel Terry { get; private set; }
 		public ModelEntity TerryRagdoll { get; private set; }
 		private bool dressed = false;
 
 		[Net] public string ClothingData { get; set; }
-		private Clothing.Container container = new();
-		private List<AnimSceneObject> clothingObjects = new();
+		private ClothingContainer container = new();
+		private List<SceneModel> clothingObjects = new();
 
 		[ClientRpc]
 		public static void RegisterClothing( int id, string model, string matGroup, int slotsOver, int slotsUnder, int hideBody )
@@ -39,6 +37,7 @@ namespace Ballers
 
 		public static void DeliverClothing( Client cl )
 		{
+			/*
 			foreach ( Clothing clothing in Clothing.All )
 			{
 				int id = clothing.ResourceId;
@@ -50,6 +49,7 @@ namespace Ballers
 
 				RegisterClothing( id, model, matGroup, slotsOver, slotsUnder, hideBody );
 			}
+			*/
 		}
 
 		private void Deserialize()
@@ -61,7 +61,7 @@ namespace Ballers
 
 			try
 			{
-				var entries = System.Text.Json.JsonSerializer.Deserialize<Clothing.Container.Entry[]>( ClothingData );
+				var entries = System.Text.Json.JsonSerializer.Deserialize<ClothingContainer.Entry[]>( ClothingData );
 
 				foreach ( var entry in entries )
 				{
@@ -99,9 +99,7 @@ namespace Ballers
 					continue;
 				}
 
-				var model = Model.Load( c.Model );
-
-				var anim = new AnimSceneObject( model, Terry.Transform );
+				var anim = new SceneModel( Scene, c.Model, Terry.Transform );
 
 				if ( !string.IsNullOrEmpty( c.MaterialGroup ) )
 					anim.SetMaterialGroup( c.MaterialGroup );
@@ -150,7 +148,7 @@ namespace Ballers
 
 		public void SetupTerry()
 		{
-			Terry = new AnimSceneObject( Model.Load( "models/citizen/citizen.vmdl" ), Transform.Zero );
+			Terry = new SceneModel( Scene, Model.Load( "models/citizen/citizen.vmdl" ), Transform.Zero );
 		}
 
 		public void UpdateTerry()
@@ -171,10 +169,10 @@ namespace Ballers
 				var angle = MathF.Atan2( sideward, forward ).RadianToDegree().NormalizeDegrees();
 
 				// base stance
-				Terry.SetAnimBool( "b_grounded", true );
-				Terry.SetAnimInt( "holdtype", 0 );
-				Terry.SetAnimFloat( "aimat_weight", 0.5f ); // old
-				Terry.SetAnimFloat( "aim_body_weight", 0.5f );
+				Terry.SetAnimParameter( "b_grounded", true );
+				Terry.SetAnimParameter( "holdtype", 0 );
+				Terry.SetAnimParameter( "aimat_weight", 0.5f ); // old
+				Terry.SetAnimParameter( "aim_body_weight", 0.5f );
 
 				if ( speed > 32f )
 				{
@@ -189,21 +187,21 @@ namespace Ballers
 				// look direction
 				var lookDirection = direction;
 				if ( Controller == ControlType.Player )
-					lookDirection = (direction * 0.3f + EyeRot.Forward * 0.7f);
+					lookDirection = (direction * 0.3f + EyeRotation.Forward * 0.7f);
 
 				var aimPos = Position + lookDirection * 200f;
 				var localPos = Terry.Transform.PointToLocal( aimPos );
-				Terry.SetAnimVector( "aim_eyes", localPos );
-				Terry.SetAnimVector( "aim_head", localPos );
-				Terry.SetAnimVector( "aim_body", localPos );
+				Terry.SetAnimParameter( "aim_eyes", localPos );
+				Terry.SetAnimParameter( "aim_head", localPos );
+				Terry.SetAnimParameter( "aim_body", localPos );
 
 				// walk animation
-				Terry.SetAnimFloat( "move_direction", angle );
-				Terry.SetAnimFloat( "move_speed", speed );
-				Terry.SetAnimFloat( "move_groundspeed", speed );
-				Terry.SetAnimFloat( "move_y", sideward );
-				Terry.SetAnimFloat( "move_x", forward );
-				Terry.SetAnimFloat( "move_z", 0 );
+				Terry.SetAnimParameter( "move_direction", angle );
+				Terry.SetAnimParameter( "move_speed", speed );
+				Terry.SetAnimParameter( "move_groundspeed", speed );
+				Terry.SetAnimParameter( "move_y", sideward );
+				Terry.SetAnimParameter( "move_x", forward );
+				Terry.SetAnimParameter( "move_z", 0 );
 
 				// update
 				Terry.Update( RealTime.Delta );
@@ -246,7 +244,6 @@ namespace Ballers
 
 			TerryRagdoll = ent;
 		}
-
 		public void UpdateModel()
 		{
 			if ( Velocity.LengthSquared > 0.0f )

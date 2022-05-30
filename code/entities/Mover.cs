@@ -1,15 +1,14 @@
 ﻿using Sandbox;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ballers
 {
 	[Library( "ball_mover" )]
-	[Hammer.SupportsSolid]
-	[Hammer.RenderFields]
-	[Hammer.DoorHelper( "movedir", "islocal", "movetype", "movedistance" )]
-	[Hammer.VisGroup( Hammer.VisGroup.Dynamic )]
+	[SandboxEditor.SupportsSolid]
+	[SandboxEditor.RenderFields]
+	[SandboxEditor.DoorHelper( "movedir", "islocal", "movetype", "movedistance" )]
+	[SandboxEditor.VisGroup( SandboxEditor.VisGroup.Dynamic )]
 	public partial class Mover : ModelEntity
 	{
 		public static new List<Mover> All = new();

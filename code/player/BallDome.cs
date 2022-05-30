@@ -1,11 +1,6 @@
 ﻿
 using Sandbox;
-using Sandbox.UI.Construct;
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace Ballers
 {
@@ -14,11 +9,6 @@ namespace Ballers
 		public const float PopForce = 300f; // pop!
 		private TimeSince lifeTime;
 		private bool hasSpawned = false;
-
-		public static readonly SoundEvent Pop = new( "sounds/ball/pop.vsnd" )
-		{
-			DistanceMax = 1536f,
-		};
 
 		public static void Create( Ball ball )
 		{
@@ -36,10 +26,11 @@ namespace Ballers
 			var axis = new Vector3( -dir.y, dir.x, 0.0f );
 			var angle = ball.Velocity.Length / (40.0f * (float)Math.PI);
 
-			Sound.FromWorld( Pop.Name, ball.Position );
+			//Sound.FromWorld( Pop.Name, ball.Position );
+			Sound.FromWorld( "sounds/ball/pop.sound", ball.Position );
 
 			BallDome dome1 = new BallDome() { Position = pos, Rotation = rot, Velocity = vel };
-			dome1.SceneObject.SetValue( "tint2", ball.SceneObject.GetVectorValue( "tint2" ) );
+			//dome1.SceneObject.Attributes.Set( "tint2", ball.SceneObject.GetVectorValue( "tint2" ) );
 			dome1.PhysicsBody.AngularVelocity = axis * angle * 2f;
 			dome1.PhysicsBody.Mass = Ball.Mass * 0.5f;
 
@@ -47,7 +38,7 @@ namespace Ballers
 			rot = rot * Rotation.FromPitch( 180f );
 
 			BallDome dome2 = new BallDome() { Position = pos, Rotation = rot, Velocity = vel };
-			dome2.SceneObject.SetValue( "tint2", ball.SceneObject.GetVectorValue( "tint" ) );
+			//dome2.SceneObject.Attributes.Set( "tint2", ball.SceneObject.GetVectorValue( "tint" ) );
 			dome2.PhysicsBody.AngularVelocity = axis * angle * 2f;
 			dome2.PhysicsBody.Mass = Ball.Mass * 0.5f;
 		}

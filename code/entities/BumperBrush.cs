@@ -1,13 +1,10 @@
 ﻿using Sandbox;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Ballers
 {
 
 	[Library( "func_bumper" )]
-	[Hammer.SupportsSolid]
+	[SandboxEditor.SupportsSolid]
 	public partial class BumperBrush : ModelEntity
 	{
 		[Property( "force", Title = "Force" )]

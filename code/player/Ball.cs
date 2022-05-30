@@ -1,10 +1,7 @@
 ﻿
 using Sandbox;
-using Sandbox.UI.Construct;
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
 
 namespace Ballers
@@ -54,7 +51,7 @@ namespace Ballers
 			if ( Controller == ControlType.Player )
 			{
 				ReplayData = new ReplayData();
-				Camera = new BallCamera();
+				CameraMode = new BallCamera();
 			}
 			else
 			{
@@ -194,8 +191,8 @@ namespace Ballers
 			Color ballColor = new ColorHsv( hue, saturation, 1f );
 			Color ballColor2 = new ColorHsv( (hue + 25f) % 360, saturation, 1f );
 
-			SceneObject.SetValue( "tint", ballColor );
-			SceneObject.SetValue( "tint2", ballColor2 );
+			SceneObject.Attributes.Set( "tint", ballColor );
+			SceneObject.Attributes.Set( "tint2", ballColor2 );
 
 			isColored = true;
 		}
@@ -223,14 +220,14 @@ namespace Ballers
 				SetupColors();
 		}
 
-		[ServerCmd( "kill" )]
+		[ConCmd.Server( "kill" )]
 		public static void Kill()
 		{
 			if ( ConsoleSystem.Caller != null && ConsoleSystem.Caller.Pawn is Ball player )
 				player.Pop( false );
 		}
 
-		[ServerCmd( "reset" )]
+		[ConCmd.Server( "reset" )]
 		public static void ResetCommand()
 		{
 			if ( ConsoleSystem.Caller != null && ConsoleSystem.Caller.Pawn is Ball player )

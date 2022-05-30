@@ -1,9 +1,8 @@
-﻿using System;
-using Ballers;
+﻿using Ballers;
 
 namespace Sandbox
 {
-	public class BallCamera : Camera
+	public class BallCamera : CameraMode
 	{
 		private float fov = 0f;
 		private float roll = 0f;
@@ -28,8 +27,8 @@ namespace Sandbox
 			Vector3 position = player.Position;
 			if ( player.LifeState == LifeState.Dead )
 			{
-				Transform bone = player.TerryRagdoll.GetBoneTransform( 0 );
-				position = bone.Position + Vector3.Up * 8f;
+				//Transform bone = player.TerryRagdoll.GetBoneTransform( 0 );
+				//position = bone.Position + Vector3.Up * 8f;
 			}
 
 			Vector3 velocity = player.LifeState == LifeState.Alive ? player.Velocity : Vector3.Zero;
@@ -47,7 +46,7 @@ namespace Sandbox
 
 			Vector3 camPos = position + (Rotation.Backward * 10 * zoom + Rotation.Up * 0.5f * zoom);
 
-			Position = cameraTrace.FromTo( position, camPos ).Run().EndPos;
+			Position = cameraTrace.FromTo( position, camPos ).Run().EndPosition;
 
 			FieldOfView = 75 + fov;
 

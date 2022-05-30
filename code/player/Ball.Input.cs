@@ -1,11 +1,6 @@
 ﻿
 using Sandbox;
-using Sandbox.UI.Construct;
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace Ballers
 {
@@ -23,7 +18,7 @@ namespace Ballers
 
 		public void SimulateInputs()
 		{
-			EyeRot = Input.Rotation;
+			EyeRotation = Input.Rotation;
 
 			if ( Controller == ControlType.Player )
 			{

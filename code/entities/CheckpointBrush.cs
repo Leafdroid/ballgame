@@ -1,16 +1,13 @@
 ﻿using Sandbox;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using Sandbox.UI;
+using System.IO;
 
 namespace Ballers
 {
 
 	[Library( "func_checkpoint" )]
-	[Hammer.SupportsSolid]
-	[Hammer.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
+	[SandboxEditor.SupportsSolid]
+	[SandboxEditor.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
 	public partial class CheckpointBrush : ModelEntity
 	{
 		/// <summary>
@@ -55,7 +52,7 @@ namespace Ballers
 				return;
 
 			if ( IsClient )
-				Sound.FromScreen( Swoosh.Name );
+				Sound.FromScreen( "sounds/ball/swoosh.sound" );
 
 
 			float tickTime = player.ActiveTick * Global.TickInterval;
@@ -165,14 +162,7 @@ namespace Ballers
 			return $"{fullMinutes.ToString( "00" )}:{fullSeconds.ToString( "00" )}.{milliseconds.ToString( "000" )}";
 		}
 
-		public static readonly SoundEvent Badge = new( "sounds/ball/badge.vsnd" )
-		{
-			Pitch = 1f,
-			Volume = 0.4f,
-			DistanceMax = 1024,
-			UI = true
-		};
-
+		/*
 		public static readonly SoundEvent Swoosh = new( "sounds/ball/swoosh.vsnd" )
 		{
 			Pitch = 1f,
@@ -180,5 +170,6 @@ namespace Ballers
 			DistanceMax = 1024,
 			UI = true
 		};
+		*/
 	}
 }
