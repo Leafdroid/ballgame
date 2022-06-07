@@ -25,13 +25,15 @@ namespace Ballers
 			Transmit = TransmitType.Always;
 		}
 
+
 		public static readonly SoundEvent BoingSound = new( "sounds/ball/boing.vsnd" )
 		{
 			Pitch = 0.95f,
 			PitchRandom = 0.05f,
 			Volume = 0.65f,
-			DistanceMax = 2048f,
+			//DistanceMax = 2048f,
 		};
+
 
 		public void Bonk( Ball bonker, Vector3 pos )
 		{

@@ -1,11 +1,5 @@
 ﻿
 using Sandbox;
-using Sandbox.UI.Construct;
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace Ballers
 {
@@ -14,10 +8,6 @@ namespace Ballers
 		private float groundTime = 0f;
 		private Ball ball;
 		private Sound sound;
-		private static SoundEvent soundEvent = new SoundEvent( "sounds/ball/roll.vsnd" )
-		{
-			DistanceMax = 1024f,
-		};
 
 		public RollSound( Ball ball )
 		{
