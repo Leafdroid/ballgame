@@ -22,7 +22,7 @@ namespace Ballers
 
 		public override void Respawn()
 		{
-			if ( !(this as ModelEntity).IsValid() )
+			if (!IsValid)
 				return;
 
 			if ( Controller == ControlType.Player )
@@ -36,12 +36,14 @@ namespace Ballers
 			SetSpawnpoint();
 			ResetInterpolation();
 
+			Tags.Add("player");
+			SetupPhysicsFromSphere(PhysicsMotionType.Dynamic, Vector3.Zero, 40f);
 			RollSound.RespawnPredicted( this );
 		}
 
 		public void Create()
 		{
-			if ( !(this as ModelEntity).IsValid() )
+			if ( !IsValid )
 				return;
 
 			Host.AssertServer();
@@ -62,15 +64,13 @@ namespace Ballers
 			if ( Client.IsValid() )
 				ClothingData = Client.GetClientData( "avatar" );
 
-			PhysicsEnabled = false;
+			PhysicsEnabled = true;
 
 			// for water collision effects!
-			SetupPhysicsFromSphere( PhysicsMotionType.Keyframed, Vector3.Zero, 40f );
-			EnableAllCollisions = false;
+			SetupPhysicsFromSphere( PhysicsMotionType.Dynamic, Vector3.Zero, 40f );
+			Tags.Add("player");
+			EnableAllCollisions = true;
 			EnableTraceAndQueries = true;
-			ClearCollisionLayers();
-			AddCollisionLayer( CollisionLayer.Player );
-			SetInteractsWith( CollisionLayer.Water );
 
 			EnableShadowCasting = true;
 			Transmit = TransmitType.Always;

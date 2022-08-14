@@ -29,7 +29,7 @@ namespace Ballers
 		public Vector3 GetGravity()
 		{
 			if ( GravityType == GravityType.Default )
-				return Map.Physics.Gravity * 800f / 360f;
+				return Map.Physics.Gravity;
 			else
 				return GravityRotation.Forward * Map.Physics.Gravity.Length * 800f / 360f;
 		}
@@ -45,6 +45,7 @@ namespace Ballers
 			float directionSpeed = clampedVelocity.Dot( MoveDirection );
 
 			float acceleration = Acceleration;
+
 			if ( !Grounded )
 				acceleration *= AirControl;
 
@@ -66,8 +67,7 @@ namespace Ballers
 
 			TraceResult[] triggerTraces = moveTrace
 				.FromTo( Position, Position + Velocity * Time.Delta )
-				.HitLayer( CollisionLayer.All, false )
-				.HitLayer( CollisionLayer.Trigger, true )
+				.WithTag("trigger")
 				.RunAll();
 
 			if ( triggerTraces == null )
@@ -104,7 +104,7 @@ namespace Ballers
 			var mover = new MoveHelper( Position, Velocity, this );
 
 			Vector3 gravityNormal = GetGravity().Normal;
-			Grounded = mover.TraceDirection( gravityNormal ).Hit;
+			Grounded = mover.TraceDirection( gravityNormal * 45 ).Hit;
 
 			Vector3 flatVelocity = Velocity - gravityNormal * Velocity.Dot( gravityNormal );
 			float speedFraction = flatVelocity.Length / MaxSpeed;
@@ -114,7 +114,7 @@ namespace Ballers
 			TraceResult groundTrace = mover.TraceDirection( gravityNormal * 16f + speedFraction * 24f );
 			if ( groundTrace.Hit )
 			{
-				string surface = groundTrace.Surface.Name;
+				string surface = groundTrace.Surface.ResourceName;
 
 				Rotation want = Rotation.LookAt( -groundTrace.Normal, GravityRotation.Up );
 
@@ -141,10 +141,9 @@ namespace Ballers
 			else if ( GravityType == GravityType.Magnet )
 				GravityType = GravityType.Default;
 
-			TraceResult waterTrace = Trace.Ray( Position + Vector3.Up * 80f, Position )
-				.Radius( 40f )
-				.HitLayer( CollisionLayer.All, false )
-				.HitLayer( CollisionLayer.Water, true )
+			TraceResult waterTrace = Trace.Ray(Position + Vector3.Up * 80f, Position)
+				.Radius(40f)
+				.WithTag("water")
 				.Run();
 
 			float friction = Grounded ? Friction : Drag;
@@ -208,6 +207,9 @@ namespace Ballers
 		[ClientRpc]
 		public static void ClientImpactSound( Ball ball, float force )
 		{
+			if (ball == null)
+				return;
+
 			if ( ball.Client != Local.Client || ball.Controller == ControlType.Replay )
 				ball.ImpactSound( force );
 		}

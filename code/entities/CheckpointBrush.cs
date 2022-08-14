@@ -32,8 +32,7 @@ namespace Ballers
 			EnableAllCollisions = false;
 			EnableTraceAndQueries = true;
 
-			ClearCollisionLayers();
-			AddCollisionLayer( CollisionLayer.Trigger );
+			Tags.Add("trigger");
 
 			if ( Index > LastIndex )
 				LastIndex = Index;

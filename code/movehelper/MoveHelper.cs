@@ -19,14 +19,8 @@ namespace Ballers
 			Position = position;
 
 			// Hit everything but other balls
-			Trace = Trace.Ray( 0, 0 )
-				.Radius( 40f )
-				.HitLayer( CollisionLayer.Solid, true )
-				.HitLayer( CollisionLayer.PLAYER_CLIP, true )
-				.HitLayer( CollisionLayer.GRATE, true )
-				.HitLayer( CollisionLayer.STATIC_LEVEL, true )
-				.HitLayer( CollisionLayer.WORLD_GEOMETRY, true )
-				.HitLayer( CollisionLayer.Trigger, false );
+			Trace = Trace.Ray(0, 0)
+				.WithoutTags("player");
 		}
 
 		public TraceResult TraceFromTo( Vector3 start, Vector3 end )
@@ -69,7 +63,7 @@ namespace Ballers
 					Vector3 movePos = Position + relativeVelocity * timestep;
 
 					TraceResult moverTrace = Trace.FromTo( Position, movePos )
-					.HitLayer( CollisionLayer.LADDER, true )
+					.WithTag( "ladder" )
 					.Only( mover )
 					.Run();
 
@@ -94,7 +88,7 @@ namespace Ballers
 					break;
 
 				TraceResult pm = Trace.FromTo( Position, Position + Velocity * timestep )
-				.HitLayer( CollisionLayer.LADDER, true )
+				.WithTag("ladder")
 				.Run();
 
 				if ( pm.Hit )
@@ -150,7 +144,7 @@ namespace Ballers
 			float bumpForce = bumpVelocity.Length;
 			Ball.PlayImpactSound( bumpForce );
 
-			if ( bumpForce > 350f && hitSurface != null && !silentSurfaces.Contains( hitSurface.Name ) )
+			if ( bumpForce > 350f && hitSurface != null && !silentSurfaces.Contains( hitSurface.ResourceName ) )
 			{
 				string sound = bumpForce > 700f ? hitSurface.Sounds.ImpactHard : hitSurface.Sounds.ImpactSoft;
 				PredictionSound.World( Ball.Client, sound, hitPos );

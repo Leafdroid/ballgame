@@ -220,10 +220,8 @@ namespace Ballers
 			var ent = new ModelEntity();
 			ent.Position = Terry.Position;
 			ent.Rotation = Terry.Rotation;
-			ent.MoveType = MoveType.Physics;
 			ent.UsePhysicsCollision = true;
 			ent.EnableAllCollisions = true;
-			ent.CollisionGroup = CollisionGroup.Debris;
 			ent.Model = Terry.Model;
 
 			DressRagdoll( ent );
@@ -234,11 +232,6 @@ namespace Ballers
 
 			ent.SurroundingBoundsMode = SurroundingBoundsType.Physics;
 			ent.PhysicsGroup.Velocity = Velocity;
-
-			ent.SetInteractsAs( CollisionLayer.Debris );
-			ent.SetInteractsWith( CollisionLayer.WORLD_GEOMETRY );
-			ent.AddCollisionLayer( CollisionLayer.Debris );
-			ent.SetInteractsWith( CollisionLayer.Debris );
 
 			ent.DeleteAsync( 6.5f );
 

@@ -5,23 +5,26 @@
 //
 namespace Ballers
 {
-	/// <summary>
-	/// This is the HUD entity. It creates a RootPanel clientside, which can be accessed
-	/// via RootPanel on this entity, or Local.Hud.
-	/// </summary>
-	public partial class BallersHudEntity : Sandbox.HudEntity<RootPanel>
+	public partial class BallersHudEntity : RootPanel
 	{
+		public static BallersHudEntity Instance;
+
 		public BallersHudEntity()
 		{
-			if ( IsClient )
-			{
-				RootPanel.SetTemplate( "ui/ballershud.html" );
-
-				RootPanel.AddChild<NameTags>();
-				RootPanel.AddChild<Scoreboard<ScoreboardEntry>>();
-				RootPanel.AddChild<Timer>();
+			//If the hud already exists, delete and make it null for a new one
+			if(Instance != null)
+            {
+				Instance?.Delete();
+				Instance = null;
 			}
+
+			Instance = this;
+
+			SetTemplate( "ui/ballershud.html" );
+
+			AddChild<NameTags>();
+			AddChild<Scoreboard<ScoreboardEntry>>();
+			AddChild<Timer>();
 		}
 	}
-
 }

@@ -9,16 +9,47 @@ namespace Sandbox
 
 		private int zoom = 20;
 
-		private const int minZoom = 10;
-		private const int maxZoom = 30;
+		private const int minZoom = -15;
+		private const int maxZoom = 75;
 
-		private static Trace cameraTrace = Trace.Ray( 0, 0 )
-			.Radius( 10f )
-			.HitLayer( CollisionLayer.Debris, false );
+		private static Trace cameraTrace = Trace.Ray(0, 0)
+			.Radius(10f);
 
-		public override void Update()
+        public override void Update()
+		{
+			if (Local.Pawn is not AnimatedEntity pawn)
+				return;
+
+			zoom -= Input.MouseWheel * 5;
+			zoom = zoom.Clamp(minZoom, maxZoom);
+
+			Position = pawn.Position;
+			Vector3 targetPos;
+
+			var center = pawn.Position + Vector3.Up * 45;
+
+			Position = center;
+			Rotation = Rotation.FromAxis(Vector3.Up, 4) * Input.Rotation;
+
+			float distance = 130.0f + zoom * pawn.Scale;
+			targetPos = Position;
+			targetPos += Input.Rotation.Forward * -distance;
+			
+			Position = targetPos;
+			
+			FieldOfView = 70;
+
+			Viewer = null;
+		}
+
+		/*public override void Update()
 		{
 			if ( Local.Client.Pawn is not Ball player )
+				return;
+
+			var pawn = Local.Pawn;
+
+			if (pawn == null)
 				return;
 
 			zoom -= Input.MouseWheel;
@@ -44,13 +75,15 @@ namespace Sandbox
 
 			Rotation = Rotation.From( Input.Rotation.Pitch(), Input.Rotation.Yaw(), roll );
 
-			Vector3 camPos = position + (Rotation.Backward * 10 * zoom + Rotation.Up * 0.5f * zoom);
+			Vector3 camPos = position + (pawnRotation.Backward * 10 * zoom + Rotation.Up * 0.5f * zoom);
 
 			Position = cameraTrace.FromTo( position, camPos ).Run().EndPosition;
+
+			Log.Info(cameraTrace);
 
 			FieldOfView = 75 + fov;
 
 			Viewer = null;
-		}
+		}*/
 	}
 }

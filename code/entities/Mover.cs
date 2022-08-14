@@ -72,8 +72,6 @@ namespace Ballers
 		private void SharedSpawn()
 		{
 			SetupPhysicsFromModel( PhysicsMotionType.Keyframed );
-			ClearCollisionLayers();
-			AddCollisionLayer( CollisionLayer.LADDER );
 		}
 
 		public override void ClientSpawn()
@@ -91,8 +89,7 @@ namespace Ballers
 			clientEnt.EnableAllCollisions = true;
 			clientEnt.Transform = Transform;
 
-			clientEnt.ClearCollisionLayers();
-			clientEnt.AddCollisionLayer( CollisionLayer.LADDER );
+			clientEnt.Tags.Add("ladder");
 			ClientEntity = clientEnt;
 		}
 

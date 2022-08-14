@@ -61,7 +61,10 @@ namespace Ballers
 		[ClientRpc]
 		public static void UpdateRpc( Ball ball, bool grounded, float speed )
 		{
-			if ( ball.Client != Local.Client )
+			if (ball == null)
+				return;
+
+			if (ball.Client != null && ball.Client != Local.Client )
 				ball.RollSound.Update( grounded, speed );
 		}
 	}
