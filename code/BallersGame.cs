@@ -3,14 +3,15 @@ using Sandbox;
 
 namespace Ballers
 {
-	public partial class BallersGame : Sandbox.Game
+	public partial class BallersGame : Game
 	{
 		public BallersGame()
 		{
-			if ( IsServer )
-				new BallersHudEntity();
+			if (IsClient)
+			{
+				_ = new BallersHudEntity();
+			}
 		}
-
 		public override void Simulate( Client client )
 		{
 			base.Simulate( client );

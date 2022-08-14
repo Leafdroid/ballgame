@@ -95,7 +95,7 @@ namespace Ballers
 			}
 		}
 
-		public static bool operator ==( BallInput a, BallInput b ) => a.data == b.data;
-		public static bool operator !=( BallInput a, BallInput b ) => a.data != b.data;
+		//public static bool operator == ( BallInput a, BallInput b ) => a.data == b.data;
+		//public static bool operator != ( BallInput a, BallInput b ) => a.data != b.data;
 	}
 }

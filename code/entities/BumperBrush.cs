@@ -111,7 +111,7 @@ namespace Ballers
 		{
 			justBonked = true;
 
-			Sound.FromWorld( BoingSound.Name, pos ).SetPitch( Pitch );
+			Sound.FromWorld( BoingSound.ResourceName, pos ).SetPitch( Pitch );
 		}
 
 		[ClientRpc]
@@ -127,8 +127,7 @@ namespace Ballers
 		{
 			SetupPhysicsFromModel( PhysicsMotionType.Keyframed );
 			EnableDrawing = true;
-			ClearCollisionLayers();
-			AddCollisionLayer( CollisionLayer.STATIC_LEVEL );
+			Tags.Add("solid");
 		}
 
 		public override void ClientSpawn()

@@ -5,7 +5,7 @@ namespace Ballers
 	[Library( "trigger_death", Description = "Used for killing ballers" )]
 	[SandboxEditor.SupportsSolid]
 	[SandboxEditor.AutoApplyMaterial( "materials/tools/toolstrigger.vmat" )]
-	public partial class HurtBrush : ModelEntity
+	public partial class HurtBrush : BaseTrigger
 	{
 		/// <summary>
 		/// Set to true if baller has to collide with a solid to die in this zone, use for fall damage deaths etc.
@@ -28,8 +28,7 @@ namespace Ballers
 			EnableAllCollisions = false;
 			EnableTraceAndQueries = true;
 
-			ClearCollisionLayers();
-			AddCollisionLayer( CollisionLayer.Trigger );
+			Tags.Add("trigger");
 		}
 
 		public override void ClientSpawn()
